@@ -1,1 +1,0 @@
-the delay us is: 10the VGA gain is: 0.5the sampling rate is: 22000

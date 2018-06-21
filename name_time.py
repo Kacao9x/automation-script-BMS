@@ -1,4 +1,4 @@
-import time
+import time, sys
 
 
 def __get_filename():
@@ -6,7 +6,6 @@ def __get_filename():
     return name
     #time.clock() is an object, not string
 
-__get_filename()
 
 def __write_test_logs(name= '', delay=int, gain=str, sample_rate=int):
     try:
@@ -15,6 +14,8 @@ def __write_test_logs(name= '', delay=int, gain=str, sample_rate=int):
             writeout.writelines('the VGA gain is: ' + gain)
             writeout.writelines('the sampling rate is: ' + str(sample_rate))
 
+    except:
+        sys.exit("error to writing to job file")
     finally:
         writeout.close()
     return

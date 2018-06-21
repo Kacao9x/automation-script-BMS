@@ -1,11 +1,6 @@
 import argparse
 import sys, time
 
-#parser = argparse.ArgumentParser()
-#parser.add_argument("echo")
-#args = parser.parse_args()
-
-#print args.echo
 
 def ParseHelpers():
     global parser, args
@@ -25,6 +20,7 @@ def ParseHelpers():
 
     parser.add_argument('-a', '-A', '--delayus', default='1', type=int,
                         dest='delay_us', help='set the time delay')
+                        #choices=range(1,5000000))
                         # choices=range(1,1000))
     # A = args.delay_us
     parser.add_argument('-b', '-B', '--sampling-rate', default='22000',
@@ -36,11 +32,12 @@ def ParseHelpers():
                         dest='gain', help='set the VGA gain')
                         #(choices='0.0', '0.1', ... '9.9', '10.0')
     # C = args.gain
-    parser.add_argument('--num-of-cycle-impulse', type=int, dest='num_of_cycle',
+    parser.add_argument('--num-of-cycle-impulse', type=int, default=0,
+                        dest='num_of_cycle',
                         help='number of cycles per impulse')
     # impulse = args.num_of_cycle
-    parser.add_argument('--num-of-capture', type=int, dest='capture',
-                        help='number of echoes to capture')
+    parser.add_argument('--num-of-capture', type=int, default=0,
+                        dest='capture', help='number of echoes to capture')
     # snapshot = args.capture
 
     #repetition rate:#num of cycle, freq
@@ -64,11 +61,49 @@ def ParseHelpers():
         print "the time delay is: " + str(args.delay_us)
 
 #==============================================================================#
+#======= create a test log file and set the name =====#
+def __get_filename():
+    return  "file" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
+    #time.clock() is an object, not string
+
+
+def __write_test_logs(name= '', delay=int, gain=str, sample_rate=int):
+    try:
+        with open(name, 'ab') as writeout:
+            writeout.writelines('the delay us is: ' + str(delay) + '\n')
+            writeout.writelines('the VGA gain is: ' + gain + '\n')
+            writeout.writelines('the sampling rate is: ' + str(sample_rate) + '\n')
+
+    except:
+        sys.exit("error to writing to job file")
+    finally:
+        writeout.close()
+    return
+
+
+#==============================================================================#
+#======================== MAIN ACTIVITY =======================================#
+def main():
+    __NAME__ = __get_filename()
+    print __NAME__
+    __write_test_logs(__NAME__, __DELAY__, __GAIN__, __SAMPLING__)
+
+
+
+#==============================================================================#
+
+
 ParseHelpers()
 
-if args.debug:
-    print "Debug Mode Activated"
-    #Set up the system parameter for debug mode
+__GAIN__    = args.gain
+__SAMPLING__= args.rate
+__DELAY__   = args.delay_us
+number_of_capture = args.num_of_cycle
+number_of_cycle_impulse = args.capture
+
+if args.fresh:
+    print "Start a new test"
+    main()
 else:
     # A = args.delay_us
     # B = args.rate
@@ -77,6 +112,3 @@ else:
     # snapshot = args.capture
     result = args.delay_us*4
     print (result)
-
-timestr = time.strftime("%Y%m%d-%H%M%S")
-print timestr

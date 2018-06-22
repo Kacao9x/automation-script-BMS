@@ -3,7 +3,6 @@ import argparse
 #https://stackoverflow.com/questions/25295487/python-argparse-value-range-help-message-appearance
 
 import sys, time
-import unittest
 
 from echoes_protocol import echoes
 from echoes_spi import *
@@ -13,7 +12,7 @@ from echoes_spi import *
 def ParseHelpers():
     global parser, args
 
-    parser = argparse.ArgumentParser(description='start CMD line '
+    parser = argparse.ArgumentParser(description='CMD line '
                                      + 'argument for auto test'
                                      + ' Must provide')
     # ======================= Start CMD ====================================#
@@ -53,10 +52,12 @@ def ParseHelpers():
 
     # parser.add_argument('--adc-config')
 
-    #repetition rate:#num of cycle, freq
-    #after runnning 10 min, rename the test_log file with a timestampe
-
     #============================ Add-on feature ==============================#
+
+    parser.add_argument('--repeat', default=1, type=int, choices=range(1,11),
+                        dest='repeat', metavar='[1,10]',
+                        help='the number of repetition')
+
     parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='Enable debug mode')
     parser.add_argument('-l', '--logs', dest='logs', action='store_true',
@@ -93,6 +94,8 @@ def __write_test_logs(name= '', delay=int, gain=str, sample_rate=int):
     finally:
         writeout.close()
     return
+
+#create test_logs file
 
 
 #==============================================================================#

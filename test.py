@@ -27,8 +27,8 @@ def ParseHelpers():
                         dest='delay_us', help='set the time delay',
                         choices=range(1,5000000), metavar="[1,500000]")
 
-    parser.add_argument('-b', '-B', '--rate', default='22000',
-                        type=int, dest='rate', help='set sampling rate',
+    parser.add_argument('-b', '-B', '--rate', default='22000', type=int,
+                        dest='rate', help='set sampling rate',
                         choices=range(10000, 50001), metavar="[10000-50000]")
                         # choices=[22000, 44000, 66000])
 
@@ -38,19 +38,20 @@ def ParseHelpers():
 
     parser.add_argument('-v', '-V', '--voltage', default='10', type=int,
                         dest='voltage', help='set transducer voltage',
-                        choices=range(0,85,5), metavar="[0,85, 5]")
+                        choices=range(10,85,5), metavar="[0,85, 5]")
 
-    parser.add_argument('--num-of-cycle-impulse', type=int, default=0,
-                        dest='num_of_cycle',
-                        help='number of cycles per impulse')
-    # impulse = args.num_of_cycle
-    parser.add_argument('--num-of-capture', type=int, default=0,
-                        dest='capture', help='number of echoes to capture')
-    # snapshot = args.capture
+    parser.add_argument('--input', default=1, type=int, choices=[1,2],
+                        dest='input', metavar='1. adc-primary  2.adc-secondary',
+                        help='select input channel to collect data')
 
-    parser.add_argument('--threshold', required=False, type=int, choices=range(0, 101),
-                        help='Threshold (0-100) denoting at what threat level to provide',
-                        metavar="[0-100]", default=49)
+    parser.add_argument('--impulse-type', default=1, type=int, choices=[1,2],
+                        dest='type', metavar='1.unipolar  2.bipolar',
+                        help='select type of impulse')
+
+    parser.add_argument('--period', type=int, default=1,help='periods',
+                        dest='period',choices=[1,2,3], metavar='[1,2,3]')
+
+    # parser.add_argument('--adc-config')
 
     #repetition rate:#num of cycle, freq
     #after runnning 10 min, rename the test_log file with a timestampe
@@ -75,7 +76,7 @@ def ParseHelpers():
 #==============================================================================#
 #================= create a test log file and set the name ====================#
 def __get_filename():
-    return  "file" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
+    return  "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
     #time.clock() is an object, not string
     #https://www.dotnetperls.com/filename-date-python
 
@@ -116,23 +117,41 @@ def main():
         print "Failed VGA gain setup"
 
     # set voltage limit for transducer
-    if echoes_1.setVoltage(__VOLTAGE__):
+    if echoes_1.setImpulseVoltage(__VOLTAGE__):
         print "Successfully voltage setup"
     else:
         print "Failed voltage setup"
 
+    # select input capture channel
+    if echoes_1.setCaptureADC(__INPUT__):
+        print "Successfully input capture setup"
+    else:
+        print "Failed input input capture setup"
+
+    # select Impulse type
+    if echoes_1.setImpulseType(__TYPE__):
+        print "Successfully set input type [1,2,4,8,16]"
+    else:
+        print "Failed input set input type"
+
+    # set the time for 1 cycle
+    if echoes_1.setImpulseCycles(__PERIOD__):
+        print "Successfully Impulse cycle setup"
+    else:
+        print "Failed Impulse cycle setup"
 
 #==============================================================================#
 
 
 ParseHelpers()
 
-__GAIN__    = args.gain
-__SAMPLING__= args.rate
-__DELAY__   = args.delay_us
-__VOLTAGE__ = args.voltage
-number_of_capture = args.num_of_cycle
-number_of_cycle_impulse = args.capture
+__GAIN__        = args.gain
+__SAMPLING__    = args.rate
+__DELAY__       = args.delay_us
+__VOLTAGE__     = args.voltage
+__INPUT__       = args.input
+__TYPE__        = args.type
+__PERIOD__      = args.period
 
 if args.fresh:
     print "Start a new test"
@@ -166,7 +185,7 @@ else:
 #             print "Successfully VGA gain setup"
 #
 #         # set voltage limit for transducer
-#         if echoes_1.setVoltage(__VOLTAGE__):
+#         if echoes_1.setImpulseVoltage(__VOLTAGE__):
 #             print "Successfully voltage setup"
 #
 #         # send CMD to readout value to STM32

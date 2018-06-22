@@ -5,6 +5,9 @@ import argparse
 import sys, time
 import unittest
 
+from echoes_protocol import echoes
+from echoes_spi import *
+
 
 
 def ParseHelpers():
@@ -23,17 +26,15 @@ def ParseHelpers():
     parser.add_argument('-a', '-A', '--delayus', default='1', type=int,
                         dest='delay_us', help='set the time delay',
                         choices=range(1,5000000), metavar="[1,500000]")
-                        # choices=range(1,1000))
-    # A = args.delay_us
+
     parser.add_argument('-b', '-B', '--rate', default='22000',
                         type=int, dest='rate', help='set sampling rate',
                         choices=range(10000, 50001), metavar="[10000-50000]")
                         # choices=[22000, 44000, 66000])
-    # B = args.rate
+
     parser.add_argument('-c', '-C', '--gain', default='0.0', type=str,
-                        dest='gain', help='set the VGA gain')
+                        dest='gain', help='set the VGA gain', metavar="[0.0, 1.0]")
                         #(choices='0.0', '0.1', ... '9.9', '10.0')
-    # C = args.gain
 
     parser.add_argument('-v', '-V', '--voltage', default='10', type=int,
                         dest='voltage', help='set transducer voltage',
@@ -72,10 +73,11 @@ def ParseHelpers():
         print "the time delay is: " + str(args.delay_us)
 
 #==============================================================================#
-#======= create a test log file and set the name =====#
+#================= create a test log file and set the name ====================#
 def __get_filename():
     return  "file" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
     #time.clock() is an object, not string
+    #https://www.dotnetperls.com/filename-date-python
 
 
 def __write_test_logs(name= '', delay=int, gain=str, sample_rate=int):
@@ -100,8 +102,24 @@ def main():
     __write_test_logs(__NAME__, __DELAY__, __GAIN__, __SAMPLING__)
 
     #execute the activity here over SPI prococol
+    echoes_1 = echoes()
 
+    if echoes_1.setImpulseDelay(__DELAY__):
+        print "Successfully delay_us setup"
+    else:
+        print "Failed delay_us"
 
+    # Set sampling rate
+    if echoes_1.setVgaGain(__GAIN__):
+        print "Successfully VGA gain setup"
+    else:
+        print "Failed VGA gain setup"
+
+    # set voltage limit for transducer
+    if echoes_1.setVoltage(__VOLTAGE__):
+        print "Successfully voltage setup"
+    else:
+        print "Failed voltage setup"
 
 
 #==============================================================================#
@@ -132,22 +150,32 @@ else:
 #high pass filter for DC offset, cutoff at 50khz
 #output to webapp for screen display
 
-class Test(unittest.Testcase):
+# class Test(unittest.Testcase):
+#
+#     def testIt(self):
+#         echoes_1 = echoes()
+#
+#         # Set delay_us to capture the waveform
+#         # return True if successful setup
+#         if echoes_1.setImpulseDelay(__DELAY__):
+#             print "Successfully delay_us setup"
 
-    def testIt(self):
-        echoes_1 = echoes()
-
-        # Set delay_us to capture the waveform
-        if echoes_1.setImpulseDelay(__DELAY__):
-            print "Successfully delay_us setup"
-
-        # Set sampling rate
-        if echoes_1.setVGAGain(__GAIN__):
-            print "Successfully VGA gain setup"
-
-        # set voltage limit for transducer
-        if echoes_1.setVoltage(__VOLTAGE__):
-            print "Successfully voltage setup"
-
-        
-        return
+#
+#         # Set sampling rate
+#         if echoes_1.setVgaGain(__GAIN__):
+#             print "Successfully VGA gain setup"
+#
+#         # set voltage limit for transducer
+#         if echoes_1.setVoltage(__VOLTAGE__):
+#             print "Successfully voltage setup"
+#
+#         # send CMD to readout value to STM32
+#         if echoes_1.readAdcData():
+#             print "blahblah"
+#
+#         #
+#         if echoes_1.initiateCapture():
+#             print "initateCapture"
+#
+#
+#         return

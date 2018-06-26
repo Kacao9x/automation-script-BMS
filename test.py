@@ -2,10 +2,11 @@ import argparse
 #from argparse import ArgumentParser: optimize the low-memory on Pi
 #https://stackoverflow.com/questions/25295487/python-argparse-value-range-help-message-appearance
 
-import sys, time
+import sys, datetime
 
 from echoes_protocol import echoes
 from echoes_spi import *
+from echoes_signalprocessing import *
 
 
 
@@ -28,7 +29,7 @@ def ParseHelpers():
 
     parser.add_argument('-b', '-B', '--rate', default='22000', type=int,
                         dest='rate', help='set sampling rate',
-                        choices=range(10000, 50001), metavar="[10000-50000]")
+                        choices=range(10000, 2500001), metavar="[10000-2500000]")
                         # choices=[22000, 44000, 66000])
 
     parser.add_argument('-c', '-C', '--gain', default='0.0', type=str,
@@ -40,7 +41,7 @@ def ParseHelpers():
                         choices=range(10,85,5), metavar="[0,85, 5]")
 
     parser.add_argument('--input', default=1, type=int, choices=[1,2],
-                        dest='input', metavar='1. adc-primary  2.adc-secondary',
+                        dest='input', metavar='1.adc-primary  2.adc-secondary',
                         help='select input channel to collect data')
 
     parser.add_argument('--impulse-type', default=1, type=int, choices=[1,2],
@@ -76,18 +77,19 @@ def ParseHelpers():
 
 #==============================================================================#
 #================= create a test log file and set the name ====================#
-def __get_filename():
-    return  "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
+def __get_filename__():
+    return  "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
     #time.clock() is an object, not string
     #https://www.dotnetperls.com/filename-date-python
 
 
-def __write_test_logs(name= '', delay=int, gain=str, sample_rate=int):
+def __write_test_logs__(name= '', delay=int, gain=str, sample_rate=int):
     try:
         with open(name, 'ab') as writeout:
             writeout.writelines('the delay us is: ' + str(delay) + '\n')
             writeout.writelines('the VGA gain is: ' + gain + '\n')
             writeout.writelines('the sampling rate is: ' + str(sample_rate) + '\n')
+
 
     except:
         sys.exit("error to writing to job file")
@@ -97,17 +99,9 @@ def __write_test_logs(name= '', delay=int, gain=str, sample_rate=int):
 
 #create test_logs file
 
-
 #==============================================================================#
-#======================== MAIN ACTIVITY =======================================#
-def main():
-    __NAME__ = __get_filename()
-    print __NAME__
-    __write_test_logs(__NAME__, __DELAY__, __GAIN__, __SAMPLING__)
-
-    #execute the activity here over SPI prococol
-    echoes_1 = echoes()
-
+#======================== System Config =======================================#
+def __system_config__(echoes_1):
     if echoes_1.setImpulseDelay(__DELAY__):
         print "Successfully delay_us setup"
     else:
@@ -143,7 +137,67 @@ def main():
     else:
         print "Failed Impulse cycle setup"
 
+
+
+def __sample_output__(echoes_1):
+
+    echoes_1.initiateCapture(True)
+    # echoes_1(echoes_1.setImpulseType())
+    totalpages = 1
+    output = echoes_1.readAdcData(pagesToRead=totalpages)
+    y = output[0:totalpages * 2048];
+    if output:
+
+        # fs = __SAMPLING__
+        # y = output[0:totalpages * 2048];
+
+        # echoes_dsp = echoes_signals(fs)
+        # print("Removing DC offset")
+        # y = echoes_dsp.removeDcOffset(y)
+
+        # if True:
+        #     y = echoes_dsp.applyBandpass(y)
+        #
+        # if True:
+        #     print("Upsampling")
+        #     y = echoes_dsp.upsample(y, 8)
+        #     fs = fs * 8
+        #
+        # if True:
+        #     print("Normalizing")
+        #     y = echoes_dsp.normalize(y)
+        #
+        # if False:
+        #     y = [i * 3.0 for i in y]
+
+        y = y[0:2048]
+
+        print("Generating data of " + str(len(y)) +
+              " datapoints to log file")
+        # Write file
+        ts = time.time()
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+        fn = "data/" + st + "-echoes-b.dat"
+
+        filehandle = open(fn, "w")
+        for samp in y:
+            filehandle.write(str(samp) + "\n")
+        filehandle.close()
+
 #==============================================================================#
+#======================== MAIN ACTIVITY =======================================#
+def main():
+    __NAME__ = __get_filename__()
+    print __NAME__
+    __write_test_logs__(__NAME__, __DELAY__, __GAIN__, __SAMPLING__)
+
+    #send out op-code CMD over SPI prococol
+    echoes_1 = echoes()
+    __system_config__(echoes_1)
+    # Fire and capture the echoes
+    __sample_output__(echoes_1)
+
+
 
 
 ParseHelpers()
@@ -160,11 +214,7 @@ if args.fresh:
     print "Start a new test"
     main()
 else:
-    # A = args.delay_us
-    # B = args.rate
-    # C = args.gain
-    # impulse = args.num_of_cycle
-    # snapshot = args.capture
+    #resume test
     result = args.delay_us*4
     print (result)
 

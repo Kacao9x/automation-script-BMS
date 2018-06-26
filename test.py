@@ -41,15 +41,17 @@ def ParseHelpers():
                         choices=range(10,85,5), metavar="[0,85, 5]")
 
     parser.add_argument('--input', default=1, type=int, choices=[1,2],
-                        dest='input', metavar='1.adc-primary  2.adc-secondary',
-                        help='select input channel to collect data')
+                        dest='input', metavar='1 or 2',
+                        help='select input channel to collect data\n' +
+                        '1.adc-primary  2.adc-secondary')
 
     parser.add_argument('--impulse-type', default=1, type=int, choices=[1,2],
-                        dest='type', metavar='1.unipolar  2.bipolar',
-                        help='select type of impulse')
+                        dest='type', metavar='1 or 2',
+                        help='select type of impulse\n' + '1.unipolar  2.bipolar')
 
     parser.add_argument('--period', type=int, default=1,help='periods',
                         dest='period',choices=[1,2,3], metavar='[1,2,3]')
+
 
     # parser.add_argument('--adc-config')
 
@@ -194,8 +196,12 @@ def main():
     #send out op-code CMD over SPI prococol
     echoes_1 = echoes()
     __system_config__(echoes_1)
-    # Fire and capture the echoes
-    __sample_output__(echoes_1)
+
+    for i in range(__REPEAT__):
+        print 'Cycle: ' + str(i) + '\n'
+        # Fire and capture the echoes
+        __sample_output__(echoes_1)
+        print 'End cycle \n \n'
 
 
 
@@ -209,6 +215,8 @@ __VOLTAGE__     = args.voltage
 __INPUT__       = args.input
 __TYPE__        = args.type
 __PERIOD__      = args.period
+
+__REPEAT__      = args.repeat
 
 if args.fresh:
     print "Start a new test"

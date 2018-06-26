@@ -13,6 +13,7 @@ from numpy import convolve as np_convolve
 from scipy.signal import fftconvolve, lfilter, firwin, upfirdn
 from scipy.signal import convolve as sig_convolve
 from scipy.ndimage import convolve1d
+from echoes_protocol import *
 
 class echoes_signals(object):
     '''

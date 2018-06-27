@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Python-script.iml" filepath="$PROJECT_DIR$/.idea/Python-script.iml" />
       <module fileurl="file://$PROJECT_DIR$/../titan-pi-app/.idea/titan-pi-app.iml" filepath="$PROJECT_DIR$/../titan-pi-app/.idea/titan-pi-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../titan-pi-app/.idea/titan-pi-app.iml" filepath="$PROJECT_DIR$/../titan-pi-app/.idea/titan-pi-app.iml" />
     </modules>
   </component>
 </project>

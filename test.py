@@ -10,7 +10,7 @@ from echoes_signalprocessing import *
 
 
 
-def ParseHelpers():
+def ParseHelpers(err=None):
     global parser, args
 
     parser = argparse.ArgumentParser(description='CMD line '
@@ -38,7 +38,7 @@ def ParseHelpers():
 
     parser.add_argument('-v', '-V', '--voltage', default='10', type=int,
                         dest='voltage', help='set transducer voltage',
-                        choices=range(10,85,5), metavar="[0,85, 5]")
+                        choices=range(10,90,5), metavar="[0,85, 5]")
 
     parser.add_argument('--input', default=1, type=int, choices=[1,2],
                         dest='input', metavar='1 or 2',
@@ -66,7 +66,15 @@ def ParseHelpers():
     parser.add_argument('-l', '--logs', dest='logs', action='store_true',
                         help='Print logging messages')
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
+
+    try:
+        args = parser.parse_args()
+    except SystemExit as err:
+        if err.code == 2:
+            parser.print_help()
+
+        sys.exit(0)
 
 
     answer = float(args.gain)
@@ -103,50 +111,49 @@ def __write_test_logs__(name= '', delay=int, gain=str, sample_rate=int):
 
 #==============================================================================#
 #======================== System Config =======================================#
-def __system_config__(echoes_1):
-    if echoes_1.setImpulseDelay(__DELAY__):
+def __system_config__(echo):
+    if echo.setImpulseDelay(__DELAY__):
         print "Successfully delay_us setup"
     else:
         print "Failed delay_us"
 
     # Set sampling rate
-    if echoes_1.setVgaGain(__GAIN__):
+    if echo.setVgaGain(__GAIN__):
         print "Successfully VGA gain setup"
     else:
         print "Failed VGA gain setup"
 
     # set voltage limit for transducer
-    if echoes_1.setImpulseVoltage(__VOLTAGE__):
+    if echo.setImpulseVoltage(__VOLTAGE__):
         print "Successfully voltage setup"
     else:
         print "Failed voltage setup"
 
     # select input capture channel
-    if echoes_1.setCaptureADC(__INPUT__):
+    if echo.setCaptureADC(__INPUT__):
         print "Successfully input capture setup"
     else:
         print "Failed input input capture setup"
 
     # select Impulse type
-    if echoes_1.setImpulseType(__TYPE__):
+    if echo.setImpulseType(__TYPE__):
         print "Successfully set input type [1,2,4,8,16]"
     else:
         print "Failed input set input type"
 
     # set the time for 1 cycle
-    if echoes_1.setImpulseCycles(__PERIOD__):
+    if echo.setImpulseCycles(__PERIOD__):
         print "Successfully Impulse cycle setup"
     else:
         print "Failed Impulse cycle setup"
 
 
 
-def __sample_output__(echoes_1):
-
-    echoes_1.initiateCapture(True)
+def __sample_output__(echo, num=int):
+    echo.initiateCapture(True)
     # echoes_1(echoes_1.setImpulseType())
     totalpages = 1
-    output = echoes_1.readAdcData(pagesToRead=totalpages)
+    output = echo.readAdcData(pagesToRead=totalpages)
     y = output[0:totalpages * 2048];
     if output:
 
@@ -178,7 +185,8 @@ def __sample_output__(echoes_1):
               " datapoints to log file")
         # Write file
         ts = time.time()
-        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+        st = 'cycle' + str(num) + '-' \
+             + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
         fn = "data/" + st + "-echoes-b.dat"
 
         filehandle = open(fn, "w")
@@ -195,12 +203,14 @@ def main():
 
     #send out op-code CMD over SPI prococol
     echoes_1 = echoes()
-    __system_config__(echoes_1)
 
     for i in range(__REPEAT__):
-        print 'Cycle: ' + str(i) + '\n'
+        print '\n\nCycle: ' + str(i)
+        __system_config__(echoes_1)
         # Fire and capture the echoes
-        __sample_output__(echoes_1)
+        __sample_output__(echoes_1, i)
+        time.sleep(2*60)
+
         print 'End cycle \n \n'
 
 
@@ -259,3 +269,9 @@ else:
 #
 #
 #         return
+
+# try:
+#     options = parser.parse_args()
+# except:
+#     parser.print_help()
+#     sys.exit(0)

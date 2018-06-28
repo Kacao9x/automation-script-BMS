@@ -51,13 +51,13 @@ def ParseHelpers(err=None):
     parser.add_argument('--period', type=int, default=1,help='periods',
                         dest='period',choices=[1,2,3], metavar='[1,2,3]')
 
-    parser.add_argument('--half-pw', type=int,default='0', choices=range(1,7),
+    parser.add_argument('--half-pw', type=int,default='1', choices=range(1,7),
                         dest='half', help='input half period width' +
                                           '0.step'+'1.500ns',
                         metavar='select 0 to 6')
 
 
-    parser.add_argument('--adc-config', type=int, default=0, choices=range(0,7),
+    parser.add_argument('--adc-config', type=int, default='0', choices=range(0,7),
                         dest='adcConfig', help='Input ADC config', metavar='[0,6]')
 
     parser.add_argument('--num-seq', type=int, default=1, choices=[1,2,4,8,16],
@@ -66,7 +66,7 @@ def ParseHelpers(err=None):
 
     #============================ Add-on feature ==============================#
 
-    parser.add_argument('--repeat', default=1, type=int, choices=range(1,11),
+    parser.add_argument('--repeat', default=1, type=int, choices=range(1,61),
                         dest='repeat', metavar='[1,10]',
                         help='the number of repetition')
 
@@ -104,7 +104,13 @@ def __write_test_logs__(name= ''):
             writeout.writelines('the delay us is: ' + str(__DELAY__) + '\n')
             writeout.writelines('the VGA gain is: ' + __GAIN__ + '\n')
             writeout.writelines('the sampling rate is: ' + str(__SAMPLING__) + '\n')
-
+            writeout.writelines('The volt transducer is'+ str(__VOLTAGE__) + '\n')
+            writeout.writelines('The input channel to collect data'+ str(__INPUT__)+ '\n')
+            writeout.writelines('The impulse type'+ str(__TYPE__)+ '\n')
+            writeout.writelines('The impulse half period?'+ str(__HALF__) +'\n')
+            writeout.writelines('Set conver sequence'+ str(__numSEQ__) + '\n')
+            writeout.writelines('Set ADC config' + str(__adcCONFIG__) + '\n')
+            writeout.writelines('number of Repeat' + str(__REPEAT__) + '\n')
 
     except:
         sys.exit("error to writing to job file")
@@ -116,7 +122,7 @@ def __write_test_logs__(name= ''):
 
 #==============================================================================#
 #======================== System Config =======================================#
-def __system_config__(echo):
+def __system_config__(echo, echo_dsp):
     # 1. set voltage limit for transducer
     if echo.setImpulseVoltage(__VOLTAGE__):
         print "Successfully voltage setup"
@@ -154,8 +160,12 @@ def __system_config__(echo):
         print "Failed input input capture setup"
 
     # 6. select ADC sampling config:
-    if echo.setAdcConfig(__adcCONFIG__):
-        print "Successfully ADC sampling config setup"
+    if __adcCONFIG__ == 0:
+        result = echo.setAdcConfig(ADC_Config.fs_12bit_3_60msps)
+        if result:
+            echo_dsp.setFs(3600000.0)
+            print("  Success!")
+            print "Successfully ADC sampling config setup"
     else:
         print "Failed ADC sampling config setup"
 
@@ -247,7 +257,7 @@ def __capture_filtered_data_(echo, echo_dsp, num=int):
 def main():
     __NAME__ = __get_filename__()
     print __NAME__
-    __write_test_logs__(__NAME__, __DELAY__, __GAIN__, __SAMPLING__)
+    __write_test_logs__(__NAME__)
 
     #send out op-code CMD over SPI prococol
     echoes_1 = echoes()
@@ -256,11 +266,14 @@ def main():
 
     for i in range(__REPEAT__):
         print '\n\nCycle: ' + str(i)
-        __system_config__(echoes_1)
+        __system_config__(echoes_1, echoes_dsp)
         # Fire and capture the echoes
+        print '.... Capture raw data...'
         __capture_raw_data__(echoes_1, i)
-        time.sleep(1*60)
-        __capture_filtered_data_(echoes_1 ,echoes_dsp, i)
+        time.sleep(1 * 10)
+        print '.... Capture filtered data...'
+        __capture_filtered_data_(echoes_1, echoes_dsp, i)
+        time.sleep(1 * 10)
 
         print 'End cycle \n \n'
 

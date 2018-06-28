@@ -27,14 +27,13 @@ def ParseHelpers(err=None):
                         dest='delay_us', help='set the time delay',
                         choices=range(1,5000000), metavar="[1,500000]")
 
-    parser.add_argument('-b', '-B', '--rate', default='22000', type=int,
+    parser.add_argument('-b', '-B', '--rate', default='2400000', type=int,
                         dest='rate', help='set sampling rate',
                         choices=range(10000, 2500001), metavar="[10000-2500000]")
-                        # choices=[22000, 44000, 66000])
 
     parser.add_argument('-c', '-C', '--gain', default='0.0', type=str,
                         dest='gain', help='set the VGA gain', metavar="[0.0, 1.0]")
-                        #(choices='0.0', '0.1', ... '9.9', '10.0')
+
 
     parser.add_argument('-v', '-V', '--voltage', default='10', type=int,
                         dest='voltage', help='set transducer voltage',
@@ -52,8 +51,18 @@ def ParseHelpers(err=None):
     parser.add_argument('--period', type=int, default=1,help='periods',
                         dest='period',choices=[1,2,3], metavar='[1,2,3]')
 
+    parser.add_argument('--half-pw', type=int,default='0', choices=range(1,7),
+                        dest='half', help='input half period width' +
+                                          '0.step'+'1.500ns',
+                        metavar='select 0 to 6')
 
-    # parser.add_argument('--adc-config')
+
+    parser.add_argument('--adc-config', type=int, default=0, choices=range(0,7),
+                        dest='adcConfig', help='Input ADC config', metavar='[0,6]')
+
+    parser.add_argument('--num-seq', type=int, default=1, choices=[1,2,4,8,16],
+                        dest='numSeq', help='how many sequence to average together',
+                        metavar='[1,2,4,8,16]')
 
     #============================ Add-on feature ==============================#
 
@@ -76,14 +85,10 @@ def ParseHelpers(err=None):
 
         sys.exit(0)
 
-
-    answer = float(args.gain)
+    if args.fresh:
+        print "Start a new test"
     if args.resume:
-        print "the gain is: ".format(args.gain, answer)
-    if args.gain == 4:
-        print "the sampling rate".format(args.rate, args.rate)
-    else:
-        print "the time delay is: " + str(args.delay_us)
+        print "Resume the test"
 
 #==============================================================================#
 #================= create a test log file and set the name ====================#
@@ -93,12 +98,12 @@ def __get_filename__():
     #https://www.dotnetperls.com/filename-date-python
 
 
-def __write_test_logs__(name= '', delay=int, gain=str, sample_rate=int):
+def __write_test_logs__(name= ''):
     try:
         with open(name, 'ab') as writeout:
-            writeout.writelines('the delay us is: ' + str(delay) + '\n')
-            writeout.writelines('the VGA gain is: ' + gain + '\n')
-            writeout.writelines('the sampling rate is: ' + str(sample_rate) + '\n')
+            writeout.writelines('the delay us is: ' + str(__DELAY__) + '\n')
+            writeout.writelines('the VGA gain is: ' + __GAIN__ + '\n')
+            writeout.writelines('the sampling rate is: ' + str(__SAMPLING__) + '\n')
 
 
     except:
@@ -112,72 +117,76 @@ def __write_test_logs__(name= '', delay=int, gain=str, sample_rate=int):
 #==============================================================================#
 #======================== System Config =======================================#
 def __system_config__(echo):
-    if echo.setImpulseDelay(__DELAY__):
-        print "Successfully delay_us setup"
-    else:
-        print "Failed delay_us"
-
-    # Set sampling rate
-    if echo.setVgaGain(__GAIN__):
-        print "Successfully VGA gain setup"
-    else:
-        print "Failed VGA gain setup"
-
-    # set voltage limit for transducer
+    # 1. set voltage limit for transducer
     if echo.setImpulseVoltage(__VOLTAGE__):
         print "Successfully voltage setup"
     else:
         print "Failed voltage setup"
 
-    # select input capture channel
-    if echo.setCaptureADC(__INPUT__):
-        print "Successfully input capture setup"
-    else:
-        print "Failed input input capture setup"
-
-    # select Impulse type
+    # 2. Shape of the impulse
     if echo.setImpulseType(__TYPE__):
-        print "Successfully set input type [1,2,4,8,16]"
+        print "Successfully set input type unipolar or bipolar"
     else:
         print "Failed input set input type"
 
-    # set the time for 1 cycle
+    # 3. Half period width of pulse
+    # Need to fix
+    if __HALF__ == 1:
+        print "half period width of pulse:500"
+        print echo.setImpulseHalfPeriodWidth(500)
+    else:
+        #step
+        print echo.setImpulseHalfPeriodWidth(65535)
+
+    # switch
+
+    # 4. number of period impulse
     if echo.setImpulseCycles(__PERIOD__):
         print "Successfully Impulse cycle setup"
     else:
         print "Failed Impulse cycle setup"
 
 
+    # 5. select input capture channel:primary or secondary
+    if echo.setCaptureADC(__INPUT__):
+        print "Successfully input capture setup"
+    else:
+        print "Failed input input capture setup"
 
-def __sample_output__(echo, num=int):
+    # 6. select ADC sampling config:
+    if echo.setAdcConfig(__adcCONFIG__):
+        print "Successfully ADC sampling config setup"
+    else:
+        print "Failed ADC sampling config setup"
+
+    # 7. Set how many sequences to average together
+    if echo.setConvertsPerSequence(__numSEQ__):
+        print "Successfully set sequence to avg"
+    else:
+        print "Failed to set sequence to avg"
+
+
+    # 8. Set sampling rate
+    if echo.setVgaGain(__GAIN__):
+        print "Successfully VGA gain setup"
+    else:
+        print "Failed VGA gain setup"
+
+    # #9
+    # if echo.setImpulseDelay(__DELAY__):
+    #     print "Successfully delay_us setup"
+    # else:
+    #     print "Failed delay_us"
+
+#==============================================================================#
+#======================== MAIN FUNCTION =======================================#
+def __capture_raw_data__(echo, num=int):
     echo.initiateCapture(True)
     # echoes_1(echoes_1.setImpulseType())
     totalpages = 1
     output = echo.readAdcData(pagesToRead=totalpages)
     y = output[0:totalpages * 2048];
     if output:
-
-        # fs = __SAMPLING__
-        # y = output[0:totalpages * 2048];
-
-        # echoes_dsp = echoes_signals(fs)
-        # print("Removing DC offset")
-        # y = echoes_dsp.removeDcOffset(y)
-
-        # if True:
-        #     y = echoes_dsp.applyBandpass(y)
-        #
-        # if True:
-        #     print("Upsampling")
-        #     y = echoes_dsp.upsample(y, 8)
-        #     fs = fs * 8
-        #
-        # if True:
-        #     print("Normalizing")
-        #     y = echoes_dsp.normalize(y)
-        #
-        # if False:
-        #     y = [i * 3.0 for i in y]
 
         y = y[0:2048]
 
@@ -194,6 +203,45 @@ def __sample_output__(echo, num=int):
             filehandle.write(str(samp) + "\n")
         filehandle.close()
 
+def __capture_filtered_data_(echo, echo_dsp, num=int):
+    echo.initiateCapture(True)
+    # echoes_1(echoes_1.setImpulseType())
+    totalpages = 1
+    output = echo.readAdcData(pagesToRead=totalpages)
+    y = output[0:totalpages * 2048];
+    if output:
+
+        if output:
+
+            fsOriginal = echo_dsp.getFs()
+
+            y = output[0:totalpages * 2048];
+
+            print("Total samples: " + str(len(y)))
+
+            if True:
+                print("Removing DC offset")
+                y = echo_dsp.removeDcOffset(y)
+
+            if True:
+                print("Upsampling")
+                y = echo_dsp.upsample(y, 4)
+
+            if False:
+                print("Normalizing")
+                y = echo_dsp.normalize(y)
+
+            # Write file
+            ts = time.time()
+            st = 'cycle' + str(num) + '-' + 'filtered'\
+                 + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+            fn = "data/" + st + "-echoes-b.dat"
+
+            filehandle = open(fn, "w")
+            for samp in y:
+                filehandle.write(str(samp) + "\n")
+            filehandle.close()
+
 #==============================================================================#
 #======================== MAIN ACTIVITY =======================================#
 def main():
@@ -203,13 +251,16 @@ def main():
 
     #send out op-code CMD over SPI prococol
     echoes_1 = echoes()
+    echoes_dsp = echoes_signals(2400000.0)
+
 
     for i in range(__REPEAT__):
         print '\n\nCycle: ' + str(i)
         __system_config__(echoes_1)
         # Fire and capture the echoes
-        __sample_output__(echoes_1, i)
-        time.sleep(2*60)
+        __capture_raw_data__(echoes_1, i)
+        time.sleep(1*60)
+        __capture_filtered_data_(echoes_1 ,echoes_dsp, i)
 
         print 'End cycle \n \n'
 
@@ -225,6 +276,9 @@ __VOLTAGE__     = args.voltage
 __INPUT__       = args.input
 __TYPE__        = args.type
 __PERIOD__      = args.period
+__HALF__        = args.half
+__adcCONFIG__   = args.adcConfig
+__numSEQ__      = args.numSeq
 
 __REPEAT__      = args.repeat
 

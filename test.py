@@ -192,35 +192,44 @@ def __system_config__(echo, echo_dsp):
     else:
         print "Failed"
 
+
     # 5. select input capture channel:primary or secondary
-    if echo.setCaptureADC(__INPUT__):
-        print "(5) Successfully input capture setup"
-    else:
-        print "(5) Failed input input capture setup"
+    print "\n(5) select input capture: "
+    if __INPUT__ == 1:
+        print "primary: " + echo.setCaptureADC(__INPUT__)
+    elif __INPUT__ == 2:
+        print "secondary: " + echo.setCaptureADC(__INPUT__)
 
     # 6. select ADC sampling config:
+    print "\n(6) select ADC sampling bits: "
     if __ADCconfig__ == 0:
+        print "12bit_3_60msps"
         result = echo.setAdcConfig(ADC_Config.fs_12bit_3_60msps)
         if result:
             echo_dsp.setFs(3600000.0)
             print("  Success!")
-            print "(6) Successfully ADC sampling config setup"
     else:
-        print "(6) Failed ADC sampling config setup"
+        print "Failed"
 
     # 7. Set how many sequences to average together
-    if echo.setConvertsPerSequence(__numSEQ__):
-        print "(7) Successfully set sequence to avg"
-    else:
-        print "(7) Failed to set sequence to avg"
+    print "\n(7) sequence to average: "
+    if __numSEQ__ == 1:
+        print "1 " + echo.setConvertsPerSequence(Sequence_Count.sequence_1)
+    if __numSEQ__ == 2:
+        print "2 " + echo.setConvertsPerSequence(Sequence_Count.sequence_2)
+    if __numSEQ__ == 4:
+        print "4 " + echo.setConvertsPerSequence(Sequence_Count.sequence_4)
+    if __numSEQ__ == 8:
+        print "8 " + echo.setConvertsPerSequence(Sequence_Count.sequence_8)
+    if __numSEQ__ == 16:
+        print "16 " + echo.setConvertsPerSequence(Sequence_Count.sequence_16)
 
-    # 8. Set sampling rate
-    if echo.setVgaGain(float(__GAIN__)):
-        print "(8) Successfully VGA gain setup"
-    else:
-        print "(8) Failed VGA gain setup"
 
-    # #9
+    # 8. Set VGA gain
+    print "\n(8) set VGA gain: "
+    print __GAIN__ + echo.setVgaGain(__GAIN__)
+
+    # 9
     # if echo.setImpulseDelay(__DELAY__):
     #     print "Successfully delay_us setup"
     # else:

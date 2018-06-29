@@ -122,41 +122,41 @@ def __write_test_logs__(name=''):
 
 # ==============================================================================#
 # ======================== System Config =======================================#
-def __system_config__(echo, echo_dsp):
+def __system_config__():
     # 1. set voltage limit for transducer
     print "(1) Voltage setup: "
     if __VOLTAGE__ == 85:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_85v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_85v)
     elif __VOLTAGE__ == 80:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_80v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_80v)
     elif __VOLTAGE__ == 75:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_75v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_75v)
     elif __VOLTAGE__ == 70:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_70v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_70v)
     elif __VOLTAGE__ == 65:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_65v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_65v)
     elif __VOLTAGE__ == 60:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_60v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_60v)
     elif __VOLTAGE__ == 55:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_55v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_55v)
     elif __VOLTAGE__ == 50:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_50v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_50v)
     elif __VOLTAGE__ == 45:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_45v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_45v)
     elif __VOLTAGE__ == 40:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_40v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_40v)
     elif __VOLTAGE__ == 35:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_35v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_35v)
     elif __VOLTAGE__ == 30:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_30v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_30v)
     elif __VOLTAGE__ == 25:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_25v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_25v)
     elif __VOLTAGE__ == 20:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_20v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_20v)
     elif __VOLTAGE__ == 15:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_15v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_15v)
     elif __VOLTAGE__ == 10:
-        print echo.setImpulseVoltage(Impulse_Voltage.impulse_10v)
+        print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_10v)
 
     # if echo.setImpulseVoltage(__VOLTAGE__):
     #     print "(1) Successfully voltage setup"
@@ -166,24 +166,24 @@ def __system_config__(echo, echo_dsp):
     # 2. Shape of the impulse type unipolar or bipolar
     print "\n(2) Set input type: "
     if __TYPE__ == 1:
-        print "unipolar: %s" % echo.setImpulseType(Impulse_Type.half)
+        print "unipolar: %s" % echoes_1.setImpulseType(Impulse_Type.half)
     elif __TYPE__ == 2:
-        print "bipolar: %s" % echo.setImpulseType(Impulse_Type.full)
+        print "bipolar: %s" % echoes_1.setImpulseType(Impulse_Type.full)
 
 
     # 3. Half period width of pulse
     # Need to fix
     print "\n(3) Half period width of pulse: "
     if __HALF__ == 1:
-        print "500ns: %s" % echo.setImpulseHalfPeriodWidth(500)
+        print "500ns: %s" % echoes_1.setImpulseHalfPeriodWidth(500)
     else:
         # step
-        print "step: %s" % echo.setImpulseHalfPeriodWidth(65535)
+        print "step: %s" % echoes_1.setImpulseHalfPeriodWidth(65535)
 
 
     # 4. number of period impulse
     print "\n(4) Number of period impulse: " + str(__PERIOD__)
-    if echo.setImpulseCycles(__PERIOD__):
+    if echoes_1.setImpulseCycles(__PERIOD__):
         print " Success"
     else:
         print "Failed"
@@ -192,17 +192,17 @@ def __system_config__(echo, echo_dsp):
     # 5. select input capture channel:primary or secondary
     print "\n(5) select input capture: "
     if __INPUT__ == 1:
-        print "primary: %s" % echo.setCaptureADC(__INPUT__)
+        print "primary: %s" % echoes_1.setCaptureADC(__INPUT__)
     elif __INPUT__ == 2:
-        print "secondary: %s" % echo.setCaptureADC(__INPUT__)
+        print "secondary: %s" % echoes_1.setCaptureADC(__INPUT__)
 
     # 6. select ADC sampling config:
     print "\n(6) select ADC sampling bits: "
     if __ADCconfig__ == 0:
         print "12bit_3_60msps"
-        result = echo.setAdcConfig(ADC_Config.fs_12bit_3_60msps)
+        result = echoes_1.setAdcConfig(ADC_Config.fs_12bit_3_60msps)
         if result:
-            echo_dsp.setFs(3600000.0)
+            echoes_dsp.setFs(3600000.0)
             print("  Success!")
     else:
         print "Failed"
@@ -210,20 +210,20 @@ def __system_config__(echo, echo_dsp):
     # 7. Set how many sequences to average together
     print "\n(7) sequence to average: "
     if __numSEQ__ == 1:
-        print "1 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_1)
+        print "1 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_1)
     if __numSEQ__ == 2:
-        print "2 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_2)
+        print "2 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_2)
     if __numSEQ__ == 4:
-        print "4 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_4)
+        print "4 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_4)
     if __numSEQ__ == 8:
-        print "8 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_8)
+        print "8 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_8)
     if __numSEQ__ == 16:
-        print "16 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_16)
+        print "16 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_16)
 
 
     # 8. Set VGA gain
     print "\n(8) set VGA gain: "
-    print __GAIN__ + "%s" % echo.setVgaGain(__GAIN__)
+    print __GAIN__ + "%s" % echoes_1.setVgaGain(__GAIN__)
 
     # 9
     # if echo.setImpulseDelay(__DELAY__):
@@ -234,21 +234,21 @@ def __system_config__(echo, echo_dsp):
 
 # ==============================================================================#
 # ======================== MAIN FUNCTION =======================================#
-def __capture_raw_data__(echo, num=int):
-    echo.initiateCapture(True)
+def __capture_raw_data__(num=int):
+    print("Generating raw data of datapoints to log file")
+    echoes_1.initiateCapture( send_impulse = True )
     # echoes_1(echoes_1.setImpulseType())
     totalpages = 1
-    output = echo.readAdcData(pagesToRead=totalpages)
-    y = output[0:totalpages * 2048];
+    output = echoes_1.readAdcData(pagesToRead=totalpages)
+    
     if output:
+            
+        y = output[0:totalpages*2048];
+        print("Total samples: "+str(len(y)))
 
-        y = y[0:2048]
-
-        print("Generating data of " + str(len(y)) +
-              " datapoints to log file")
         # Write file
         ts = time.time()
-        st = 'cycle' + str(num) + '-' \
+        st = 'cycle' + str(num+1) + '-' \
              + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
         fn = "data/" + st + "-echoes-b.dat"
 
@@ -258,17 +258,17 @@ def __capture_raw_data__(echo, num=int):
         filehandle.close()
 
 
-def __capture_filtered_data__(echo, echo_dsp, num=int):
-    echo.initiateCapture(True)
+def __capture_filtered_data__(num=int):
+    echoes_1.initiateCapture(True)
     # echoes_1(echoes_1.setImpulseType())
     totalpages = 1
-    output = echo.readAdcData(pagesToRead=totalpages)
-    y = output[0:totalpages * 2048];
+    output = echoes_1.readAdcData(pagesToRead=totalpages)
+
     if output:
 
         if output:
 
-            fsOriginal = echo_dsp.getFs()
+            # fsOriginal = echoes_dsp.getFs()
 
             y = output[0:totalpages * 2048];
 
@@ -276,19 +276,21 @@ def __capture_filtered_data__(echo, echo_dsp, num=int):
 
             if True:
                 print("Removing DC offset")
-                y = echo_dsp.removeDcOffset(y)
+                y = echoes_dsp.removeDcOffset(y)
 
             if True:
                 print("Upsampling")
-                y = echo_dsp.upsample(y, 4)
+                y = echoes_dsp.upsample(y, 4)
 
             if False:
                 print("Normalizing")
-                y = echo_dsp.normalize(y)
+                y = echoes_dsp.normalize(y)
+
+            # fs = echoes_dsp.getFs()
 
             # Write file
             ts = time.time()
-            st = 'cycle' + str(num) + '-' + 'filtered-' \
+            st = 'cycle' + str(num+1) + '-' + 'filtered-' \
                  + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
             fn = "data/" + st + "-echoes-b.dat"
 
@@ -307,18 +309,17 @@ def main():
 
     # ======= UNIT TEST =======#
     # execute the activity here over SPI prococol
-    echoes_1 = echoes()
-    echoes_dsp = echoes_signals(2400000.0)
+
 
     for i in range(__REPEAT__):
         print '\n\nCycle: ' + str(i)
-        __system_config__(echoes_1, echoes_dsp)
+        __system_config__()
         # Fire and capture the echoes
         print '.... Capture raw data...'
-        __capture_raw_data__(echoes_1, i)
+        __capture_raw_data__(i)
         time.sleep(1 * 10)
         print '.... Capture filtered data...'
-        __capture_filtered_data__(echoes_1, echoes_dsp, i)
+        __capture_filtered_data__(i)
         time.sleep(10)
 
         print 'End cycle \n \n'
@@ -343,6 +344,10 @@ __ADCconfig__   = args.adcConfig
 __numSEQ__      = args.numSeq
 
 __REPEAT__      = args.repeat
+
+echoes_1        = echoes()
+echoes_dsp      = echoes_signals(2400000.0)
+
 
 if args.fresh:
     print "Start a new test"

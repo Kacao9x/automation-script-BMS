@@ -124,6 +124,42 @@ def __write_test_logs__(name='', delay=int, gain=str, sample_rate=int):
 # ======================== System Config =======================================#
 def __system_config__(echo, echo_dsp):
     # 1. set voltage limit for transducer
+    print "(1) Voltage setup: "
+    if __VOLTAGE__ == 85:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_85v)
+    elif __VOLTAGE__ == 80:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_80v)
+    elif __VOLTAGE__ == 75:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_75v)
+    elif __VOLTAGE__ == 70:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_70v)
+    elif __VOLTAGE__ == 65:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_65v)
+    elif __VOLTAGE__ == 60:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_60v)
+    elif __VOLTAGE__ == 55:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_55v)
+    elif __VOLTAGE__ == 50:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_50v)
+    elif __VOLTAGE__ == 45:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_45v)
+    elif __VOLTAGE__ == 40:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_40v)
+    elif __VOLTAGE__ == 35:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_35v)
+    elif __VOLTAGE__ == 30:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_30v)
+    elif __VOLTAGE__ == 25:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_25v)
+    elif __VOLTAGE__ == 20:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_20v)
+    elif __VOLTAGE__ == 15:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_15v)
+    elif __VOLTAGE__ == 10:
+        print echo.setImpulseVoltage(Impulse_Voltage.impulse_10v)
+
+
+
     if echo.setImpulseVoltage(__VOLTAGE__):
         print "(1) Successfully voltage setup"
     else:

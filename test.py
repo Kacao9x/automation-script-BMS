@@ -11,7 +11,7 @@ import argparse, sys
 
 import datetime
 
-from lib.echoes_spi import *
+# from lib.echoes_spi import *
 from lib.echoes_signalprocessing import *
 from lib.echoes_protocol import *
 
@@ -99,7 +99,7 @@ def __get_filename__():
     return "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
 
 
-def __write_test_logs__(name='', delay=int, gain=str, sample_rate=int):
+def __write_test_logs__(name=''):
     try:
         with open(name, 'ab') as writeout:
             writeout.writelines('the delay us is: ' + str(__DELAY__) + '\n')
@@ -110,7 +110,7 @@ def __write_test_logs__(name='', delay=int, gain=str, sample_rate=int):
             writeout.writelines('The impulse type' + str(__TYPE__) + '\n')
             writeout.writelines('The impulse half period?' + str(__HALF__) + '\n')
             writeout.writelines('Set conver sequence' + str(__numSEQ__) + '\n')
-            # writeout.writelines('Set ADC config' + str(__ADCconfig__) + '\n')
+            writeout.writelines('Set ADC config' + str(__ADCconfig__) + '\n')
             writeout.writelines('number of Repeat' + str(__REPEAT__) + '\n')
 
     except:
@@ -166,23 +166,19 @@ def __system_config__(echo, echo_dsp):
     # 2. Shape of the impulse type unipolar or bipolar
     print "\n(2) Set input type: "
     if __TYPE__ == 1:
-        print "unipolar: " + echo.setImpulseType(Impulse_Type.half)
+        print "unipolar: %s" % echo.setImpulseType(Impulse_Type.half)
     elif __TYPE__ == 2:
-        print "bipolar: " + echo.setImpulseType(Impulse_Type.full)
-    # if echo.setImpulseType(__TYPE__):
-    #     print "(2) Successfully set input type unipolar or bipolar"
-    # else:
-    #     print "(2) Failed input set input type"
+        print "bipolar: %s" % echo.setImpulseType(Impulse_Type.full)
 
 
     # 3. Half period width of pulse
     # Need to fix
     print "\n(3) Half period width of pulse: "
     if __HALF__ == 1:
-        print "500ns: " + echo.setImpulseHalfPeriodWidth(500)
+        print "500ns: %s" % echo.setImpulseHalfPeriodWidth(500)
     else:
         # step
-        print "step: " + echo.setImpulseHalfPeriodWidth(65535)
+        print "step: %s" % echo.setImpulseHalfPeriodWidth(65535)
 
 
     # 4. number of period impulse
@@ -196,9 +192,9 @@ def __system_config__(echo, echo_dsp):
     # 5. select input capture channel:primary or secondary
     print "\n(5) select input capture: "
     if __INPUT__ == 1:
-        print "primary: " + echo.setCaptureADC(__INPUT__)
+        print "primary: %s" % echo.setCaptureADC(__INPUT__)
     elif __INPUT__ == 2:
-        print "secondary: " + echo.setCaptureADC(__INPUT__)
+        print "secondary: %s" % echo.setCaptureADC(__INPUT__)
 
     # 6. select ADC sampling config:
     print "\n(6) select ADC sampling bits: "
@@ -214,20 +210,20 @@ def __system_config__(echo, echo_dsp):
     # 7. Set how many sequences to average together
     print "\n(7) sequence to average: "
     if __numSEQ__ == 1:
-        print "1 " + echo.setConvertsPerSequence(Sequence_Count.sequence_1)
+        print "1 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_1)
     if __numSEQ__ == 2:
-        print "2 " + echo.setConvertsPerSequence(Sequence_Count.sequence_2)
+        print "2 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_2)
     if __numSEQ__ == 4:
-        print "4 " + echo.setConvertsPerSequence(Sequence_Count.sequence_4)
+        print "4 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_4)
     if __numSEQ__ == 8:
-        print "8 " + echo.setConvertsPerSequence(Sequence_Count.sequence_8)
+        print "8 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_8)
     if __numSEQ__ == 16:
-        print "16 " + echo.setConvertsPerSequence(Sequence_Count.sequence_16)
+        print "16 %s" % echo.setConvertsPerSequence(Sequence_Count.sequence_16)
 
 
     # 8. Set VGA gain
     print "\n(8) set VGA gain: "
-    print __GAIN__ + echo.setVgaGain(__GAIN__)
+    print __GAIN__ + "%s" % echo.setVgaGain(__GAIN__)
 
     # 9
     # if echo.setImpulseDelay(__DELAY__):
@@ -323,7 +319,7 @@ def main():
         time.sleep(1 * 10)
         print '.... Capture filtered data...'
         __capture_filtered_data__(echoes_1, echoes_dsp, i)
-        time.sleep(20 * 60)
+        time.sleep(10)
 
         print 'End cycle \n \n'
 
@@ -335,25 +331,24 @@ def main():
 
 ParseHelpers()
 
-__GAIN__ = args.gain
-__SAMPLING__ = args.rate
-__DELAY__ = args.delay_us
-__VOLTAGE__ = args.voltage
-__INPUT__ = args.input
-__TYPE__ = args.type
-__PERIOD__ = args.period
-__HALF__ = args.half
-__ADCconfig__ = args.adcConfig
-__numSEQ__ = args.numSeq
+__GAIN__        = args.gain
+__SAMPLING__    = args.rate
+__DELAY__       = args.delay_us
+__VOLTAGE__     = args.voltage
+__INPUT__       = args.input
+__TYPE__        = args.type
+__PERIOD__      = args.period
+__HALF__        = args.half
+__ADCconfig__   = args.adcConfig
+__numSEQ__      = args.numSeq
 
-__REPEAT__ = args.repeat
+__REPEAT__      = args.repeat
 
 if args.fresh:
     print "Start a new test"
     main()
 else:
-    result = args.delay_us * 4
-    print (result)
+    print "resume test"
 
 # if args.test:
 #     pass

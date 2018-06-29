@@ -18,12 +18,11 @@
           <file leaf-file-name="titan_web.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/../titan-pi-app/titan_web.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="102">
-                  <caret line="42" column="63" lean-forward="false" selection-start-line="42" selection-start-column="48" selection-end-line="42" selection-end-column="63" />
+                <state relative-caret-position="215">
+                  <caret line="239" column="46" lean-forward="false" selection-start-line="239" selection-start-column="30" selection-end-line="239" selection-end-column="46" />
                   <folding>
                     <element signature="e#62#111#0" expanded="true" />
                     <element signature="e#7951#8361#0" expanded="false" />
-                    <element signature="e#9838#10321#0" expanded="false" />
                     <element signature="e#10391#10629#0" expanded="false" />
                   </folding>
                 </state>
@@ -33,8 +32,8 @@
           <file leaf-file-name="echoes_signalprocessing.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_signalprocessing.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="102">
-                  <caret line="24" column="8" lean-forward="false" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="8" />
+                <state relative-caret-position="510">
+                  <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -43,8 +42,8 @@
           <file leaf-file-name="echoes_protocol.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_protocol.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="215">
-                  <caret line="30" column="6" lean-forward="false" selection-start-line="30" selection-start-column="6" selection-end-line="30" selection-end-column="6" />
+                <state relative-caret-position="-68">
+                  <caret line="116" column="8" lean-forward="false" selection-start-line="116" selection-start-column="8" selection-end-line="116" selection-end-column="8" />
                   <folding>
                     <element signature="e#136#151#0" expanded="true" />
                   </folding>
@@ -79,8 +78,8 @@
           <file leaf-file-name="test.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="591">
-                  <caret line="158" column="63" lean-forward="false" selection-start-line="158" selection-start-column="63" selection-end-line="158" selection-end-column="63" />
+                <state relative-caret-position="472">
+                  <caret line="192" column="21" lean-forward="false" selection-start-line="192" selection-start-column="21" selection-end-line="192" selection-end-column="21" />
                   <folding>
                     <element signature="e#130#150#0" expanded="true" />
                     <element signature="e#325#3947#0" expanded="false" />
@@ -104,8 +103,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>BLOCK</find>
-      <find>pagesto</find>
       <find>repea</find>
       <find>data</find>
       <find>parse_args</find>
@@ -133,6 +130,8 @@
       <find>12</find>
       <find>adcConfig</find>
       <find>fs_12bit_3_60msps</find>
+      <find>setImpulseHalf</find>
+      <find>setImpulseCyc</find>
       <find>Impulse_Voltage</find>
     </findStrings>
   </component>
@@ -155,7 +154,7 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1646" />
+    <option name="x" value="46" />
     <option name="y" value="-11" />
     <option name="width" value="1555" />
     <option name="height" value="912" />
@@ -289,7 +288,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1646" y="-11" width="1555" height="912" extended-state="6" />
+    <frame x="46" y="-11" width="1555" height="912" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.07662588" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -363,7 +362,6 @@
           <folding>
             <element signature="e#62#111#0" expanded="true" />
             <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
             <element signature="e#10391#10629#0" expanded="false" />
           </folding>
         </state>
@@ -418,7 +416,6 @@
           <folding>
             <element signature="e#62#111#0" expanded="true" />
             <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
             <element signature="e#10391#10629#0" expanded="false" />
           </folding>
         </state>
@@ -462,7 +459,6 @@
           <folding>
             <element signature="e#62#111#0" expanded="true" />
             <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
             <element signature="e#10391#10629#0" expanded="false" />
           </folding>
         </state>
@@ -660,8 +656,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_protocol.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="215">
-          <caret line="30" column="6" lean-forward="false" selection-start-line="30" selection-start-column="6" selection-end-line="30" selection-end-column="6" />
+        <state relative-caret-position="-68">
+          <caret line="116" column="8" lean-forward="false" selection-start-line="116" selection-start-column="8" selection-end-line="116" selection-end-column="8" />
           <folding>
             <element signature="e#136#151#0" expanded="true" />
           </folding>
@@ -670,20 +666,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_signalprocessing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="24" column="8" lean-forward="false" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="8" />
+        <state relative-caret-position="510">
+          <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../titan-pi-app/titan_web.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="42" column="63" lean-forward="false" selection-start-line="42" selection-start-column="48" selection-end-line="42" selection-end-column="63" />
+        <state relative-caret-position="215">
+          <caret line="239" column="46" lean-forward="false" selection-start-line="239" selection-start-column="30" selection-end-line="239" selection-end-column="46" />
           <folding>
             <element signature="e#62#111#0" expanded="true" />
             <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
             <element signature="e#10391#10629#0" expanded="false" />
           </folding>
         </state>
@@ -691,8 +686,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="591">
-          <caret line="158" column="63" lean-forward="false" selection-start-line="158" selection-start-column="63" selection-end-line="158" selection-end-column="63" />
+        <state relative-caret-position="472">
+          <caret line="192" column="21" lean-forward="false" selection-start-line="192" selection-start-column="21" selection-end-line="192" selection-end-column="21" />
           <folding>
             <element signature="e#130#150#0" expanded="true" />
             <element signature="e#325#3947#0" expanded="false" />

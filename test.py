@@ -158,35 +158,39 @@ def __system_config__(echo, echo_dsp):
     elif __VOLTAGE__ == 10:
         print echo.setImpulseVoltage(Impulse_Voltage.impulse_10v)
 
+    # if echo.setImpulseVoltage(__VOLTAGE__):
+    #     print "(1) Successfully voltage setup"
+    # else:
+    #     print "(1) Failed voltage setup"
 
+    # 2. Shape of the impulse type unipolar or bipolar
+    print "\n(2) Set input type: "
+    if __TYPE__ == 1:
+        print "unipolar: " + echo.setImpulseType(Impulse_Type.half)
+    elif __TYPE__ == 2:
+        print "bipolar: " + echo.setImpulseType(Impulse_Type.full)
+    # if echo.setImpulseType(__TYPE__):
+    #     print "(2) Successfully set input type unipolar or bipolar"
+    # else:
+    #     print "(2) Failed input set input type"
 
-    if echo.setImpulseVoltage(__VOLTAGE__):
-        print "(1) Successfully voltage setup"
-    else:
-        print "(1) Failed voltage setup"
-
-    # 2. Shape of the impulse
-    if echo.setImpulseType(__TYPE__):
-        print "(2) Successfully set input type unipolar or bipolar"
-    else:
-        print "(2) Failed input set input type"
 
     # 3. Half period width of pulse
     # Need to fix
+    print "\n(3) Half period width of pulse: "
     if __HALF__ == 1:
-        print "(3) half period width of pulse:500"
-        print echo.setImpulseHalfPeriodWidth(500)
+        print "500ns: " + echo.setImpulseHalfPeriodWidth(500)
     else:
         # step
-        print echo.setImpulseHalfPeriodWidth(65535)
+        print "step: " + echo.setImpulseHalfPeriodWidth(65535)
 
-    # switch
 
     # 4. number of period impulse
+    print "\n(4) Number of period impulse: " + str(__PERIOD__)
     if echo.setImpulseCycles(__PERIOD__):
-        print "(4) Successfully Impulse cycle setup"
+        print " Success"
     else:
-        print "(4) Failed Impulse cycle setup"
+        print "Failed"
 
     # 5. select input capture channel:primary or secondary
     if echo.setCaptureADC(__INPUT__):

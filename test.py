@@ -6,10 +6,9 @@ TITAN Command Line Interface
 See Github repo for documentation
 @author: kacao
 '''
-
+#python titan_cmd.py --start-fresh -a 15 -b 2400000 -c 0.25 -v 85 --input 1
+#--impulse-type 2 --half-pw 1 --adc-config 0 --num-seq 1
 import argparse, sys
-
-import datetime
 
 # from lib.echoes_spi import *
 from lib.echoes_signalprocessing import *
@@ -46,12 +45,12 @@ def ParseHelpers():
                         choices=range(10, 90, 5), metavar="[0,85, 5]")
 
     parser.add_argument('--input', default='1', type=int, choices=[1, 2],
-                        dest='input', metavar='1 or 2',
+                        dest='input', metavar='[1 or 2]',
                         help='select input channel to collect data ' +
                              '1.adc-primary  2.adc-secondary')
 
     parser.add_argument('--impulse-type', default='1', type=int, choices=[1, 2],
-                        dest='type', metavar='1 or 2',
+                        dest='type', metavar='[1 or 2]',
                         help='select type of impulse\n' + '1.unipolar  2.bipolar')
 
     parser.add_argument('--period', type=int, default='1', help='periods',
@@ -157,6 +156,8 @@ def __system_config__():
         print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_15v)
     elif __VOLTAGE__ == 10:
         print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_10v)
+    
+    time.sleep(10)
 
     # if echo.setImpulseVoltage(__VOLTAGE__):
     #     print "(1) Successfully voltage setup"
@@ -169,7 +170,7 @@ def __system_config__():
         print "unipolar: %s" % echoes_1.setImpulseType(Impulse_Type.half)
     elif __TYPE__ == 2:
         print "bipolar: %s" % echoes_1.setImpulseType(Impulse_Type.full)
-
+    time.sleep(10)
 
     # 3. Half period width of pulse
     # Need to fix
@@ -179,7 +180,7 @@ def __system_config__():
     else:
         # step
         print "step: %s" % echoes_1.setImpulseHalfPeriodWidth(65535)
-
+    time.sleep(10)
 
     # 4. number of period impulse
     print "\n(4) Number of period impulse: " + str(__PERIOD__)
@@ -187,14 +188,15 @@ def __system_config__():
         print " Success"
     else:
         print "Failed"
-
+    time.sleep(10)
 
     # 5. select input capture channel:primary or secondary
     print "\n(5) select input capture: "
     if __INPUT__ == 1:
-        print "primary: %s" % echoes_1.setCaptureADC(__INPUT__)
+        print "primary: %s" % echoes_1.setCaptureADC(Capture_Adc.adc_primary)
     elif __INPUT__ == 2:
-        print "secondary: %s" % echoes_1.setCaptureADC(__INPUT__)
+        print "secondary: %s" % echoes_1.setCaptureADC(Capture_Adc.adc_secondary)
+    time.sleep(10)
 
     # 6. select ADC sampling config:
     print "\n(6) select ADC sampling bits: "
@@ -206,6 +208,8 @@ def __system_config__():
             print("  Success!")
     else:
         print "Failed"
+    time.sleep(10)
+
 
     # 7. Set how many sequences to average together
     print "\n(7) sequence to average: "
@@ -219,12 +223,13 @@ def __system_config__():
         print "8 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_8)
     if __numSEQ__ == 16:
         print "16 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_16)
-
+    time.sleep(10)
 
     # 8. Set VGA gain
     print "\n(8) set VGA gain: "
     print __GAIN__ + "%s" % echoes_1.setVgaGain(__GAIN__)
-
+    time.sleep(10)
+    
     # 9
     # if echo.setImpulseDelay(__DELAY__):
     #     print "Successfully delay_us setup"
@@ -309,7 +314,6 @@ def main():
 
     # ======= UNIT TEST =======#
     # execute the activity here over SPI prococol
-
 
     for i in range(__REPEAT__):
         print '\n\nCycle: ' + str(i)

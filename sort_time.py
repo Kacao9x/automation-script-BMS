@@ -31,7 +31,7 @@ def readFile(name, row=int):
         with open(name, 'rb') as readout:
             data = readout.readlines()
             for line in data:
-                words.append(line.split())
+                words.append(line.lstrip().rstrip())
 
     except:
         sys.exit("error to reading the test log")
@@ -45,7 +45,7 @@ def displayListOfFile(key):
     list_cmd = ("ls data/ | grep '" + key + "' | awk '{print$1}'")
 
     for line in iter(PopenIter(list_cmd), ''):
-        file_name.append(line.lstrip('').rstrip('').split('-echoes')[0])
+        file_name.append(line.rstrip().split('-echoes')[0])
     
     return file_name
 
@@ -55,7 +55,11 @@ for i in name:
     print i
 # line = readFile('data/NIS3-Charge-02-13-2018.txt', 12)
 line = readFile('data/NIS3-Charge-02-13-2018 (copy).txt', 1)
-print line
+print line[6]
+print line[6].split('\t')[9]
+a,b = (line[6].split('\t')[1].split(':')[1], line[6].split('\t')[1].split(':')[2])
+print "a= %s" % str(a)
+print "b= %s" % str(b)
 
 '''
 1. list of files in directory and save in the array[]

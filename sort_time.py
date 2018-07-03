@@ -25,6 +25,7 @@ def getFileName():
     return
 
 
+# return a tuple of string in every line (eat memory)
 def readFile(name, row=int):
     words = []
     try:
@@ -40,6 +41,32 @@ def readFile(name, row=int):
 
     return words
 
+
+# return a line in a string of character
+# readline will read the next line from position of the console
+def readLineInFile(filename, line_number=int):
+    # line_number: int  # Number of the required line, 0-based
+    # line: str  # Content of the required line
+    try:
+        with open(filename) as file:
+            for _ in range(line_number):
+                file.readline()
+            line = file.readline().lstrip().rstrip()
+    except:
+        sys.exit("error to reading the file")
+    finally:
+        file.close()
+
+    return line
+
+
+
+#the file == a readout of text file
+def yieldlines(thefile, whatlines):
+  return (x for i, x in enumerate(thefile) if i in whatlines)
+
+
+
 def displayListOfFile(key):
     file_name = []
     list_cmd = ("ls data/ | grep '" + key + "' | awk '{print$1}'")
@@ -50,16 +77,47 @@ def displayListOfFile(key):
     return file_name
 
 
+
+def calculateTime():
+
+    pass
+
+def findTimeMatch():
+
+    pass
+
+
+# ==============================================================================#
+
+
 name = displayListOfFile(keyword)
-for i in name:
+for element in name:
+    i = element.split('-')
     print i
+    if i[1] == '2018':
+        hour2, min2,sec2 = (i[4], i[5], i[6])
+        print "hour2 %s min2 %s sec2 %s" % (hour2, min2, sec2)
+    else:
+        min2, sec2 = (i[5], i[6], i[7])
+        print "hour2 %s min2 %s sec2 %s" % (hour2, min2, sec2)
+
+
 # line = readFile('data/NIS3-Charge-02-13-2018.txt', 12)
-line = readFile('data/NIS3-Charge-02-13-2018 (copy).txt', 1)
-print line[6]
-print line[6].split('\t')[9]
-a,b = (line[6].split('\t')[1].split(':')[1], line[6].split('\t')[1].split(':')[2])
-print "a= %s" % str(a)
-print "b= %s" % str(b)
+# line = readFile('data/NIS3-Charge-02-13-2018 (copy).txt', 1)
+# print line[5]
+# print line[6].split('\t')[9]
+
+line = readLineInFile('data/NIS3-Charge-02-13-2018 (copy).txt', 5)
+print line
+starttime =  line.split(' ')[1]
+print starttime
+
+min1, sec1 = (line.split('\t')[1].split(':')[1], line.split('\t')[1].split(':')[2])
+print "a= %s" % str(min1)
+print "b= %s" % str(sec1)
+
+print"\n"
+print readLineInFile('data/NIS3-Charge-02-13-2018 (copy).txt', 6).split('\t')
 
 '''
 1. list of files in directory and save in the array[]

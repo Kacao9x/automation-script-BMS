@@ -1,8 +1,10 @@
 
 import subprocess, sys, os
 import csv
+import datetime as dt
 
 keyword = 'cycle'
+path = 'data/NIS3-Charge-02-13-2018 (copy).txt'
 __PERIOD__ = 5  #second
 
 #Subprocess's call command with piped output and active shell
@@ -22,13 +24,13 @@ def PopenIter(cmd):
 
 # ==============================================================================#
 
-def getFileName():
+def get_file_name():
 
     return
 
 
 # return a tuple of string in every line (eat memory)
-def readFile(name, row=int):
+def read_file(name, row=int):
     words = []
     try:
         with open(name, 'rb') as readout:
@@ -46,30 +48,32 @@ def readFile(name, row=int):
 
 # return a line in a string of character
 # readline will read the next line from position of the console
-def readLineInFile(filename, line_number=int):
+def read_line_in_file(filename, line_number=int):
     # line_number: int  # Number of the required line, 0-based
     # line: str  # Content of the required line
+    # global readout          #make sure this name is not used twice
     try:
-        with open(filename) as file:
+        with open(filename) as readout:
             for _ in range(line_number):
-                file.readline()
-            line = file.readline().lstrip().rstrip()
+                readout.readline()
+            line = readout.readline().lstrip().rstrip()
     except:
         sys.exit("error to reading the file")
     finally:
-        file.close()
+        readout.close()
 
     return line
 
-
+def _convert_to_time_object(str_obj):
+    return dt.datetime.strptime(str_obj, '%Y-%m-%d %H:%M:%S')
 
 #the file == a readout of text file
-def yieldlines(thefile, whatlines):
+def yield_lines(thefile, whatlines):
   return (x for i, x in enumerate(thefile) if i in whatlines)
 
 
 
-def displayListOfFile(key):
+def display_list_of_file(key):
     file_name = []
     list_cmd = ("ls data/ | grep '" + key + "' | awk '{print$1}'")
 
@@ -78,82 +82,86 @@ def displayListOfFile(key):
     
     return file_name
 
+# calculate the time difference in seconds. Return int
+def calculate_time(begin, end):
+    start_dt    = _convert_to_time_object(starttime)
+    end_dt      = _convert_to_time_object(endtime)
 
-
-def calculateTime():
-    sec,remainder = 0,0
-    if (sec2 - sec1) >= 0:
-        sec += sec2 - sec1
+    sec = 0
+    diff = (end_dt - start_dt)
+    if ( diff.days == 0 ):
+        sec += diff.seconds
     else:
-        sec += sec2 + 60 - sec1
-        remainder += 1
+        sec += diff.days*24*60*60 + diff.seconds
 
-    if (min2 - min1 - remainder) >= 0:
-        sec += (min2 - min1 -remainder)*60
-        remainder = 0
-    else:
-        sec += (min2 + 60 - min1 - remainder)*60
-        remainder = 1
-
-    sec += (hour2 - hour1 - remainder)*60*60
     return sec
 
-def __find_lines(second):
-    return int(second/__PERIOD__)
+def _line_to_capture(second):
+    return 6 + int(second/__PERIOD__)
+
+def _create_logfile_name(name=''):
+    header = ('Record ID','Time(H:M:S:ms)',	'Vol(mV)', 'Cur(mA)',
+              'Temperature(?)', 'Cap(mAh)', 'CmpCap(mAh/g)', 'Energy(mWh)',
+              'CmpEng(mWh/g)','Realtime')
+
+    try:
+        with open(name, 'ab') as outcsv:
+            writer = csv.writer(outcsv, dialect='excel',
+                                lineterminator='\r\n')
+            writer.writerow('\n')
+            writer.writerow(header)
+    finally:
+        outcsv.close()
+
+    return
+
+def save_to_file(name='',data=[]):
+    _create_logfile_name(name)
+
+    try:
+        with open(name, 'ab') as outcsv:  # append in binary mode
+            writer = csv.writer(outcsv)
+            writer.writerow(data)
+    finally:
+        outcsv.close()
+
+    return
 
 
-def findTimeMatch():
-
-    pass
 
 
 # ==============================================================================#
 
 
-name = displayListOfFile(keyword)
+name = display_list_of_file(keyword)
 for element in name:
     i = element.split('-')
     print i
     if i[1] == '2018':
-        hour2, min2,sec2 = (i[4], i[5], i[6])
-        print "hour2 %s min2 %s sec2 %s" % (hour2, min2, sec2)
+        endtime = "2018-02-16 11:10:22"
     else:
-        hour2, min2, sec2 = (i[5], i[6], i[7])
-        print "hour2 %s min2 %s sec2 %s" % (hour2, min2, sec2)
+        endtime = "2018-02-15 11:10:22"
+        print "endtime %s" % str(endtime)
 
 
-# line = readFile('data/NIS3-Charge-02-13-2018.txt', 12)
-# line = readFile('data/NIS3-Charge-02-13-2018 (copy).txt', 1)
-# print line[5]
-# print line[6].split('\t')[9]
-
-line = readLineInFile('data/NIS3-Charge-02-13-2018 (copy).txt', 5)
+line = read_line_in_file(path, 5)
 print line
-starttime =  line.split(' ')[1]
+
+starttime = line.split('\t')[9]
 print starttime
-hour1, min1, sec1 = (starttime.split(':')[0], starttime.split(':')[1], starttime.split(':')[2])
-print hour1 + ' ' + min1 + ' ' + sec1
-
-# min1, sec1 = (line.split('\t')[1].split(':')[1], line.split('\t')[1].split(':')[2])
-# print "a= %s" % str(min1)
-# print "b= %s" % str(sec1)
-
-print"\n"
-print readLineInFile('data/NIS3-Charge-02-13-2018 (copy).txt', 6).split('\t')
 
 
-hour1, min1, sec1 = int(hour1), int(min1), int(sec1)
-hour2, min2, sec2 = int(hour2), int(min2), int(sec2)
 
-timegap = calculateTime()
-print 'Timegap: %s' % str(timegap)
+print read_line_in_file(path, 6).split('\t')
+print '\n'
 
-linetofind = 6 + __find_lines(timegap)
-print "Lines need to capture: %s" % str(linetofind)
+dif = calculate_time(starttime, endtime)
+print "diff: %s" % str(dif)
+L = _line_to_capture(dif)
 
-line = readLineInFile('data/NIS3-Charge-02-13-2018.txt', linetofind)
-print line
-
+row = read_line_in_file(path, 30).split('\t')
+print row
+save_to_file('data/testlog.csv', read_line_in_file(path, 30).split('\t'))
 
 
 '''

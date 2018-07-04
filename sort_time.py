@@ -3,6 +3,8 @@ import subprocess, sys, os
 import csv
 
 keyword = 'cycle'
+__PERIOD__ = 5  #second
+
 #Subprocess's call command with piped output and active shell
 def Call(cmd):
     return subprocess.call(cmd, stdout=subprocess.PIPE,
@@ -79,8 +81,26 @@ def displayListOfFile(key):
 
 
 def calculateTime():
+    sec,remainder = 0,0
+    if (sec2 - sec1) >= 0:
+        sec += sec2 - sec1
+    else:
+        sec += sec2 + 60 - sec1
+        remainder += 1
 
-    pass
+    if (min2 - min1 - remainder) >= 0:
+        sec += (min2 - min1 -remainder)*60
+        remainder = 0
+    else:
+        sec += (min2 + 60 - min1 - remainder)*60
+        remainder = 1
+
+    sec += (hour2 - hour1 - remainder)*60*60
+    return sec
+
+def __find_lines(second):
+    return int(second/__PERIOD__)
+
 
 def findTimeMatch():
 
@@ -98,7 +118,7 @@ for element in name:
         hour2, min2,sec2 = (i[4], i[5], i[6])
         print "hour2 %s min2 %s sec2 %s" % (hour2, min2, sec2)
     else:
-        min2, sec2 = (i[5], i[6], i[7])
+        hour2, min2, sec2 = (i[5], i[6], i[7])
         print "hour2 %s min2 %s sec2 %s" % (hour2, min2, sec2)
 
 
@@ -111,13 +131,30 @@ line = readLineInFile('data/NIS3-Charge-02-13-2018 (copy).txt', 5)
 print line
 starttime =  line.split(' ')[1]
 print starttime
+hour1, min1, sec1 = (starttime.split(':')[0], starttime.split(':')[1], starttime.split(':')[2])
+print hour1 + ' ' + min1 + ' ' + sec1
 
-min1, sec1 = (line.split('\t')[1].split(':')[1], line.split('\t')[1].split(':')[2])
-print "a= %s" % str(min1)
-print "b= %s" % str(sec1)
+# min1, sec1 = (line.split('\t')[1].split(':')[1], line.split('\t')[1].split(':')[2])
+# print "a= %s" % str(min1)
+# print "b= %s" % str(sec1)
 
 print"\n"
 print readLineInFile('data/NIS3-Charge-02-13-2018 (copy).txt', 6).split('\t')
+
+
+hour1, min1, sec1 = int(hour1), int(min1), int(sec1)
+hour2, min2, sec2 = int(hour2), int(min2), int(sec2)
+
+timegap = calculateTime()
+print 'Timegap: %s' % str(timegap)
+
+linetofind = 6 + __find_lines(timegap)
+print "Lines need to capture: %s" % str(linetofind)
+
+line = readLineInFile('data/NIS3-Charge-02-13-2018.txt', linetofind)
+print line
+
+
 
 '''
 1. list of files in directory and save in the array[]

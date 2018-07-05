@@ -2,12 +2,15 @@
 import subprocess, sys, os
 import csv
 import datetime as dt
+import pandas as pd
 
 keyword     = 'cycle'
-path        = 'data/NIS3-Charge-02-13-2018 (copy).txt'
+path        = 'data/NIS3_18-07-02.txt'
 log_name    = 'data/testlog.csv'
-__PERIOD__  = 5         #second
-__DIFF__    = 0         #the result of time difference btw start and stop
+__PERIOD__  = 5                                                                 #second
+__DIFF__    = 0                                                                 #the result of time difference btw start and stop
+_start_row  = 6                                                                 #number of header to be remove
+__CAP__     = 0                                                                 #capacity of batt
 
 #Subprocess's call command with piped output and active shell
 def Call(cmd):
@@ -47,6 +50,19 @@ def read_file(name, row=int):
 
     return words
 
+# return the number of row
+def _row_count(filename):
+    return sum(1 for row in open(filename))
+
+#return ID of execution
+def _find_step_ID(filepath):
+    ID = []
+    with open(filepath) as readout:
+        for row in range (_row_count(filepath)):
+            line = readout.readline().rstrip()
+            if (line[1]  == '1') | (line [1] == '2'):
+                ID.append(row)
+    return ID
 
 # return a line in a string of character
 # readline will read the next line from position of the console
@@ -58,13 +74,29 @@ def read_line_in_file(filename, line_number=int):
         with open(filename) as readout:
             for _ in range(line_number):
                 readout.readline()
-            line = readout.readline().lstrip().rstrip()
+            line = readout.readline().rstrip()
     except:
         sys.exit("error to reading the file")
     finally:
         readout.close()
 
     return line
+
+# write data to a certan line in the file
+# return True if successful, false otherwise
+def write_line_in_file(filename, line_number=int):
+    try:
+        with open(filename) as readout:
+            for _ in range(line_number):
+                readout.writelines()
+    except:
+        sys.exit("error to reading the file")
+        return False
+    finally:
+        readout.close()
+
+    return True
+
 
 def _convert_to_time_object(str_obj):
     return dt.datetime.strptime(str_obj, '%Y-%m-%d %H:%M:%S')
@@ -99,18 +131,17 @@ def calculate_time(begin, end):
     return sec
 
 def _line_to_capture(second):
-    return 6 + int(second/__PERIOD__)
+    return _start_row + int(second/__PERIOD__)
 
 def _create_logfile_name(name=''):
-    header = ('Record ID','Time(H:M:S:ms)', 'Vol(mV)', 'Cur(mA)',
-              'Temperature(?)', 'Cap(mAh)', 'CmpCap(mAh/g)', 'Energy(mWh)',
-              'CmpEng(mWh/g)','Realtime')
+    header = ('CycleID','StepID', 'Record ID','Time(H:M:S:ms)', 'Vol(mV)',
+              'Cur(mA)','Temperature(?)', 'Cap(mAh)', 'CmpCap(mAh/g)', 
+              'Energy(mWh)','CmpEng(mWh/g)','Realtime')
 
     try:
         with open(name, 'ab') as outcsv:
             writer = csv.writer(outcsv, dialect='excel',
                                 lineterminator='\r\n')
-            writer.writerow('\n')
             writer.writerow(header)
     finally:
         outcsv.close()
@@ -164,7 +195,7 @@ def main():
     line = read_line_in_file(path, 5)
     print '#2' + line
 
-    starttime = line.split('\t')[9]
+    starttime = line.split('\t')[11]
     print '#2' + starttime
 
     #3. List filename that match a given pattern.
@@ -188,6 +219,18 @@ def main():
             print "endtime %s" % str(endtime)
 
             find_corresponding_character(starttime, endtime)
+
+
+    # try:
+    #     with open(log_name, 'ab') as outcsv:  # append in binary mode
+    #         pd.sort_values('Record ID')
+    # finally:
+    #     outcsv.close()
+
+    
+    print 'num of row: ' + str(_row_count(path))
+
+    print str(_find_step_ID(path))
 
 
     return

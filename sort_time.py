@@ -3,9 +3,11 @@ import subprocess, sys, os
 import csv
 import datetime as dt
 
-keyword = 'cycle'
-path = 'data/NIS3-Charge-02-13-2018 (copy).txt'
-__PERIOD__ = 5  #second
+keyword     = 'cycle'
+path        = 'data/NIS3-Charge-02-13-2018 (copy).txt'
+log_name    = 'data/testlog.csv'
+__PERIOD__  = 5         #second
+__DIFF__    = 0         #the result of time difference btw start and stop
 
 #Subprocess's call command with piped output and active shell
 def Call(cmd):
@@ -22,11 +24,11 @@ def PopenIter(cmd):
     return subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             shell=True).stdout.readline
 
+# For instance this awk will print lines between 20 and 40
+#
+# awk '{if ((NR > 20) && (NR < 40)) print $0}' /etc/passwd
 # ==============================================================================#
 
-def get_file_name():
-
-    return
 
 
 # return a tuple of string in every line (eat memory)
@@ -75,7 +77,7 @@ def yield_lines(thefile, whatlines):
 
 def display_list_of_file(key):
     file_name = []
-    list_cmd = ("ls data/ | grep '" + key + "' | awk '{print$1}'")
+    list_cmd = ("ls data/ | grep '" + key + "'") #| awk '{print$1}'")
 
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip().split('-echoes')[0])
@@ -84,8 +86,8 @@ def display_list_of_file(key):
 
 # calculate the time difference in seconds. Return int
 def calculate_time(begin, end):
-    start_dt    = _convert_to_time_object(starttime)
-    end_dt      = _convert_to_time_object(endtime)
+    start_dt    = _convert_to_time_object(begin)
+    end_dt      = _convert_to_time_object(end)
 
     sec = 0
     diff = (end_dt - start_dt)
@@ -100,7 +102,7 @@ def _line_to_capture(second):
     return 6 + int(second/__PERIOD__)
 
 def _create_logfile_name(name=''):
-    header = ('Record ID','Time(H:M:S:ms)',	'Vol(mV)', 'Cur(mA)',
+    header = ('Record ID','Time(H:M:S:ms)', 'Vol(mV)', 'Cur(mA)',
               'Temperature(?)', 'Cap(mAh)', 'CmpCap(mAh/g)', 'Energy(mWh)',
               'CmpEng(mWh/g)','Realtime')
 
@@ -116,8 +118,6 @@ def _create_logfile_name(name=''):
     return
 
 def save_to_file(name='',data=[]):
-    _create_logfile_name(name)
-
     try:
         with open(name, 'ab') as outcsv:  # append in binary mode
             writer = csv.writer(outcsv)
@@ -128,40 +128,20 @@ def save_to_file(name='',data=[]):
     return
 
 
+def find_corresponding_character(begin, end):
+    __DIFF__ = calculate_time(begin, end)
+    print "diff: %s" % str(__DIFF__)
+    matched_line = _line_to_capture(__DIFF__)
+
+    row = read_line_in_file(path, matched_line).split('\t')
+    print row
+    save_to_file(log_name, row)
+
+    return
+
 
 
 # ==============================================================================#
-
-
-name = display_list_of_file(keyword)
-for element in name:
-    i = element.split('-')
-    print i
-    if i[1] == '2018':
-        endtime = "2018-02-16 11:10:22"
-    else:
-        endtime = "2018-02-15 11:10:22"
-        print "endtime %s" % str(endtime)
-
-
-line = read_line_in_file(path, 5)
-print line
-
-starttime = line.split('\t')[9]
-print starttime
-
-
-
-print read_line_in_file(path, 6).split('\t')
-print '\n'
-
-dif = calculate_time(starttime, endtime)
-print "diff: %s" % str(dif)
-L = _line_to_capture(dif)
-
-row = read_line_in_file(path, 30).split('\t')
-print row
-save_to_file('data/testlog.csv', read_line_in_file(path, 30).split('\t'))
 
 
 '''
@@ -176,3 +156,41 @@ save_to_file('data/testlog.csv', read_line_in_file(path, 30).split('\t'))
     Grasp the whole line
 '''
 
+def main():
+    #1. Create test log file to save data
+    _create_logfile_name(log_name)
+
+    #2. Open a log .txt to grasp the start time
+    line = read_line_in_file(path, 5)
+    print '#2' + line
+
+    starttime = line.split('\t')[9]
+    print '#2' + starttime
+
+    #3. List filename that match a given pattern.
+    #4. Loop through the list, Edit the format
+    name = display_list_of_file(keyword)
+    for element in name:
+        print '#3' + element
+        i = element.split('-')
+        print i
+
+        if i[1] == '2018':
+            # endtime = "2018-02-16 11:10:22"
+            endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' + i[4] + ':' + i[5] + ':' + i[6]
+            print endtime
+
+            find_corresponding_character(starttime, endtime)
+
+        else:
+            # endtime = "2018-02-15 11:10:22"
+            endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' + i[5] + ':' + i[6] + ':' + i[7]
+            print "endtime %s" % str(endtime)
+
+            find_corresponding_character(starttime, endtime)
+
+
+    return
+
+if __name__ == '__main__':
+    main()

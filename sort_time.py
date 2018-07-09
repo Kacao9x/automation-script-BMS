@@ -5,8 +5,8 @@ import datetime as dt
 import pandas as pd
 
 keyword     = 'cycle'
-path        = 'data/NIS3_18-07-02.txt'
-log_name    = 'data/testlog.csv'
+path        = 'data/Filtered/NIS3_18-07-03.txt'
+log_name    = 'data/Filtered/testlog.csv'
 __PERIOD__  = 5                                                                 #second
 __DIFF__    = 0                                                                 #the result of time difference btw start and stop
 _start_row  = 6                                                                 #number of header to be remove
@@ -55,13 +55,19 @@ def _row_count(filename):
     return sum(1 for row in open(filename))
 
 #return ID of execution
-def _find_step_ID(filepath):
+def _find_step_ID(filepath, key):
     ID = []
-    with open(filepath) as readout:
-        for row in range (_row_count(filepath)):
-            line = readout.readline().rstrip()
-            if (line[1]  == '1') | (line [1] == '2'):
-                ID.append(row)
+    try:
+        with open(filepath) as readout:
+            for row in range (_row_count(filepath)):
+                line = readout.readline().rstrip()
+                if (line[1]  == key[0]) | (line [1] == key[1]):
+                    ID.append(row)
+    except:
+        sys.exit("error to find matching keyword")
+    finally:
+        readout.close()
+
     return ID
 
 # return a line in a string of character
@@ -109,7 +115,7 @@ def yield_lines(thefile, whatlines):
 
 def display_list_of_file(key):
     file_name = []
-    list_cmd = ("ls data/ | grep '" + key + "'") #| awk '{print$1}'")
+    list_cmd = ("ls data/Filtered | grep '" + key + "'") #| awk '{print$1}'")
 
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip().split('-echoes')[0])
@@ -230,7 +236,8 @@ def main():
     
     print 'num of row: ' + str(_row_count(path))
 
-    print str(_find_step_ID(path))
+    keyID = ['2', 'CV_Charge']
+    print str(_find_step_ID(path, keyID))
 
 
     return

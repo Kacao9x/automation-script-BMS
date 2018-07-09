@@ -2,7 +2,6 @@
 import subprocess, sys, os
 import csv
 import datetime as dt
-import pandas as pd
 
 keyword     = 'cycle'
 path        = 'data/Filtered/NIS3_18-07-03.txt'

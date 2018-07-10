@@ -1,15 +1,25 @@
+import numpy as np
+import os
+import glob
+import pandas as pd
 
 import subprocess, sys, os
 import csv
 import datetime as dt
 
 keyword     = 'cycle'
-path        = 'data/Filtered/NIS3_18-07-03.txt'
-log_name    = 'data/Filtered/testlog.csv'
+path        = 'data/Cycler_Data_NIS3_180703.csv'
+log_name    = 'data/testlog.csv'
 __PERIOD__  = 5                                                                 #second
 __DIFF__    = 0                                                                 #the result of time difference btw start and stop
-_start_row  = 6                                                                 #number of header to be remove
+_start_row  = 2                                                                 #number of header to be remove
 __CAP__     = 0                                                                 #capacity of batt
+header = ('id', 'id_num', 'time', 'del', 'current',
+              'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+              'en(microWh)', 'Date/Time')
+
+header_new  = ('index', 'cap(mAh)', 'FileName')
+
 
 #Subprocess's call command with piped output and active shell
 def Call(cmd):
@@ -58,10 +68,10 @@ def _find_step_ID(filepath, key):
     ID = []
     try:
         with open(filepath) as readout:
-            for row in range (_row_count(filepath)):
+            for index in range (_row_count(filepath)):
                 line = readout.readline().rstrip()
                 if (line[1]  == key[0]) | (line [1] == key[1]):
-                    ID.append(row)
+                    ID.append(index)
     except:
         sys.exit("error to find matching keyword")
     finally:
@@ -138,20 +148,19 @@ def calculate_time(begin, end):
 def _line_to_capture(second):
     return _start_row + int(second/__PERIOD__)
 
-def _create_logfile_name(name=''):
-    header = ('CycleID','StepID', 'Record ID','Time(H:M:S:ms)', 'Vol(mV)',
-              'Cur(mA)','Temperature(?)', 'Cap(mAh)', 'CmpCap(mAh/g)', 
-              'Energy(mWh)','CmpEng(mWh/g)','Realtime')
+def _create_logfile_name(name='', head=[]):
 
     try:
         with open(name, 'ab') as outcsv:
             writer = csv.writer(outcsv, dialect='excel',
                                 lineterminator='\r\n')
-            writer.writerow(header)
+            writer.writerow(head)
     finally:
         outcsv.close()
 
     return
+
+# def _create_log
 
 def save_to_file(name='',data=[]):
     try:
@@ -164,14 +173,21 @@ def save_to_file(name='',data=[]):
     return
 
 
-def find_corresponding_character(begin, end):
+def find_corresponding_character(begin, end, name=str):
     __DIFF__ = calculate_time(begin, end)
     print "diff: %s" % str(__DIFF__)
     matched_line = _line_to_capture(__DIFF__)
 
-    row = read_line_in_file(path, matched_line).split('\t')
-    print row
-    save_to_file(log_name, row)
+    row = read_line_in_file(path, matched_line).split(',')
+    print '\n'
+
+    temp_row = []
+    temp_row.append(row[0])
+    temp_row.append(row[5])
+    temp_row.append(name)
+
+    print temp_row
+    save_to_file(log_name, temp_row)
 
     return
 
@@ -192,16 +208,79 @@ def find_corresponding_character(begin, end):
     Grasp the whole line
 '''
 
+def Titan_Ashish():
+    path_1 = r"/media/kacao/479E26136B58509D/Titan_AES/Python-script/data"
+    table = pd.DataFrame()
+
+    for filename in glob.glob(os.path.join(path_1, "*.txt")):
+        my_file = open(filename)
+        table = pd.read_csv(my_file, header=3, delimiter='\t')
+
+    temp = table.iloc[:, 1:12]
+    table = temp
+    table.columns = ['id', 'id_num', 'time', 'del', 'current',
+                     'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+                     'en(microWh)', 'Date/Time']
+    del table['del']
+    del table['del2']
+
+    NA_finder = table['id'].notna()
+    ind = []
+
+    for i in range(len(NA_finder)):
+        if NA_finder[i] == True:
+            ind = np.append(ind, i)
+
+    for i in range(len(ind)):
+
+        if (table.iat[int(ind[i]), 1] == 'CV_Chg' and
+            table.iat[int(ind[i - 1]), 1]) == 'CC_Chg':
+
+            tot = table.iat[int(ind[i]) - 1, 4]
+            diff = int(ind[i + 1]) - int(ind[i])
+
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, 4] = table.iat[int(ind[i]) + j, 4] + tot
+
+        elif i == len(ind) - 1:
+
+            tot = table.iat[int(len(NA_finder) - 1), 4]
+            diff = int(len(NA_finder)) - int(ind[i])
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+
+        elif (table.iat[int(ind[i]), 1] == 'Rest' and
+              table.iat[int(ind[i - 1]), 1] == 'CV_Chg'):
+
+            tot = table.iat[int(ind[i]) - 1, 4]
+            diff = int(ind[i + 1]) - int(ind[i])
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, 4] = table.iat[int(ind[i]) + j, 4] + tot
+
+        elif (table.iat[int(ind[i + 1]), 1] == 'Rest' and
+              table.iat[int(ind[i]), 1] == 'CC_DChg'):
+
+            tot = table.iat[int(ind[i + 1]) - 1, 4]
+            diff = int(ind[i + 1]) - int(ind[i])
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+
+    table.to_csv(r"/media/kacao/479E26136B58509D/Titan_AES/Python-script/data/Cycler_Data_NIS3_180703.csv")
+
+    return
+
+
 def main():
+    Titan_Ashish()
     #1. Create test log file to save data
-    _create_logfile_name(log_name)
+    _create_logfile_name(log_name, header_new)
 
     #2. Open a log .txt to grasp the start time
-    line = read_line_in_file(path, 5)
-    print '#2' + line
+    line = read_line_in_file(path, 2)
+    print '#2 ' + line
 
-    starttime = line.split('\t')[11]
-    print '#2' + starttime
+    starttime = line.split(',')[9]
+    print '#2 ' + str(starttime)
 
     #3. List filename that match a given pattern.
     #4. Loop through the list, Edit the format
@@ -216,14 +295,15 @@ def main():
             endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' + i[4] + ':' + i[5] + ':' + i[6]
             print endtime
 
-            find_corresponding_character(starttime, endtime)
+            find_corresponding_character(starttime, endtime, element)
+
 
         else:
             # endtime = "2018-02-15 11:10:22"
             endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' + i[5] + ':' + i[6] + ':' + i[7]
             print "endtime %s" % str(endtime)
 
-            find_corresponding_character(starttime, endtime)
+            find_corresponding_character(starttime, endtime, element)
 
 
     # try:
@@ -233,10 +313,10 @@ def main():
     #     outcsv.close()
 
     
-    print 'num of row: ' + str(_row_count(path))
+    # print 'num of row: ' + str(_row_count(path))
 
-    keyID = ['2', 'CV_Charge']
-    print str(_find_step_ID(path, keyID))
+    # keyID = ['2', 'CV_Charge']
+    # print str(_find_step_ID(path, keyID))
 
 
     return

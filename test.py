@@ -58,7 +58,7 @@ def ParseHelpers():
 
     parser.add_argument('--half-pw', type=int, default='1', choices=range(1, 7),
                         dest='half', help='input half period width' +
-                                          '0.step' + '1.500ns',
+                                          '0.step' + '1.500ns', '2. 100ns',
                         metavar='select 0 to 6')
 
     parser.add_argument('--adc-config', type=int, default='0', choices=range(0, 7),
@@ -69,9 +69,12 @@ def ParseHelpers():
                         metavar='[1,2,4,8,16]')
 
     # ============================ Add-on feature ==============================#
-    parser.add_argument('--repeat', default=1, type=int, choices=range(1, 61),
-                        dest='repeat', metavar='[1,60]',
+    parser.add_argument('--repeat', default=1, type=int, choices=range(1, 1001),
+                        dest='repeat', metavar='[1,100]',
                         help='the number of repetition')
+    parser.add_argument('--minute', default=1, type=int, choices=range(1, 60),
+                    dest='minute', metavar='[1,59]',
+                    help='minutes to sleep')    
     parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='Enable debug mode')
     parser.add_argument('-l', '--logs', dest='logs', action='store_true',
@@ -94,11 +97,11 @@ def ParseHelpers():
 
 # ==============================================================================#
 # ================= create a test log file and set the name ====================#
-def __get_filename__():
+def __get_filename():
     return "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
 
 
-def __write_test_logs__(name=''):
+def __write_test_logs(name=''):
     try:
         with open(name, 'ab') as writeout:
             writeout.writelines('the delay us is: ' + str(__DELAY__) + '\n')
@@ -121,7 +124,7 @@ def __write_test_logs__(name=''):
 
 # ==============================================================================#
 # ======================== System Config =======================================#
-def __system_config__():
+def system_config():
     # 1. set voltage limit for transducer
     print "(1) Voltage setup: "
     if __VOLTAGE__ == 85:
@@ -157,7 +160,7 @@ def __system_config__():
     elif __VOLTAGE__ == 10:
         print echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_10v)
     
-    time.sleep(10)
+    time.sleep(5)
 
     # if echo.setImpulseVoltage(__VOLTAGE__):
     #     print "(1) Successfully voltage setup"
@@ -170,17 +173,19 @@ def __system_config__():
         print "unipolar: %s" % echoes_1.setImpulseType(Impulse_Type.half)
     elif __TYPE__ == 2:
         print "bipolar: %s" % echoes_1.setImpulseType(Impulse_Type.full)
-    time.sleep(10)
+    time.sleep(5)
 
     # 3. Half period width of pulse
     # Need to fix
     print "\n(3) Half period width of pulse: "
     if __HALF__ == 1:
         print "500ns: %s" % echoes_1.setImpulseHalfPeriodWidth(500)
+    elif __HALF__ == 2:
+        print "100ns: %s" % echoes_1.setImpulseHalfPeriodWidth(100)
     else:
         # step
         print "step: %s" % echoes_1.setImpulseHalfPeriodWidth(65535)
-    time.sleep(10)
+    time.sleep(5)
 
     # 4. number of period impulse
     print "\n(4) Number of period impulse: " + str(__PERIOD__)
@@ -196,7 +201,7 @@ def __system_config__():
         print "primary: %s" % echoes_1.setCaptureADC(Capture_Adc.adc_primary)
     elif __INPUT__ == 2:
         print "secondary: %s" % echoes_1.setCaptureADC(Capture_Adc.adc_secondary)
-    time.sleep(10)
+    time.sleep(5)
 
     # 6. select ADC sampling config:
     print "\n(6) select ADC sampling bits: "
@@ -208,7 +213,7 @@ def __system_config__():
             print("  Success!")
     else:
         print "Failed"
-    time.sleep(10)
+    time.sleep(5)
 
 
     # 7. Set how many sequences to average together
@@ -223,12 +228,12 @@ def __system_config__():
         print "8 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_8)
     if __numSEQ__ == 16:
         print "16 %s" % echoes_1.setConvertsPerSequence(Sequence_Count.sequence_16)
-    time.sleep(10)
+    time.sleep(5)
 
     # 8. Set VGA gain
     print "\n(8) set VGA gain: "
     print __GAIN__ + "%s" % echoes_1.setVgaGain(__GAIN__)
-    time.sleep(10)
+    time.sleep(5)
     
     # 9
     # if echo.setImpulseDelay(__DELAY__):
@@ -239,7 +244,7 @@ def __system_config__():
 
 # ==============================================================================#
 # ======================== MAIN FUNCTION =======================================#
-def __capture_raw_data__(num=int):
+def __capture_raw_data(num=int):
     print("Generating raw data of datapoints to log file")
     echoes_1.initiateCapture( send_impulse = True )
     # echoes_1(echoes_1.setImpulseType())
@@ -263,7 +268,7 @@ def __capture_raw_data__(num=int):
         filehandle.close()
 
 
-def __capture_filtered_data__(num=int):
+def __capture_filtered_data(num=int):
     echoes_1.initiateCapture(True)
     # echoes_1(echoes_1.setImpulseType())
     totalpages = 1
@@ -308,23 +313,23 @@ def __capture_filtered_data__(num=int):
 # ==============================================================================#
 # ======================== MAIN ACTIVITY =======================================#
 def main():
-    __NAME__ = __get_filename__()
+    __NAME__ = __get_filename()
     print __NAME__
-    __write_test_logs__(__NAME__)
+    __write_test_logs(__NAME__)
 
     # ======= UNIT TEST =======#
     # execute the activity here over SPI prococol
 
     for i in range(__REPEAT__):
         print '\n\nCycle: ' + str(i)
-        __system_config__()
+        system_config()
         # Fire and capture the echoes
         print '.... Capture raw data...'
-        __capture_raw_data__(i)
+        __capture_raw_data(i)
         time.sleep(1 * 10)
         print '.... Capture filtered data...'
-        __capture_filtered_data__(i)
-        time.sleep(10)
+        __capture_filtered_data(i)
+        time.sleep(20 * 60)
 
         print 'End cycle \n \n'
 

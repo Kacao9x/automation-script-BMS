@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="29268513-08b9-4059-b1c2-785190e7b231" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/sort-and-merge.py" afterPath="" />
       <change beforePath="$PROJECT_DIR$/sort_time.py" afterPath="$PROJECT_DIR$/sort_time.py" />
+      <change beforePath="$PROJECT_DIR$/sort_time_pandas.py" afterPath="" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -12,36 +15,28 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.46873173">
+    <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="sort_time.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort_time.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="85">
-                  <caret line="140" column="0" lean-forward="false" selection-start-line="140" selection-start-column="0" selection-end-line="163" selection-end-column="10" />
+                <state relative-caret-position="-4">
+                  <caret line="321" column="0" lean-forward="true" selection-start-line="321" selection-start-column="0" selection-end-line="321" selection-end-column="0" />
                   <folding>
-                    <element signature="e#1#27#0" expanded="true" />
-                    <element signature="e#683#773#0" expanded="false" />
-                    <element signature="e#858#976#0" expanded="false" />
-                    <element signature="e#1053#1161#0" expanded="false" />
-                    <element signature="e#1163#1221#0" expanded="false" />
-                    <element signature="e#1456#1757#0" expanded="false" />
-                    <element signature="e#1816#1855#0" expanded="false" />
+                    <element signature="e#942#1032#0" expanded="false" />
+                    <element signature="e#1117#1235#0" expanded="false" />
+                    <element signature="e#1312#1420#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="0">
-                  <caret line="356" column="25" lean-forward="false" selection-start-line="356" selection-start-column="25" selection-end-line="356" selection-end-column="25" />
+                <state relative-caret-position="777">
+                  <caret line="361" column="15" lean-forward="false" selection-start-line="361" selection-start-column="15" selection-end-line="361" selection-end-column="15" />
                   <folding>
                     <element signature="e#262#282#0" expanded="true" />
                     <element signature="e#442#4068#0" expanded="false" />
@@ -54,36 +49,17 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="titan_web.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/../titan-pi-app/titan_web.py">
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file leaf-file-name="merge_file.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/merge_file.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="238">
-                  <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+                <state relative-caret-position="64">
+                  <caret line="21" column="17" lean-forward="true" selection-start-line="21" selection-start-column="17" selection-end-line="21" selection-end-column="17" />
                   <folding>
-                    <element signature="e#777#3008#0" expanded="false" />
-                    <element signature="e#3496#7901#0" expanded="false" />
-                    <element signature="e#7951#8361#0" expanded="false" />
-                    <element signature="e#8466#9312#0" expanded="false" />
-                    <element signature="e#9838#10321#0" expanded="false" />
-                    <element signature="e#10391#10629#0" expanded="false" />
-                    <element signature="e#13242#13282#0" expanded="false" />
-                    <element signature="e#13302#13345#0" expanded="false" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="sort_time_pandas.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/sort_time_pandas.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="391">
-                  <caret line="61" column="0" lean-forward="true" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
-                  <folding>
-                    <element signature="e#0#26#0" expanded="true" />
-                    <element signature="e#680#1139#0" expanded="false" />
-                    <element signature="e#1283#1538#0" expanded="false" />
-                    <element signature="e#1579#2023#0" expanded="false" />
-                    <element signature="e#2064#2256#0" expanded="false" />
+                    <element signature="e#1#19#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -102,14 +78,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>12</find>
-      <find>adcConfig</find>
-      <find>fs_12bit_3_60msps</find>
-      <find>setImpulseCyc</find>
-      <find>setCaptureADC</find>
-      <find>setConvertsPerSequence</find>
-      <find>setVGA</find>
-      <find>__ADCconfig__</find>
       <find>datetime</find>
       <find>fsOriginal</find>
       <find>echo</find>
@@ -120,7 +88,6 @@
       <find>total</find>
       <find>readADC</find>
       <find>2400</find>
-      <find>65</find>
       <find>setImpulseH</find>
       <find>setImpulseHalf</find>
       <find>half</find>
@@ -131,7 +98,16 @@
       <find>calculate_time</find>
       <find>find_corresponding_character</find>
       <find>starttime</find>
+      <find>pd</find>
+      <find>65</find>
+      <find>R</find>
+      <find>old</find>
+      <find>data</find>
       <find>_find_step_ID</find>
+      <find>2418</find>
+      <find>split</find>
+      <find>row</find>
+      <find>_start_row</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -150,8 +126,10 @@
         <option value="$PROJECT_DIR$/../titan-pi-app/lib/echoes_protocol.py" />
         <option value="$PROJECT_DIR$/../titan-pi-app/titan_cmd.py" />
         <option value="$PROJECT_DIR$/../titan-pi-app/titan_web.py" />
-        <option value="$PROJECT_DIR$/sort_time.py" />
         <option value="$PROJECT_DIR$/sort_time_pandas.py" />
+        <option value="$PROJECT_DIR$/lib/merge_file.py" />
+        <option value="$PROJECT_DIR$/sort-and-merge.py" />
+        <option value="$PROJECT_DIR$/sort_time.py" />
       </list>
     </option>
   </component>
@@ -196,13 +174,17 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
               <item name="Python-script" type="b2602c69:ProjectViewProjectNode" />
               <item name="Python-script" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Python-script" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Python-script" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Python-script" type="b2602c69:ProjectViewProjectNode" />
@@ -222,6 +204,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scratches" />
       <pane id="Scope" />
     </panes>
   </component>
@@ -230,10 +213,10 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
+    <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
-    <key name="MoveFile.RECENT_KEYS">
+    <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
@@ -250,6 +233,24 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.sort_time">
+    <configuration name="merge_file" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/lib" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="Python-script" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/merge_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration name="plot" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -263,6 +264,24 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="Python-script" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/plot.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="sort-and-merge" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="Python-script" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sort-and-merge.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -286,7 +305,7 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="sort_time_pandas" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -298,22 +317,26 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="Python-script" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sort_time_pandas.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <list size="3">
-      <item index="0" class="java.lang.String" itemvalue="Python.test" />
-      <item index="1" class="java.lang.String" itemvalue="Python.plot" />
-      <item index="2" class="java.lang.String" itemvalue="Python.sort_time" />
+    <list size="5">
+      <item index="0" class="java.lang.String" itemvalue="Python.plot" />
+      <item index="1" class="java.lang.String" itemvalue="Python.sort_time" />
+      <item index="2" class="java.lang.String" itemvalue="Python.sort_time_pandas" />
+      <item index="3" class="java.lang.String" itemvalue="Python.merge_file" />
+      <item index="4" class="java.lang.String" itemvalue="Python.sort-and-merge" />
     </list>
     <recent_temporary>
-      <list size="3">
+      <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.sort_time" />
-        <item index="1" class="java.lang.String" itemvalue="Python.plot" />
-        <item index="2" class="java.lang.String" itemvalue="Python.test" />
+        <item index="1" class="java.lang.String" itemvalue="Python.sort-and-merge" />
+        <item index="2" class="java.lang.String" itemvalue="Python.merge_file" />
+        <item index="3" class="java.lang.String" itemvalue="Python.sort_time_pandas" />
+        <item index="4" class="java.lang.String" itemvalue="Python.plot" />
       </list>
     </recent_temporary>
   </component>
@@ -339,14 +362,14 @@
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11332904" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18421052" sideWeight="0.3947199" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23558897" sideWeight="0.3947199" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3433584" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18421052" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39974937" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -366,44 +389,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="6" lean-forward="false" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/plot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="11" lean-forward="true" selection-start-line="3" selection-start-column="11" selection-end-line="3" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../titan-pi-app/titan_web.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1326">
-          <caret line="266" column="50" lean-forward="false" selection-start-line="266" selection-start-column="38" selection-end-line="266" selection-end-column="50" />
-          <folding>
-            <element signature="e#777#3008#0" expanded="false" />
-            <element signature="e#3496#7901#0" expanded="false" />
-            <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#8466#9312#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
-            <element signature="e#10391#10629#0" expanded="false" />
-            <element signature="e#13242#13282#0" expanded="false" />
-            <element signature="e#13302#13345#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_signalprocessing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="714">
-          <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_spi.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="680">
@@ -472,16 +457,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
           <caret line="14" column="0" lean-forward="false" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="33" />
-          <folding>
-            <element signature="e#777#3008#0" expanded="false" />
-            <element signature="e#3496#7901#0" expanded="false" />
-            <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#8466#9312#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
-            <element signature="e#10391#10629#0" expanded="false" />
-            <element signature="e#13242#13282#0" expanded="false" />
-            <element signature="e#13302#13345#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -525,16 +500,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3315">
           <caret line="205" column="4" lean-forward="false" selection-start-line="205" selection-start-column="4" selection-end-line="205" selection-end-column="48" />
-          <folding>
-            <element signature="e#777#3008#0" expanded="false" />
-            <element signature="e#3496#7901#0" expanded="false" />
-            <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#8466#9312#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
-            <element signature="e#10391#10629#0" expanded="false" />
-            <element signature="e#13242#13282#0" expanded="false" />
-            <element signature="e#13302#13345#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -565,16 +530,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3604">
           <caret line="214" column="0" lean-forward="false" selection-start-line="214" selection-start-column="0" selection-end-line="214" selection-end-column="0" />
-          <folding>
-            <element signature="e#777#3008#0" expanded="false" />
-            <element signature="e#3496#7901#0" expanded="false" />
-            <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#8466#9312#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
-            <element signature="e#10391#10629#0" expanded="false" />
-            <element signature="e#13242#13282#0" expanded="false" />
-            <element signature="e#13302#13345#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -741,17 +696,54 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_protocol.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-218">
+          <caret line="120" column="8" lean-forward="false" selection-start-line="120" selection-start-column="8" selection-end-line="120" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../titan-pi-app/titan_web.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="205">
+          <caret line="85" column="56" lean-forward="false" selection-start-line="85" selection-start-column="31" selection-end-line="85" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python2.7/dist-packages/pandas/core/generic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="117">
+          <caret line="7815" column="8" lean-forward="false" selection-start-line="7815" selection-start-column="8" selection-end-line="7815" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/plot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="19" lean-forward="true" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+        <state relative-caret-position="187">
+          <caret line="17" column="10" lean-forward="false" selection-start-line="17" selection-start-column="8" selection-end-line="17" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sort_time_pandas.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1513">
+          <caret line="92" column="13" lean-forward="false" selection-start-line="92" selection-start-column="13" selection-end-line="92" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sort-and-merge.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-837">
+          <caret line="18" column="58" lean-forward="false" selection-start-line="18" selection-start-column="58" selection-end-line="20" selection-end-column="43" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="356" column="25" lean-forward="false" selection-start-line="356" selection-start-column="25" selection-end-line="356" selection-end-column="25" />
+        <state relative-caret-position="777">
+          <caret line="361" column="15" lean-forward="false" selection-start-line="361" selection-start-column="15" selection-end-line="361" selection-end-column="15" />
           <folding>
             <element signature="e#262#282#0" expanded="true" />
             <element signature="e#442#4068#0" expanded="false" />
@@ -763,57 +755,32 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../titan-pi-app/lib/echoes_protocol.py">
+    <entry file="file:///usr/local/lib/python2.7/dist-packages/pandas/core/frame.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="120" column="19" lean-forward="false" selection-start-line="120" selection-start-column="8" selection-end-line="120" selection-end-column="19" />
+        <state relative-caret-position="164">
+          <caret line="4420" column="0" lean-forward="false" selection-start-line="4420" selection-start-column="0" selection-end-line="4420" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../titan-pi-app/titan_web.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-          <folding>
-            <element signature="e#777#3008#0" expanded="false" />
-            <element signature="e#3496#7901#0" expanded="false" />
-            <element signature="e#7951#8361#0" expanded="false" />
-            <element signature="e#8466#9312#0" expanded="false" />
-            <element signature="e#9838#10321#0" expanded="false" />
-            <element signature="e#10391#10629#0" expanded="false" />
-            <element signature="e#13242#13282#0" expanded="false" />
-            <element signature="e#13302#13345#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sort_time.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="140" column="0" lean-forward="false" selection-start-line="140" selection-start-column="0" selection-end-line="163" selection-end-column="10" />
+        <state relative-caret-position="-4">
+          <caret line="321" column="0" lean-forward="true" selection-start-line="321" selection-start-column="0" selection-end-line="321" selection-end-column="0" />
           <folding>
-            <element signature="e#1#27#0" expanded="true" />
-            <element signature="e#683#773#0" expanded="false" />
-            <element signature="e#858#976#0" expanded="false" />
-            <element signature="e#1053#1161#0" expanded="false" />
-            <element signature="e#1163#1221#0" expanded="false" />
-            <element signature="e#1456#1757#0" expanded="false" />
-            <element signature="e#1816#1855#0" expanded="false" />
+            <element signature="e#942#1032#0" expanded="false" />
+            <element signature="e#1117#1235#0" expanded="false" />
+            <element signature="e#1312#1420#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sort_time_pandas.py">
+    <entry file="file://$PROJECT_DIR$/merge_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="61" column="0" lean-forward="true" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
+        <state relative-caret-position="64">
+          <caret line="21" column="17" lean-forward="true" selection-start-line="21" selection-start-column="17" selection-end-line="21" selection-end-column="17" />
           <folding>
-            <element signature="e#0#26#0" expanded="true" />
-            <element signature="e#680#1139#0" expanded="false" />
-            <element signature="e#1283#1538#0" expanded="false" />
-            <element signature="e#1579#2023#0" expanded="false" />
-            <element signature="e#2064#2256#0" expanded="false" />
+            <element signature="e#1#19#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -12,11 +12,11 @@ path        = 'data/Cycler_Data_NIS3_180703.csv'
 log_name    = 'data/testlog.csv'
 __PERIOD__  = 5                                                                 #second
 __DIFF__    = 0                                                                 #the result of time difference btw start and stop
-_start_row  = 2                                                                 #number of header to be remove
+_start_row  = 3                                                                 #number of header to be remove
 __CAP__     = 0                                                                 #capacity of batt
-header = ('id', 'id_num', 'time', 'del', 'current',
-              'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
-              'en(microWh)', 'Date/Time')
+header      = ('id', 'id_num', 'time', 'del', 'current',
+            'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+            'en(microWh)', 'Date/Time')
 
 header_new  = ('index', 'cap(mAh)', 'FileName')
 
@@ -36,32 +36,21 @@ def PopenIter(cmd):
     return subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             shell=True).stdout.readline
 
-# For instance this awk will print lines between 20 and 40
-#
-# awk '{if ((NR > 20) && (NR < 40)) print $0}' /etc/passwd
+
 # ==============================================================================#
 
 
-
-# return a tuple of string in every line (eat memory)
-def read_file(name, row=int):
-    words = []
-    try:
-        with open(name, 'rb') as readout:
-            data = readout.readlines()
-            for line in data:
-                words.append(line.lstrip().rstrip())
-
-    except:
-        sys.exit("error to reading the test log")
-    finally:
-        readout.close()
-
-    return words
-
 # return the number of row
 def _row_count(filename):
-    return sum(1 for row in open(filename))
+    # return sum(1 for row in open(filename))
+    sum = 0
+    with open(filename) as readout:
+        for _ in readout:
+            sum +=1
+    readout.close()
+    return sum
+
+
 
 #return ID of execution
 def _find_step_ID(filepath, key):
@@ -79,21 +68,27 @@ def _find_step_ID(filepath, key):
 
     return ID
 
+
 # return a line in a string of character
 # readline will read the next line from position of the console
 def read_line_in_file(filename, line_number=int):
     # line_number: int  # Number of the required line, 0-based
-    # line: str  # Content of the required line
     # global readout          #make sure this name is not used twice
-    try:
-        with open(filename) as readout:
+    row_num = _row_count(filename)
+
+    if line_number > row_num:
+        sys.exit('index out of bound')
+    else:
+        try:
+            readout = open(filename, 'r')
+        except:
+            sys.exit("error to reading the file")
+        else:
             for _ in range(line_number):
                 readout.readline()
             line = readout.readline().rstrip()
-    except:
-        sys.exit("error to reading the file")
-    finally:
-        readout.close()
+        finally:
+            readout.close()
 
     return line
 
@@ -116,11 +111,6 @@ def write_line_in_file(filename, line_number=int):
 def _convert_to_time_object(str_obj):
     return dt.datetime.strptime(str_obj, '%Y-%m-%d %H:%M:%S')
 
-#the file == a readout of text file
-def yield_lines(thefile, whatlines):
-  return (x for i, x in enumerate(thefile) if i in whatlines)
-
-
 
 def display_list_of_file(key):
     file_name = []
@@ -130,6 +120,7 @@ def display_list_of_file(key):
         file_name.append(line.rstrip().split('-echoes')[0])
     
     return file_name
+
 
 # calculate the time difference in seconds. Return int
 def calculate_time(begin, end):
@@ -145,8 +136,10 @@ def calculate_time(begin, end):
 
     return sec
 
+
 def _line_to_capture(second):
     return _start_row + int(second/__PERIOD__)
+
 
 def _create_logfile_name(name='', head=[]):
 
@@ -160,7 +153,6 @@ def _create_logfile_name(name='', head=[]):
 
     return
 
-# def _create_log
 
 def save_to_file(name='',data=[]):
     try:
@@ -178,6 +170,8 @@ def find_corresponding_character(begin, end, name=str):
     print "diff: %s" % str(__DIFF__)
     matched_line = _line_to_capture(__DIFF__)
 
+    #check if the index is out of bound
+
     row = read_line_in_file(path, matched_line).split(',')
     print '\n'
 
@@ -192,9 +186,11 @@ def find_corresponding_character(begin, end, name=str):
     return
 
 
-
 # ==============================================================================#
-
+'''
+for .txt, sep = '\t
+for .csv, sep = ','
+'''
 
 '''
 1. list of files in directory and save in the array[]
@@ -207,6 +203,15 @@ def find_corresponding_character(begin, end, name=str):
     Calculate how many lines to reach the first timestamp in test logs filename
     Grasp the whole line
 '''
+def sort_data(filename):
+    my_file = open(filename)
+    table = pd.read_csv(my_file, header=0, delimiter=',')
+
+    table = table.sort_values('index')
+
+    table.to_csv(r"/media/kacao/479E26136B58509D/Titan_AES/Python-script/data/test_log_sorted.csv")
+
+    return
 
 def Titan_Ashish():
     path_1 = r"/media/kacao/479E26136B58509D/Titan_AES/Python-script/data"
@@ -271,6 +276,9 @@ def Titan_Ashish():
 
 
 def main():
+    row_num = _row_count(path)
+    print 'num of row: ' + str(row_num)
+    sort_data(log_name)
     Titan_Ashish()
     #1. Create test log file to save data
     _create_logfile_name(log_name, header_new)
@@ -292,7 +300,8 @@ def main():
 
         if i[1] == '2018':
             # endtime = "2018-02-16 11:10:22"
-            endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' + i[4] + ':' + i[5] + ':' + i[6]
+            endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
+                      + i[4] + ':' + i[5] + ':' + i[6]
             print endtime
 
             find_corresponding_character(starttime, endtime, element)
@@ -300,20 +309,12 @@ def main():
 
         else:
             # endtime = "2018-02-15 11:10:22"
-            endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' + i[5] + ':' + i[6] + ':' + i[7]
+            endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
+                      + i[5] + ':' + i[6] + ':' + i[7]
             print "endtime %s" % str(endtime)
 
             find_corresponding_character(starttime, endtime, element)
 
-
-    # try:
-    #     with open(log_name, 'ab') as outcsv:  # append in binary mode
-    #         pd.sort_values('Record ID')
-    # finally:
-    #     outcsv.close()
-
-    
-    # print 'num of row: ' + str(_row_count(path))
 
     # keyID = ['2', 'CV_Charge']
     # print str(_find_step_ID(path, keyID))
@@ -323,3 +324,19 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+# ==============================================================================#
+"""
+No usage for now
+"""
+# For instance this awk will print lines between 20 and 40
+#
+# awk '{if ((NR > 20) && (NR < 40)) print $0}' /etc/passwd
+
+#the file == a readout of text file
+def yield_lines(thefile, whatlines):
+  return (x for i, x in enumerate(thefile) if i in whatlines)
+
+

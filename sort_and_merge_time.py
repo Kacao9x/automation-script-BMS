@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import glob
 import pandas as pd
 
@@ -37,7 +36,7 @@ def PopenIter(cmd):
                             shell=True).stdout.readline
 
 
-# ==============================================================================#
+#==============================================================================#
 
 
 # return the number of row
@@ -232,9 +231,11 @@ def Titan_Ashish():
     NA_finder = table['id'].notna()
     ind = []
 
+    # find the stage index
     for i in range(len(NA_finder)):
         if NA_finder[i] == True:
             ind = np.append(ind, i)
+
 
     for i in range(len(ind)):
 
@@ -278,7 +279,7 @@ def Titan_Ashish():
 def main():
     row_num = _row_count(path)
     print 'num of row: ' + str(row_num)
-    sort_data(log_name)
+
     Titan_Ashish()
     #1. Create test log file to save data
     _create_logfile_name(log_name, header_new)
@@ -315,7 +316,7 @@ def main():
 
             find_corresponding_character(starttime, endtime, element)
 
-
+    sort_data(log_name)
     # keyID = ['2', 'CV_Charge']
     # print str(_find_step_ID(path, keyID))
 

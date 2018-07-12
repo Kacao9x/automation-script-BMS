@@ -37,6 +37,9 @@ for i, row in enumerate( pd.notna(table['id']).tolist() ):
 def _addition_value(x):
     return x * 0.5
 
+# def func(x, y):
+#     if x
+
 for index, element in enumerate(table['id'].notna().tolist()):
     if element == True:
         print 'element %s' % element
@@ -46,5 +49,8 @@ for index, element in enumerate(table['id'].notna().tolist()):
 #replace the data to the original dataframe
 # table['cap(mAh)'] = table.apply(lambda row: _addition_value(row['cap(mAh)']), axis=1)
 
-table['cap(mAh)'] = table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']), axis=1)
-print table.to_string()
+        table['cap(mAh)'] = table.apply(lambda row: 0 if row['id_num'] != 'CC_Chg' else _addition_value(row['cap(mAh)']), axis=1)
+        # table['cap(mAh)'] = table.apply(lambda row: func(row['id'],row['cap(mAh)']), axis=1)
+        print table['cap(mAh)'][2]
+
+print(table.to_string())

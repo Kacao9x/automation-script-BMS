@@ -18,7 +18,7 @@ header      = ('id', 'id_num', 'time', 'del', 'current',
             'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
             'en(microWh)', 'Date/Time')
 
-header_new  = ('index', 'cap(mAh)', 'FileName')
+header_sorted  = ('index', 'cap(mAh)', 'FileName')
 
 
 #==============================================================================#
@@ -58,7 +58,17 @@ def _row_count(filename):
     return table
 
 
-def make_Dataframe(filepath):
+def display_list_of_file(key):
+    file_name = []
+    list_cmd = ('ls data/'+ key + '* -1v')
+
+    for line in iter(PopenIter(list_cmd), ''):
+        file_name.append(line.rstrip().split('-echoes')[0])
+
+    return file_name
+
+
+def read_Dataframe_from_file(filepath):
     with open(filepath) as outfile:
         table = pd.read_csv(outfile, header=3, sep='\t')
     outfile.close()
@@ -73,7 +83,7 @@ def make_Dataframe(filepath):
 
 
 # Merge the capacity between stage 1,2 and 4
-# only works with the test logs from HP machine
+# only works with the cycler data logs
 def merge_column(table):
     # table: Dataframe with a custom header
 
@@ -121,33 +131,96 @@ def merge_column(table):
     table.to_csv(path)
     return
 
-def helper():
 
-    return
-
-def _read_start_time(table):
+def _read_time(table):
     print table.iat[0,1]
+    start_time = table.iat[1, 8]
     if( table.iat[0,1] == 'CC_Chg' ):
         start_time = table.iat[1, 8]
 
-    else:
+    # else:
         # for i in table.iterrows():
-        table[]
-        df[df['model'].str.match('Mac')]
-        # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),
-                                        axis=1)
+        # table[table['']]
+        # df[df['model'].str.match('Mac')]
+        # # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),axis=1)
     return start_time
+
+# calculate the time difference in seconds. Return int
+def calculate_time(begin, end):
+    start_dt    = _convert_to_time_object(begin)
+    end_dt      = _convert_to_time_object(end)
+
+    sec = 0
+    diff = (end_dt - start_dt)
+    if ( diff.days == 0 ):
+        sec += diff.seconds
+    else:
+        sec += diff.days*24*60*60 + diff.seconds
+
+    return sec
+
+
+def find_capacity(begin, end, table):
+    diff = calculate_time(begin, end)
+
+    line = _line_to_capture(diff)
+    print "diff: %s" % str(line)
+
+    # cap = table.iat[line, 4]                                                  #grasp manually
+    return line, table['cap(mAh)'][line]
+
+def write_Dataframe():
+
+    return
 
 
 def main():
 
-    table = make_Dataframe('data/NIS3_18-07-03.txt')
+    table = read_Dataframe_from_file('data/NIS3_18-07-03.txt')
     merge_column(table)
 
-    start_time = _read_start_time(table)
-    print str(start_time)
+    starttime = _read_time(table)
+    print str(starttime)
 
+    cap = []
+    filename = []
+    index = []
 
+    filelist = display_list_of_file(keyword)
+    for element in filelist:
+        print '#3' + element
+        i = element.split('-')
+        print i
+        if i[1] == '2018':
+            filename.append(element)
+            endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
+                      + i[4] + ':' + i[5] + ':' + i[6]
+            print endtime
+
+            i, c = find_capacity(starttime, endtime, table)
+            cap.append( c )
+            index.append( i )
+
+        else:
+            # endtime = "2018-02-15 11:10:22"
+            endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
+                      + i[5] + ':' + i[6] + ':' + i[7]
+            print "endtime %s" % str(endtime)
+
+            # find_corresponding_character(starttime, endtime, element)
+
+    table_sorted = pd.DataFrame({'index': index,
+                                 'cap(mAh)': cap,
+                                 'FileName': filename},
+                                columns=['index', 'cap(mAh)', 'FileName'])      #columns=[] used to set order of columns
+
+    table_sorted = table_sorted.sort_values('index')
+    print table_sorted.to_string()
+
+    a, b = 9, 11
+
+    print "a: %2.f, b: %2.0f" % (a,b)
+    # table_sorted.to_csv("data/test_log_sorted.csv")
     return
 if __name__ == '__main__':
     main()

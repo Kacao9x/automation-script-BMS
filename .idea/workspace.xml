@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="29268513-08b9-4059-b1c2-785190e7b231" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/merge_file.py" afterPath="$PROJECT_DIR$/merge_file.py" />
-      <change beforePath="$PROJECT_DIR$/sort_and_merge_time.py" afterPath="$PROJECT_DIR$/sort_and_merge_time.py" />
+      <change beforePath="$PROJECT_DIR$/sort.py" afterPath="$PROJECT_DIR$/sort.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,8 +18,8 @@
           <file leaf-file-name="sort_and_merge_time.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort_and_merge_time.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="17">
-                  <caret line="290" column="13" lean-forward="false" selection-start-line="290" selection-start-column="4" selection-end-line="290" selection-end-column="13" />
+                <state relative-caret-position="-1054">
+                  <caret line="119" column="4" lean-forward="false" selection-start-line="119" selection-start-column="4" selection-end-line="119" selection-end-column="4" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                     <element signature="e#932#1022#0" expanded="false" />
@@ -44,7 +42,7 @@
           <file leaf-file-name="merge_file.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/merge_file.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="833">
+                <state relative-caret-position="539">
                   <caret line="52" column="33" lean-forward="false" selection-start-line="52" selection-start-column="33" selection-end-line="52" selection-end-column="33" />
                   <folding>
                     <element signature="e#1#19#0" expanded="true" />
@@ -56,16 +54,18 @@
           <file leaf-file-name="sort.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="518">
-                  <caret line="136" column="10" lean-forward="false" selection-start-line="136" selection-start-column="10" selection-end-line="136" selection-end-column="10" />
+                <state relative-caret-position="722">
+                  <caret line="221" column="17" lean-forward="false" selection-start-line="221" selection-start-column="17" selection-end-line="221" selection-end-column="17" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <element signature="e#1037#1127#0" expanded="false" />
-                    <element signature="e#1212#1330#0" expanded="false" />
-                    <element signature="e#1407#1515#0" expanded="false" />
-                    <element signature="e#1834#2022#0" expanded="false" />
-                    <element signature="e#2059#2434#0" expanded="false" />
-                    <element signature="e#2559#4218#0" expanded="false" />
+                    <element signature="e#1040#1130#0" expanded="false" />
+                    <element signature="e#1215#1333#0" expanded="false" />
+                    <element signature="e#1410#1518#0" expanded="false" />
+                    <element signature="e#1643#1700#0" expanded="false" />
+                    <element signature="e#1837#2025#0" expanded="false" />
+                    <element signature="e#2788#4447#0" expanded="false" />
+                    <element signature="e#4948#5213#0" expanded="false" />
+                    <element signature="e#6248#6518#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -84,7 +84,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>Impulse_Voltage</find>
       <find>firw</find>
       <find>SPI_PROCESSOR_ADC_BUFFER_SIZE</find>
       <find>total</find>
@@ -114,6 +113,7 @@
       <find>sep</find>
       <find>calculate_time</find>
       <find>find_corresponding_character</find>
+      <find>__DI</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -137,8 +137,8 @@
         <option value="$PROJECT_DIR$/sort-and-merge.py" />
         <option value="$PROJECT_DIR$/sort_time.py" />
         <option value="$PROJECT_DIR$/sort_and_merge_time.py" />
-        <option value="$PROJECT_DIR$/sort.py" />
         <option value="$PROJECT_DIR$/merge_file.py" />
+        <option value="$PROJECT_DIR$/sort.py" />
       </list>
     </option>
   </component>
@@ -169,7 +169,7 @@
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
+    <navigator proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -182,21 +182,7 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="Python-script" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Python-script" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scratches" />
-      <pane id="Scope" />
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../titan-pi-app-master" />
@@ -222,7 +208,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.merge_file">
+  <component name="RunManager" selected="Python.sort">
     <configuration name="merge_file" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -322,8 +308,8 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.merge_file" />
-        <item index="1" class="java.lang.String" itemvalue="Python.sort" />
+        <item index="0" class="java.lang.String" itemvalue="Python.sort" />
+        <item index="1" class="java.lang.String" itemvalue="Python.merge_file" />
         <item index="2" class="java.lang.String" itemvalue="Python.sort_time" />
         <item index="3" class="java.lang.String" itemvalue="Python.sort-and-merge" />
         <item index="4" class="java.lang.String" itemvalue="Python.sort_time_pandas" />
@@ -348,14 +334,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1647" y="-4" width="1873" height="1084" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12813908" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23558897" sideWeight="0.3947199" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25814536" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22188139" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -657,6 +642,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="164">
           <caret line="4420" column="0" lean-forward="false" selection-start-line="4420" selection-start-column="0" selection-end-line="4420" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -669,8 +655,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sort_and_merge_time.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="290" column="13" lean-forward="false" selection-start-line="290" selection-start-column="4" selection-end-line="290" selection-end-column="13" />
+        <state relative-caret-position="-1054">
+          <caret line="119" column="4" lean-forward="false" selection-start-line="119" selection-start-column="4" selection-end-line="119" selection-end-column="4" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#932#1022#0" expanded="false" />
@@ -687,7 +673,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/merge_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="833">
+        <state relative-caret-position="539">
           <caret line="52" column="33" lean-forward="false" selection-start-line="52" selection-start-column="33" selection-end-line="52" selection-end-column="33" />
           <folding>
             <element signature="e#1#19#0" expanded="true" />
@@ -697,16 +683,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sort.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="518">
-          <caret line="136" column="10" lean-forward="false" selection-start-line="136" selection-start-column="10" selection-end-line="136" selection-end-column="10" />
+        <state relative-caret-position="722">
+          <caret line="221" column="17" lean-forward="false" selection-start-line="221" selection-start-column="17" selection-end-line="221" selection-end-column="17" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#1037#1127#0" expanded="false" />
-            <element signature="e#1212#1330#0" expanded="false" />
-            <element signature="e#1407#1515#0" expanded="false" />
-            <element signature="e#1834#2022#0" expanded="false" />
-            <element signature="e#2059#2434#0" expanded="false" />
-            <element signature="e#2559#4218#0" expanded="false" />
+            <element signature="e#1040#1130#0" expanded="false" />
+            <element signature="e#1215#1333#0" expanded="false" />
+            <element signature="e#1410#1518#0" expanded="false" />
+            <element signature="e#1643#1700#0" expanded="false" />
+            <element signature="e#1837#2025#0" expanded="false" />
+            <element signature="e#2788#4447#0" expanded="false" />
+            <element signature="e#4948#5213#0" expanded="false" />
+            <element signature="e#6248#6518#0" expanded="false" />
           </folding>
         </state>
       </provider>

@@ -193,7 +193,6 @@ def sort_by_name(filelist, starttime, table):
                       + i[5] + ':' + i[6] + ':' + i[7]
             print endtime
 
-
         i, c = find_capacity(starttime, endtime, table)
         cap.append(c)
         index.append(i)
@@ -229,10 +228,27 @@ def main():
 
     table_sorted = sort_by_name(filelist, starttime, table)
 
+    #Add SoC data values into data frame
+
+    for i, name in enumerate( filelist ):
+        temp = []
+        with open(path + name +'-echoes-b.dat') as readout:
+            for line in readout:
+                temp.append(float(line.rstrip()))
+        readout.close()
+
+        print temp
+        new_header = 'Cycle_' + str(i+1)
+
+        tempTable = pd.DataFrame({new_header:temp})
+
+        table_sorted = pd.concat([table_sorted, tempTable], axis = 1)
+        del temp[:], tempTable
 
     # table_sorted.to_csv(final_log_path)
-    table_sorted.to_csv(path+'test.csv')
+    # table_sorted.to_csv(path+'test.csv')
 
+    table_sorted.to_csv(path+'test.csv')
 
     return
 if __name__ == '__main__':

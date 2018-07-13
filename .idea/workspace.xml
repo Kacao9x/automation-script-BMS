@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="29268513-08b9-4059-b1c2-785190e7b231" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/sort.py" afterPath="$PROJECT_DIR$/sort.py" />
-      <change beforePath="$PROJECT_DIR$/test.py" afterPath="$PROJECT_DIR$/test.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -54,8 +53,8 @@
           <file leaf-file-name="sort.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="68">
-                  <caret line="215" column="28" lean-forward="true" selection-start-line="215" selection-start-column="28" selection-end-line="215" selection-end-column="28" />
+                <state relative-caret-position="563">
+                  <caret line="233" column="4" lean-forward="false" selection-start-line="233" selection-start-column="4" selection-end-line="233" selection-end-column="4" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                     <element signature="e#674#764#0" expanded="false" />
@@ -68,6 +67,10 @@
                     <element signature="e#4156#4534#0" expanded="false" />
                     <element signature="e#4627#4892#0" expanded="false" />
                     <element signature="e#4937#5176#0" expanded="false" />
+                    <element signature="e#5578#5709#0" expanded="false" />
+                    <element signature="e#5737#5868#0" expanded="false" />
+                    <element signature="e#6015#6025#0" expanded="false" />
+                    <element signature="e#6343#6464#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -145,10 +148,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1646" />
-    <option name="y" value="-11" />
-    <option name="width" value="1555" />
-    <option name="height" value="912" />
+    <option name="x" value="5167" />
+    <option name="y" value="-4" />
+    <option name="width" value="1873" />
+    <option name="height" value="1084" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -349,13 +352,13 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1646" y="-11" width="1555" height="912" extended-state="6" />
+    <frame x="5167" y="-4" width="1873" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12749517" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23558897" sideWeight="0.3947199" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30701753" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25051126" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -700,8 +703,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sort.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="215" column="28" lean-forward="true" selection-start-line="215" selection-start-column="28" selection-end-line="215" selection-end-column="28" />
+        <state relative-caret-position="563">
+          <caret line="233" column="4" lean-forward="false" selection-start-line="233" selection-start-column="4" selection-end-line="233" selection-end-column="4" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#674#764#0" expanded="false" />
@@ -714,6 +717,10 @@
             <element signature="e#4156#4534#0" expanded="false" />
             <element signature="e#4627#4892#0" expanded="false" />
             <element signature="e#4937#5176#0" expanded="false" />
+            <element signature="e#5578#5709#0" expanded="false" />
+            <element signature="e#5737#5868#0" expanded="false" />
+            <element signature="e#6015#6025#0" expanded="false" />
+            <element signature="e#6343#6464#0" expanded="false" />
           </folding>
         </state>
       </provider>

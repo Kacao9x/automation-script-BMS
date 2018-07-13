@@ -169,8 +169,54 @@ def _SOC_header_creator():
     filelist = display_list_of_file(keyword)
 
     for i in range(len(filelist)):
-        header.append('SoC_' + str(i))
+        header.append('SoC_' + str(i+1))
     return header
+
+
+def sort_by_name(filelist, starttime, table):
+    cap     = []
+    filename= []
+    index   = []
+
+    for element in filelist:
+
+        i = element.split('-')
+        print i
+
+        if i[1] == '2018':
+            endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
+                      + i[4] + ':' + i[5] + ':' + i[6]
+            print endtime
+
+        else:
+            endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
+                      + i[5] + ':' + i[6] + ':' + i[7]
+            print endtime
+
+
+        i, c = find_capacity(starttime, endtime, table)
+        cap.append(c)
+        index.append(i)
+        filename.append(element)
+
+        # temp =[]
+        # with open(path+element+'-echoes-b.dat') as fobj:
+        #     for line in fobj:
+        #         temp.append(float(line.rstrip()))
+        # fobj.close()
+        # SoC.append(temp)
+
+    column = ['index', 'cap(mAh)', 'FileName']
+    # column.append(_SOC_header_creator())
+
+    table_sorted = pd.DataFrame({'index': index,
+                                 'cap(mAh)': cap,
+                                 'FileName': filename},
+                                columns=column)  # columns=[] used to set order of columns
+
+    table_sorted = table_sorted.sort_values('index')
+    return table_sorted
+
 
 def main():
 
@@ -179,68 +225,15 @@ def main():
 
     starttime = _read_time(table)
     print str(starttime)
-
-    cap     = []
-    filename= []
-    index   = []
-    SoC     = []
-
     filelist = display_list_of_file(keyword)
-    for element in filelist:
-        print '#3' + element
-        i = element.split('-')
-        print i
-        if i[1] == '2018':
 
-            endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
-                      + i[4] + ':' + i[5] + ':' + i[6]
-            print endtime
-
-            i, c = find_capacity(starttime, endtime, table)
-            cap.append( c )
-            index.append( i )
-            filename.append(element)
-
-        else:
-
-            endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
-                      + i[5] + ':' + i[6] + ':' + i[7]
-            print endtime
-
-            i, c = find_capacity(starttime, endtime, table)
-            cap.append(c)
-            index.append(i)
-            filename.append(element)
-
-            temp =[]
-            with open(path+element+'-echoes-b.dat') as fobj:
-                for line in fobj:
-                    temp.append(float(line.rstrip()))
-            fobj.close()
-            SoC.append(temp)
-    # print SoC
-
-    column = ['index', 'cap(mAh)', 'FileName']
-    column.append(_SOC_header_creator())
-
-    table_sorted = pd.DataFrame({'index': index,
-                                 'cap(mAh)': cap,
-                                 'FileName': filename,
-                                 'SoC': SoC},
-                                columns=column)      #columns=[] used to set order of columns
-
-    table_sorted = table_sorted.sort_values('index')
-
+    table_sorted = sort_by_name(filelist, starttime, table)
 
 
     # table_sorted.to_csv(final_log_path)
     table_sorted.to_csv(path+'test.csv')
 
-    # print table_sorted.to_string()
 
-    # a, b = 9, 11
-    #
-    # print "a: %2.f, b: %2.0f" % (a,b)
     return
 if __name__ == '__main__':
     main()

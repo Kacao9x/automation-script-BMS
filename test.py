@@ -58,7 +58,7 @@ def ParseHelpers():
 
     parser.add_argument('--half-pw', type=int, default='1', choices=range(1, 7),
                         dest='half', help='input half period width' +
-                                          '0.step' + '1.500ns', '2. 100ns',
+                                          '0.step' + '1.500ns' + '2. 100ns',
                         metavar='select 0 to 6')
 
     parser.add_argument('--adc-config', type=int, default='0', choices=range(0, 7),

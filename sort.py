@@ -164,10 +164,13 @@ def find_capacity(begin, end, table):
     # cap = table.iat[line, 4]                                                  #grasp manually
     return line, table['cap(mAh)'][line]
 
-def write_Dataframe():
+def _SOC_header_creator():
+    header = []
+    filelist = display_list_of_file(keyword)
 
-    return
-
+    for i in range(len(filelist)):
+        header.append('SoC_' + str(i))
+    return header
 
 def main():
 
@@ -177,9 +180,10 @@ def main():
     starttime = _read_time(table)
     print str(starttime)
 
-    cap = []
-    filename = []
-    index = []
+    cap     = []
+    filename= []
+    index   = []
+    SoC     = []
 
     filelist = display_list_of_file(keyword)
     for element in filelist:
@@ -208,18 +212,35 @@ def main():
             index.append(i)
             filename.append(element)
 
+            temp =[]
+            with open(path+element+'-echoes-b.dat') as fobj:
+                for line in fobj:
+                    temp.append(float(line.rstrip()))
+            fobj.close()
+            SoC.append(temp)
+    # print SoC
+
+    column = ['index', 'cap(mAh)', 'FileName']
+    column.append(_SOC_header_creator())
+
     table_sorted = pd.DataFrame({'index': index,
                                  'cap(mAh)': cap,
-                                 'FileName': filename},
-                                columns=['index', 'cap(mAh)', 'FileName'])      #columns=[] used to set order of columns
+                                 'FileName': filename,
+                                 'SoC': SoC},
+                                columns=column)      #columns=[] used to set order of columns
 
     table_sorted = table_sorted.sort_values('index')
-    print table_sorted.to_string()
+
+
+
+    # table_sorted.to_csv(final_log_path)
+    table_sorted.to_csv(path+'test.csv')
+
+    # print table_sorted.to_string()
 
     # a, b = 9, 11
     #
     # print "a: %2.f, b: %2.0f" % (a,b)
-    table_sorted.to_csv(final_log_path)
     return
 if __name__ == '__main__':
     main()

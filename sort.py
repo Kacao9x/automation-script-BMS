@@ -7,18 +7,13 @@ import csv
 import datetime as dt
 
 
-keyword     = 'cycle'
-path        = 'data/Cycler_Data_NIS3_180703.csv'
-log_name    = 'data/testlog.csv'
+keyword         = 'cycle'
+path            = 'data/Filtered/Filtered/'
+cycler_path     = path + 'Cycler_Data_Apple_180713.csv'
+final_log_path  = path + 'test_log_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
-__DIFF__    = 0                                                                 #the result of time difference btw start and stop
 _start_row  = 1                                                                 #number of header to be remove
-__CAP__     = 0                                                                 #capacity of batt
-header      = ('id', 'id_num', 'time', 'del', 'current',
-            'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
-            'en(microWh)', 'Date/Time')
 
-header_sorted  = ('index', 'cap(mAh)', 'FileName')
 
 
 #==============================================================================#
@@ -60,8 +55,8 @@ def _row_count(filename):
 
 def display_list_of_file(key):
     file_name = []
-    list_cmd = ('ls data/'+ key + '* -1v')
-
+    list_cmd = ('ls '+ path +' -1v' + " | grep '" + key + "'")
+    print list_cmd
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip().split('-echoes')[0])
 
@@ -128,7 +123,7 @@ def merge_column(table):
             for j in range(diff):
                 table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
 
-    table.to_csv(path)
+    table.to_csv(cycler_path)
     return
 
 
@@ -176,7 +171,7 @@ def write_Dataframe():
 
 def main():
 
-    table = read_Dataframe_from_file('data/NIS3_18-07-03.txt')
+    table = read_Dataframe_from_file('data/Filtered/Filtered/Apple-18-07-13.txt')
     merge_column(table)
 
     starttime = _read_time(table)
@@ -192,7 +187,7 @@ def main():
         i = element.split('-')
         print i
         if i[1] == '2018':
-            filename.append(element)
+
             endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
                       + i[4] + ':' + i[5] + ':' + i[6]
             print endtime
@@ -200,14 +195,18 @@ def main():
             i, c = find_capacity(starttime, endtime, table)
             cap.append( c )
             index.append( i )
+            filename.append(element)
 
         else:
-            # endtime = "2018-02-15 11:10:22"
+
             endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
                       + i[5] + ':' + i[6] + ':' + i[7]
-            print "endtime %s" % str(endtime)
+            print endtime
 
-            # find_corresponding_character(starttime, endtime, element)
+            i, c = find_capacity(starttime, endtime, table)
+            cap.append(c)
+            index.append(i)
+            filename.append(element)
 
     table_sorted = pd.DataFrame({'index': index,
                                  'cap(mAh)': cap,
@@ -217,10 +216,10 @@ def main():
     table_sorted = table_sorted.sort_values('index')
     print table_sorted.to_string()
 
-    a, b = 9, 11
-
-    print "a: %2.f, b: %2.0f" % (a,b)
-    # table_sorted.to_csv("data/test_log_sorted.csv")
+    # a, b = 9, 11
+    #
+    # print "a: %2.f, b: %2.0f" % (a,b)
+    table_sorted.to_csv(final_log_path)
     return
 if __name__ == '__main__':
     main()

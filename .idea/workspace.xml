@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="29268513-08b9-4059-b1c2-785190e7b231" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/sort.py" afterPath="$PROJECT_DIR$/sort.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,7 +19,7 @@
           <file leaf-file-name="sort_and_merge_time.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort_and_merge_time.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1054">
+                <state relative-caret-position="518">
                   <caret line="119" column="4" lean-forward="false" selection-start-line="119" selection-start-column="4" selection-end-line="119" selection-end-column="4" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
@@ -42,7 +43,7 @@
           <file leaf-file-name="merge_file.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/merge_file.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="539">
+                <state relative-caret-position="833">
                   <caret line="52" column="33" lean-forward="false" selection-start-line="52" selection-start-column="33" selection-end-line="52" selection-end-column="33" />
                   <folding>
                     <element signature="e#1#19#0" expanded="true" />
@@ -54,18 +55,18 @@
           <file leaf-file-name="sort.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="722">
-                  <caret line="221" column="17" lean-forward="false" selection-start-line="221" selection-start-column="17" selection-end-line="221" selection-end-column="17" />
+                <state relative-caret-position="-1893">
+                  <caret line="5" column="10" lean-forward="true" selection-start-line="5" selection-start-column="10" selection-end-line="5" selection-end-column="10" />
                   <folding>
-                    <element signature="e#0#18#0" expanded="true" />
-                    <element signature="e#1040#1130#0" expanded="false" />
-                    <element signature="e#1215#1333#0" expanded="false" />
-                    <element signature="e#1410#1518#0" expanded="false" />
-                    <element signature="e#1643#1700#0" expanded="false" />
-                    <element signature="e#1837#2025#0" expanded="false" />
-                    <element signature="e#2788#4447#0" expanded="false" />
-                    <element signature="e#4948#5213#0" expanded="false" />
-                    <element signature="e#6248#6518#0" expanded="false" />
+                    <element signature="e#674#764#0" expanded="false" />
+                    <element signature="e#849#967#0" expanded="false" />
+                    <element signature="e#1044#1152#0" expanded="false" />
+                    <element signature="e#1277#1334#0" expanded="false" />
+                    <element signature="e#1370#1412#0" expanded="false" />
+                    <element signature="e#1471#1659#0" expanded="false" />
+                    <element signature="e#1969#2344#0" expanded="false" />
+                    <element signature="e#2460#4126#0" expanded="false" />
+                    <element signature="e#4627#4892#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -84,13 +85,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>firw</find>
-      <find>SPI_PROCESSOR_ADC_BUFFER_SIZE</find>
-      <find>total</find>
-      <find>readADC</find>
-      <find>2400</find>
-      <find>setImpulseH</find>
-      <find>setImpulseHalf</find>
       <find>half</find>
       <find>read_file</find>
       <find>name_file</find>
@@ -106,7 +100,6 @@
       <find>2418</find>
       <find>split</find>
       <find>row</find>
-      <find>_start_row</find>
       <find>__PERIOD__</find>
       <find>write_line_in_file</find>
       <find>write</find>
@@ -114,6 +107,14 @@
       <find>calculate_time</find>
       <find>find_corresponding_character</find>
       <find>__DI</find>
+      <find>__DIFF__</find>
+      <find>_start_row</find>
+      <find>__CAP__</find>
+      <find>header_sorted</find>
+      <find>path</find>
+      <find>display_list_of_file</find>
+      <find>log_name</find>
+      <find>cap(mAh)</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -143,10 +144,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1756" />
-    <option name="y" value="181" />
-    <option name="width" value="1551" />
-    <option name="height" value="868" />
+    <option name="x" value="1646" />
+    <option name="y" value="-11" />
+    <option name="width" value="1555" />
+    <option name="height" value="912" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -333,18 +334,19 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1647" y="-4" width="1873" height="1084" extended-state="6" />
+    <frame x="1646" y="-11" width="1555" height="912" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12813908" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23558897" sideWeight="0.3947199" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22180451" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22188139" sideWeight="0.6052801" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39974937" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -655,7 +657,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sort_and_merge_time.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1054">
+        <state relative-caret-position="518">
           <caret line="119" column="4" lean-forward="false" selection-start-line="119" selection-start-column="4" selection-end-line="119" selection-end-column="4" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
@@ -673,7 +675,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/merge_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="539">
+        <state relative-caret-position="833">
           <caret line="52" column="33" lean-forward="false" selection-start-line="52" selection-start-column="33" selection-end-line="52" selection-end-column="33" />
           <folding>
             <element signature="e#1#19#0" expanded="true" />
@@ -683,18 +685,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sort.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="722">
-          <caret line="221" column="17" lean-forward="false" selection-start-line="221" selection-start-column="17" selection-end-line="221" selection-end-column="17" />
+        <state relative-caret-position="-1893">
+          <caret line="5" column="10" lean-forward="true" selection-start-line="5" selection-start-column="10" selection-end-line="5" selection-end-column="10" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#1040#1130#0" expanded="false" />
-            <element signature="e#1215#1333#0" expanded="false" />
-            <element signature="e#1410#1518#0" expanded="false" />
-            <element signature="e#1643#1700#0" expanded="false" />
-            <element signature="e#1837#2025#0" expanded="false" />
-            <element signature="e#2788#4447#0" expanded="false" />
-            <element signature="e#4948#5213#0" expanded="false" />
-            <element signature="e#6248#6518#0" expanded="false" />
+            <element signature="e#674#764#0" expanded="false" />
+            <element signature="e#849#967#0" expanded="false" />
+            <element signature="e#1044#1152#0" expanded="false" />
+            <element signature="e#1277#1334#0" expanded="false" />
+            <element signature="e#1370#1412#0" expanded="false" />
+            <element signature="e#1471#1659#0" expanded="false" />
+            <element signature="e#1969#2344#0" expanded="false" />
+            <element signature="e#2460#4126#0" expanded="false" />
+            <element signature="e#4627#4892#0" expanded="false" />
           </folding>
         </state>
       </provider>

@@ -6,8 +6,8 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'data/Filtered/Filtered/'
-cycler_path     = path + 'Cycler_Data_Apple_180713.csv'
+path            = 'data/Filtered/'
+cycler_path     = path + 'Cycler_Data_Apple_180717.csv'
 final_log_path  = path + 'test_log_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
@@ -34,8 +34,12 @@ def PopenIter(cmd):
 def _convert_to_time_object(str_obj):
     return dt.datetime.strptime(str_obj, '%Y-%m-%d %H:%M:%S')
 
+def _convert_to_time_object_fix(str_obj):
+    return dt.datetime.strptime(str_obj, '%m/%d/%Y %H:%M:%S')
+
 def _line_to_capture(second):
-    return _start_row + int(second/__PERIOD__)
+    # return _start_row + int(second/__PERIOD__)
+    return _start_row + int(second)
 
 # return the number of row
 def _row_count(filename):
@@ -49,7 +53,7 @@ def _row_count(filename):
 
     return table
 
-# display the file with keyword in ascending
+# display the file with keyword in ascending using BASH
 def display_list_of_file(key):
     file_name = []
     list_cmd = ('ls '+ path +' -1v' + " | grep '" + key + "'")
@@ -124,12 +128,28 @@ def merge_column(table):
     table.to_csv(cycler_path)
     return
 
+# grasp the timestamp in the dataframe
+# return datetime Object
+# def _read_time(table):
+#     print table.iat[0,1]
+#     start_time = table.iat[1, 8]
+#     if( table.iat[0,1] == 'CC_Chg' ):
+#         start_time = table.iat[1, 8]
+#
+#     # grasp automatically instead
+#     # else:
+#         # for i in table.iterrows():
+#         # table[table['']]
+#         # df[df['model'].str.match('Mac')]
+#         # # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),axis=1)
+#     return start_time
 
 def _read_time(table):
-    print table.iat[0,1]
-    start_time = table.iat[1, 8]
-    if( table.iat[0,1] == 'CC_Chg' ):
-        start_time = table.iat[1, 8]
+    print table.iat[0,2]
+    print table.iat[1,11]
+    start_time = table.iat[1, 11]
+    if( table.iat[0,1] == 'Record ID' ):
+        start_time = table.iat[0, 11]
 
     # grasp automatically instead
     # else:
@@ -138,12 +158,11 @@ def _read_time(table):
         # df[df['model'].str.match('Mac')]
         # # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),axis=1)
     return start_time
-
 # calculate the time difference in seconds. Return int
 def calculate_time(begin, end):
-    start_dt    = _convert_to_time_object(begin)
+    # start_dt    = _convert_to_time_object(begin)
     end_dt      = _convert_to_time_object(end)
-
+    start_dt      = _convert_to_time_object_fix(begin)
     sec = 0
     diff = (end_dt - start_dt)
     if ( diff.days == 0 ):
@@ -153,7 +172,8 @@ def calculate_time(begin, end):
 
     return sec
 
-
+# grasp the capacity corresponding to the filename
+# return line and value
 def find_capacity(begin, end, table):
     diff = calculate_time(begin, end)
 
@@ -161,8 +181,10 @@ def find_capacity(begin, end, table):
     print "diff: %s" % str(line)
 
     # cap = table.iat[line, 4]                                                  #grasp manually
-    return line, table['cap(mAh)'][line]
+    # return line, table['cap(mAh)'][line]
+    return line, table['Capacity(Ah)'][line]
 
+# add a new header for the column to store echoes amplitude
 def _SOC_header_creator():
     header = []
     filelist = display_list_of_file(keyword)
@@ -171,7 +193,7 @@ def _SOC_header_creator():
         header.append('SoC_' + str(i+1))
     return header
 
-
+# return a sorted table with capacity, filename, index
 def sort_by_name(filelist, starttime, table):
     cap     = []
     filename= []
@@ -203,7 +225,7 @@ def sort_by_name(filelist, starttime, table):
     table_sorted = pd.DataFrame({'index': index,
                                  'cap(mAh)': cap,
                                  'FileName': filename},
-                                columns=column)  # columns=[] used to set order of columns
+                                columns=column)                                 # columns=[] used to set order of columns
 
     table_sorted = table_sorted.sort_values('index')
     return table_sorted
@@ -211,8 +233,13 @@ def sort_by_name(filelist, starttime, table):
 
 def main():
 
-    table = read_Dataframe_from_file('data/Filtered/Filtered/Apple-18-07-13.txt')
-    merge_column(table)
+    # table = read_Dataframe_from_file(path + 'Nis-ModH80-1.csv')
+    # merge_column(table)
+
+    with open(path + 'Nis-ModH80-1(3).csv') as outfile:
+        table = pd.read_csv(outfile, header=0, sep=',')
+    outfile.close()
+
 
     starttime = _read_time(table)
     print str(starttime)
@@ -222,20 +249,20 @@ def main():
 
     #Add SoC data values into data frame
 
-    for i, name in enumerate( filelist ):
-        temp = []
-        with open(path + name +'-echoes-b.dat') as readout:
-            for line in readout:
-                temp.append(float(line.rstrip()))
-        readout.close()
-
-        print temp
-        new_header = 'Cycle_' + str(i+1)
-
-        tempTable = pd.DataFrame({new_header:temp})
-
-        table_sorted = pd.concat([table_sorted, tempTable], axis = 1)                   #add new column (diff index) into exisiing Dataframe
-        del temp[:], tempTable
+    # for i, name in enumerate( filelist ):
+    #     temp = []
+    #     with open(path + name +'-echoes-b.dat') as readout:
+    #         for line in readout:
+    #             temp.append(float(line.rstrip()))
+    #     readout.close()
+    #
+    #     print temp
+    #     new_header = 'Cycle_' + str(i+1)
+    #
+    #     tempTable = pd.DataFrame({new_header:temp})
+    #
+    #     table_sorted = pd.concat([table_sorted, tempTable], axis = 1)                   #add new column (diff index) into exisiing Dataframe
+    #     del temp[:], tempTable
 
 
     table_sorted.to_csv(final_log_path)

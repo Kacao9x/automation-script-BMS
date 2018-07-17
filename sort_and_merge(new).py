@@ -67,7 +67,7 @@ def display_list_of_file(key):
 # with a custom columns
 def read_Dataframe_from_file(filepath):
     with open(filepath) as outfile:
-        table = pd.read_csv(outfile, header=3, sep='\t')
+        table = pd.read_csv(outfile, header=3, sep='\t', error_bad_lines=False)
     outfile.close()
 
     table = table.iloc[:, 1:12]

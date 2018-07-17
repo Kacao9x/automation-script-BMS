@@ -2,61 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="29268513-08b9-4059-b1c2-785190e7b231" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/2018-06-27-11-35-44-echoes-b.dat" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/00000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/00500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/01000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/01500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/02000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/02500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/03000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/03500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/04000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/04510.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/05000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/05500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/06000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/07800.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/09000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/10500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/12700.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/13830.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/15005.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/17210.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/20550.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/21900.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/24100.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/25550.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/28500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/29780.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/29899.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Charge/ch.mat" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/00000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/01500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/03000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/04500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/06000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/07500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/09000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/10500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/12000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/13500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/15000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/16500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/18000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/19500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/21000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/22500.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/24000.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/25515.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/27250.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/30181.csv" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/31Ah-Battery-1-30-2018/Discharge/dis.mat" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/merge_file.py" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/name_time.py" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/sort.py" afterPath="$PROJECT_DIR$/sort_and_merge(new).py" />
-      <change beforePath="$PROJECT_DIR$/sort_and_merge_time.py" afterPath="$PROJECT_DIR$/sort_and_merge(old).py" />
+      <change beforePath="$PROJECT_DIR$/sort_and_merge(new).py" afterPath="$PROJECT_DIR$/sort_and_merge(new).py" />
       <change beforePath="$PROJECT_DIR$/test.py" afterPath="$PROJECT_DIR$/test.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -70,30 +16,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.50479704">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="sort_and_merge(old).py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sort_and_merge(old).py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="153">
-                  <caret line="74" column="36" lean-forward="false" selection-start-line="74" selection-start-column="36" selection-end-line="74" selection-end-column="36" />
-                  <folding>
-                    <element signature="e#0#18#0" expanded="true" />
-                    <element signature="e#932#1022#0" expanded="false" />
-                    <element signature="e#1107#1225#0" expanded="false" />
-                    <element signature="e#1302#1410#0" expanded="false" />
-                    <element signature="e#1553#1723#0" expanded="false" />
-                    <element signature="e#1789#2167#0" expanded="false" />
-                    <element signature="e#4146#4385#0" expanded="false" />
-                    <element signature="e#4427#4619#0" expanded="false" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file leaf-file-name="test.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="6800">
-                  <caret line="400" column="0" lean-forward="true" selection-start-line="400" selection-start-column="0" selection-end-line="400" selection-end-column="0" />
+                <state relative-caret-position="2424">
+                  <caret line="399" column="25" lean-forward="false" selection-start-line="399" selection-start-column="25" selection-end-line="399" selection-end-column="25" />
                   <folding>
                     <element signature="e#288#308#0" expanded="true" />
                   </folding>
@@ -108,21 +35,10 @@
           <file leaf-file-name="sort_and_merge(new).py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort_and_merge(new).py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="258">
-                  <caret line="151" column="32" lean-forward="false" selection-start-line="151" selection-start-column="32" selection-end-line="151" selection-end-column="32" />
+                <state relative-caret-position="17">
+                  <caret line="69" column="78" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="272" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <element signature="e#632#722#0" expanded="false" />
-                    <element signature="e#807#925#0" expanded="false" />
-                    <element signature="e#1002#1110#0" expanded="false" />
-                    <element signature="e#1572#1760#0" expanded="false" />
-                    <element signature="e#1853#2078#0" expanded="false" />
-                    <element signature="e#2196#2571#0" expanded="false" />
-                    <element signature="e#2687#4353#0" expanded="false" />
-                    <element signature="e#5447#5768#0" expanded="false" />
-                    <element signature="e#6266#6417#0" expanded="false" />
-                    <element signature="e#6848#6979#0" expanded="false" />
-                    <element signature="e#7198#7319#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -172,7 +88,6 @@
       <find>_read_time</find>
       <find>endtime</find>
       <find>txt</find>
-      <find>read_Dataframe_from_file</find>
       <find>merge_column</find>
       <find>convert</find>
       <find>calculate_time</find>
@@ -181,6 +96,7 @@
       <find>ls</find>
       <find>display_list_of_file</find>
       <find>diff</find>
+      <find>read_Dataframe_from_file</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -696,6 +612,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="164">
           <caret line="4420" column="0" lean-forward="false" selection-start-line="4420" selection-start-column="0" selection-end-line="4420" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -771,6 +688,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/lib/echoes_protocol.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="256">
+          <caret line="110" column="8" lean-forward="false" selection-start-line="110" selection-start-column="8" selection-end-line="110" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sort_and_merge(old).py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -788,39 +713,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/echoes_protocol.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="110" column="8" lean-forward="false" selection-start-line="110" selection-start-column="8" selection-end-line="110" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sort_and_merge(new).py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="151" column="32" lean-forward="false" selection-start-line="151" selection-start-column="32" selection-end-line="151" selection-end-column="32" />
+        <state relative-caret-position="17">
+          <caret line="69" column="78" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="272" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#632#722#0" expanded="false" />
-            <element signature="e#807#925#0" expanded="false" />
-            <element signature="e#1002#1110#0" expanded="false" />
-            <element signature="e#1572#1760#0" expanded="false" />
-            <element signature="e#1853#2078#0" expanded="false" />
-            <element signature="e#2196#2571#0" expanded="false" />
-            <element signature="e#2687#4353#0" expanded="false" />
-            <element signature="e#5447#5768#0" expanded="false" />
-            <element signature="e#6266#6417#0" expanded="false" />
-            <element signature="e#6848#6979#0" expanded="false" />
-            <element signature="e#7198#7319#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6800">
-          <caret line="400" column="0" lean-forward="true" selection-start-line="400" selection-start-column="0" selection-end-line="400" selection-end-column="0" />
+        <state relative-caret-position="2424">
+          <caret line="399" column="25" lean-forward="false" selection-start-line="399" selection-start-column="25" selection-end-line="399" selection-end-column="25" />
           <folding>
             <element signature="e#288#308#0" expanded="true" />
           </folding>

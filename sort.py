@@ -1,9 +1,7 @@
 import numpy as np
-import glob
 import pandas as pd
 
-import subprocess, sys, os
-import csv
+import subprocess
 import datetime as dt
 
 
@@ -13,7 +11,6 @@ cycler_path     = path + 'Cycler_Data_Apple_180713.csv'
 final_log_path  = path + 'test_log_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
-
 
 
 #==============================================================================#
@@ -52,7 +49,7 @@ def _row_count(filename):
 
     return table
 
-
+# display the file with keyword in ascending
 def display_list_of_file(key):
     file_name = []
     list_cmd = ('ls '+ path +' -1v' + " | grep '" + key + "'")
@@ -62,7 +59,8 @@ def display_list_of_file(key):
 
     return file_name
 
-
+# convert a csv/txt table into Pandas dataframe
+# with a custom columns
 def read_Dataframe_from_file(filepath):
     with open(filepath) as outfile:
         table = pd.read_csv(outfile, header=3, sep='\t')
@@ -133,6 +131,7 @@ def _read_time(table):
     if( table.iat[0,1] == 'CC_Chg' ):
         start_time = table.iat[1, 8]
 
+    # grasp automatically instead
     # else:
         # for i in table.iterrows():
         # table[table['']]
@@ -198,15 +197,8 @@ def sort_by_name(filelist, starttime, table):
         index.append(i)
         filename.append(element)
 
-        # temp =[]
-        # with open(path+element+'-echoes-b.dat') as fobj:
-        #     for line in fobj:
-        #         temp.append(float(line.rstrip()))
-        # fobj.close()
-        # SoC.append(temp)
 
     column = ['index', 'cap(mAh)', 'FileName']
-    # column.append(_SOC_header_creator())
 
     table_sorted = pd.DataFrame({'index': index,
                                  'cap(mAh)': cap,
@@ -242,13 +234,11 @@ def main():
 
         tempTable = pd.DataFrame({new_header:temp})
 
-        table_sorted = pd.concat([table_sorted, tempTable], axis = 1)
+        table_sorted = pd.concat([table_sorted, tempTable], axis = 1)                   #add new column (diff index) into exisiing Dataframe
         del temp[:], tempTable
 
-    # table_sorted.to_csv(final_log_path)
-    # table_sorted.to_csv(path+'test.csv')
 
-    table_sorted.to_csv(path+'test.csv')
+    table_sorted.to_csv(final_log_path)
 
     return
 if __name__ == '__main__':

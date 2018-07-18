@@ -233,19 +233,20 @@ def sort_by_name(filelist, starttime, table):
 
 def main():
 
-    # table = read_Dataframe_from_file(path + 'Nis-ModH80-1.csv')
+    table = read_Dataframe_from_file('data/Filtered/Apple-test-filtered-07-13/Filtered/Apple-18-07-13.txt')
+    table.to_csv('data/Filtered/Apple-test-filtered-07-13/Filtered/outfile.csv')
     # merge_column(table)
 
-    with open(path + 'Nis-ModH80-1(3).csv') as outfile:
-        table = pd.read_csv(outfile, header=0, sep=',')
-    outfile.close()
-
-
-    starttime = _read_time(table)
-    print str(starttime)
-    filelist = display_list_of_file(keyword)
-
-    table_sorted = sort_by_name(filelist, starttime, table)
+    # with open(path + 'Nis-ModH80-1(3).csv') as outfile:
+    #     table = pd.read_csv(outfile, header=0, sep=',')
+    # outfile.close()
+    #
+    #
+    # starttime = _read_time(table)
+    # print str(starttime)
+    # filelist = display_list_of_file(keyword)
+    #
+    # table_sorted = sort_by_name(filelist, starttime, table)
 
     #Add SoC data values into data frame
 
@@ -265,7 +266,7 @@ def main():
     #     del temp[:], tempTable
 
 
-    table_sorted.to_csv(final_log_path)
+    # table_sorted.to_csv(final_log_path)
 
     return
 if __name__ == '__main__':

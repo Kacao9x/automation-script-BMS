@@ -6,9 +6,9 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'data/Filtered/'
-cycler_path     = path + 'Cycler_Data_Apple_180717.csv'
-final_log_path  = path + 'test_log_sorted.csv'
+path            = 'Mercs-07-26/Filtered/'
+cycler_path     = path + 'Cycler_Data_Merc_180727.csv'
+final_log_path  = path + 'filered_test_log_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 
@@ -38,8 +38,8 @@ def _convert_to_time_object_fix(str_obj):
     return dt.datetime.strptime(str_obj, '%m/%d/%Y %H:%M:%S')
 
 def _line_to_capture(second):
-    # return _start_row + int(second/__PERIOD__)
-    return _start_row + int(second)
+    return _start_row + int(second/__PERIOD__)
+    # return _start_row + int(second)
 
 # return the number of row
 def _row_count(filename):
@@ -86,15 +86,18 @@ def merge_column(table):
 
     NAN_finder = table['id'].notna()                                            # result is in a boolean list
     ind = []
-    print table
+    print ("\n\n")
+    print (table.head().to_string())
+    print (table.shape)
 
     for i in range(len(NAN_finder)):
         if NAN_finder[i] == True:
             ind = np.append(ind, i)
 
     for i in range(len(ind)):
-        if (table.iat[int(ind[i]), 1] == 'CV_Chg' and
-            table.iat[int(ind[i - 1]), 1]) == 'CC_Chg':
+        # ind[ ] need to be changed due to the change of cycling order
+        if (table.iat[int(ind[i -1]), 1] == 'CV_Chg' and
+            table.iat[int(ind[i]), 1]) == 'CC_Chg':
 
             tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
             diff = int(ind[i + 1]) - int(ind[i])
@@ -146,10 +149,11 @@ def merge_column(table):
 
 def _read_time(table):
     print table.iat[0,2]
-    print table.iat[1,11]
-    start_time = table.iat[1, 11]
+    print table.iat[ _start_row + 2 , 9 ]
+    start_time = table.iat[_start_row + 2 , 9]
+
     if( table.iat[0,1] == 'Record ID' ):
-        start_time = table.iat[0, 11]
+        start_time = table.iat[0, 8]
 
     # grasp automatically instead
     # else:
@@ -158,11 +162,13 @@ def _read_time(table):
         # df[df['model'].str.match('Mac')]
         # # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),axis=1)
     return start_time
+
+
 # calculate the time difference in seconds. Return int
 def calculate_time(begin, end):
-    # start_dt    = _convert_to_time_object(begin)
+    start_dt    = _convert_to_time_object(begin)
     end_dt      = _convert_to_time_object(end)
-    start_dt      = _convert_to_time_object_fix(begin)
+    # start_dt      = _convert_to_time_object_fix(begin)
     sec = 0
     diff = (end_dt - start_dt)
     if ( diff.days == 0 ):
@@ -182,7 +188,7 @@ def find_capacity(begin, end, table):
 
     # cap = table.iat[line, 4]                                                  #grasp manually
     # return line, table['cap(mAh)'][line]
-    return line, table['Capacity(Ah)'][line]
+    return line, table['cap(mAh)'][line]
 
 # add a new header for the column to store echoes amplitude
 def _SOC_header_creator():
@@ -207,12 +213,12 @@ def sort_by_name(filelist, starttime, table):
         if i[1] == '2018':
             endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
                       + i[4] + ':' + i[5] + ':' + i[6]
-            print endtime
+            print 'endtime raw: ' + endtime
 
         else:
             endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
                       + i[5] + ':' + i[6] + ':' + i[7]
-            print endtime
+            print 'endtime filtered: ' + endtime
 
         i, c = find_capacity(starttime, endtime, table)
         cap.append(c)
@@ -233,40 +239,43 @@ def sort_by_name(filelist, starttime, table):
 
 def main():
 
-    table = read_Dataframe_from_file('data/Filtered/Apple-test-filtered-07-13/Filtered/Apple-18-07-13.txt')
-    table.to_csv('data/Filtered/Apple-test-filtered-07-13/Filtered/outfile.csv')
-    # merge_column(table)
+    table = read_Dataframe_from_file(path + 'ME01-H100_180726.txt')
+    table.to_csv(path + 'outfile_raw_.csv')
+    merge_column(table)
 
-    # with open(path + 'Nis-ModH80-1(3).csv') as outfile:
-    #     table = pd.read_csv(outfile, header=0, sep=',')
-    # outfile.close()
-    #
-    #
-    # starttime = _read_time(table)
-    # print str(starttime)
-    # filelist = display_list_of_file(keyword)
-    #
-    # table_sorted = sort_by_name(filelist, starttime, table)
-
-    #Add SoC data values into data frame
-
-    # for i, name in enumerate( filelist ):
-    #     temp = []
-    #     with open(path + name +'-echoes-b.dat') as readout:
-    #         for line in readout:
-    #             temp.append(float(line.rstrip()))
-    #     readout.close()
-    #
-    #     print temp
-    #     new_header = 'Cycle_' + str(i+1)
-    #
-    #     tempTable = pd.DataFrame({new_header:temp})
-    #
-    #     table_sorted = pd.concat([table_sorted, tempTable], axis = 1)                   #add new column (diff index) into exisiing Dataframe
-    #     del temp[:], tempTable
+    with open(path + 'Cycler_Data_Merc_180727.csv') as outfile:
+        table = pd.read_csv(outfile, header=0, sep=',')
+    outfile.close()
 
 
-    # table_sorted.to_csv(final_log_path)
+    starttime = _read_time(table)
+    print 'start-time: ' + str(starttime)
+
+    # display the list of logfile and grasp the endtime
+    filelist = display_list_of_file(keyword)
+    print (filelist)
+
+    table_sorted = sort_by_name(filelist, starttime, table)
+
+    # Add SoC data values into data frame
+
+    for i, name in enumerate( filelist ):
+        temp = []
+        with open(path + name +'-echoes-b.dat') as readout:
+            for line in readout:
+                temp.append(float(line.rstrip()))
+        readout.close()
+
+        print temp
+        new_header = 'Cycle_' + str(i+1)
+
+        tempTable = pd.DataFrame({new_header:temp})
+
+        table_sorted = pd.concat([table_sorted, tempTable], axis = 1)                   #add new column (diff index) into exisiing Dataframe
+        del temp[:], tempTable
+
+
+    table_sorted.to_csv(final_log_path)
 
     return
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ See Github repo for documentation
 @author: kacao
 '''
 # python titan_cmd.py --start-fresh -a 15 -b 2400000 -c 0.75 -v 85 --input 1
-# --impulse-type 2 --half-pw 1 --adc-config 0 --num-seq 1 --repeat 60 --minute 20
+# --impulse-type 2 --half-pw 100 --adc-config 0 --num-seq 1 --repeat 60 --minute 20
 import argparse, sys
 
 # from lib.echoes_spi import *

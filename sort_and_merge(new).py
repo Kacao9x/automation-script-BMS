@@ -6,12 +6,12 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'Mercs-07-26/Filtered/'
-cycler_path     = path + 'Cycler_Data_Merc_180727.csv'
-final_log_path  = path + 'filered_test_log_sorted.csv'
+path            = 'Me01-H100_180728/Filtered/'
+cycler_path     = path + 'Cycler_Data_Merc_180728.csv'
+final_log_path  = path + 'filtered_sorted_logs.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
-
+ind = []
 
 #==============================================================================#
 
@@ -51,7 +51,6 @@ def _row_count(filename):
     readout.close()
     return sum
 
-    return table
 
 # display the file with keyword in ascending using BASH
 def display_list_of_file(key):
@@ -83,7 +82,7 @@ def read_Dataframe_from_file(filepath):
 # only works with the cycler data logs
 def merge_column(table):
     # table: Dataframe with a custom header
-
+    end_row = _row_count(path + 'outfile_raw_.csv')
     NAN_finder = table['id'].notna()                                            # result is in a boolean list
     ind = []
     print ("\n\n")
@@ -94,23 +93,26 @@ def merge_column(table):
         if NAN_finder[i] == True:
             ind = np.append(ind, i)
 
+    print (ind)
     for i in range(len(ind)):
         # ind[ ] need to be changed due to the change of cycling order
-        if (table.iat[int(ind[i -1]), 1] == 'CV_Chg' and
-            table.iat[int(ind[i]), 1]) == 'CC_Chg':
+        if (table.iat[int(ind[i]), 1] == 'CV_Chg' and
+            table.iat[int(ind[i - 1]), 1]) == 'CC_Chg':
 
             tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
-            diff = int(ind[i + 1]) - int(ind[i])
+            # diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+            diff = int(end_row - int(ind[i])) - 1
 
             for j in range(diff):
                 table.iat[int(ind[i]) + j, 4] = table.iat[int(ind[i]) + j, 4] + tot
 
-        elif i == len(ind) - 1:
-
-            tot = table.iat[int(len(NAN_finder) - 1), 4]
-            diff = int(len(NAN_finder)) - int(ind[i])
-            for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+        # #Subtraction
+        # elif i == len(ind) - 1:
+        #
+        #     tot = table.iat[int(len(NAN_finder) - 1), 4]
+        #     diff = int(len(NAN_finder)) - int(ind[i])
+        #     for j in range(diff):
+        #         table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
 
         elif (table.iat[int(ind[i]), 1] == 'Rest' and
               table.iat[int(ind[i - 1]), 1] == 'CV_Chg'):
@@ -149,8 +151,8 @@ def merge_column(table):
 
 def _read_time(table):
     print table.iat[0,2]
-    print table.iat[ _start_row + 2 , 9 ]
-    start_time = table.iat[_start_row + 2 , 9]
+    print table.iat[ _start_row , 9 ]
+    start_time = table.iat[_start_row , 9]
 
     if( table.iat[0,1] == 'Record ID' ):
         start_time = table.iat[0, 8]
@@ -185,6 +187,20 @@ def find_capacity(begin, end, table):
 
     line = _line_to_capture(diff)
     print "diff: %s" % str(line)
+
+    sum = 0
+    if (diff / 5) > ind[0] and (diff / 5) < ind[1]:
+        sum += 0
+    elif (diff / 5) > ind[1] and (diff / 5) < ind[2]:
+        sum += 3
+    elif (diff / 5) > ind[2] and (diff / 5) < ind[3]:
+        sum += 5
+    elif (diff / 5) > ind[3] and (diff / 5) < ind[4]:
+        sum += 8
+    elif (diff / 5) > ind[4] and (diff / 5) < ind[5]:
+        sum += 12
+    elif (diff / 5) > ind[5]:
+        sum += 12
 
     # cap = table.iat[line, 4]                                                  #grasp manually
     # return line, table['cap(mAh)'][line]
@@ -234,16 +250,18 @@ def sort_by_name(filelist, starttime, table):
                                 columns=column)                                 # columns=[] used to set order of columns
 
     table_sorted = table_sorted.sort_values('index')
+
     return table_sorted
 
 
 def main():
 
-    table = read_Dataframe_from_file(path + 'ME01-H100_180726.txt')
+    table = read_Dataframe_from_file(path + 'Me01-H100_180728.txt')
     table.to_csv(path + 'outfile_raw_.csv')
     merge_column(table)
 
-    with open(path + 'Cycler_Data_Merc_180727.csv') as outfile:
+
+    with open(cycler_path) as outfile:
         table = pd.read_csv(outfile, header=0, sep=',')
     outfile.close()
 
@@ -256,6 +274,7 @@ def main():
     print (filelist)
 
     table_sorted = sort_by_name(filelist, starttime, table)
+    table_sorted.to_csv(final_log_path)
 
     # Add SoC data values into data frame
 
@@ -266,14 +285,12 @@ def main():
                 temp.append(float(line.rstrip()))
         readout.close()
 
-        print temp
-        new_header = 'Cycle_' + str(i+1)
+        col_header = table_sorted.iat[ i, 1 ]                                   #read the corresponding capacity
+        tempTable = pd.DataFrame({col_header: temp})
 
-        tempTable = pd.DataFrame({new_header:temp})
-
-        table_sorted = pd.concat([table_sorted, tempTable], axis = 1)                   #add new column (diff index) into exisiing Dataframe
+        table_sorted = pd.concat([table_sorted, tempTable],
+                                 axis=1)  # add new column (diff index) into exisiing Dataframe
         del temp[:], tempTable
-
 
     table_sorted.to_csv(final_log_path)
 

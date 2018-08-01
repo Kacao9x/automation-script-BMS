@@ -1,5 +1,3 @@
-import os
-import glob
 import pandas as pd
 import numpy as np
 
@@ -17,100 +15,102 @@ def merge_column(table):
             ind = np.append(ind, i)
     print (ind)
 
-    print type(table.iat[1,4])
-    print table.iat[2,4]
+    for i in range(2, int(ind[1])):
+        table.iat[i, 5]= 21 + table.iat[i, 5]
 
-    for i in range(161139):
-        table.iat[i, 4] = int(table.iat[i, 4]) + 21000
 
-    # for i in range(len(ind)):
-    #     if (table.iat[int(ind[i]), 1] == 'CV_Chg' and
-    #         table.iat[int(ind[i - 1]), 1]) == 'CC_Chg':
-    #
-    #         tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
-    #         diff = int(ind[i + 1]) - int(ind[i])
-    #
-    #         for j in range(diff):
-    #             table.iat[int(ind[i]) + j, 4] = table.iat[int(ind[i]) + j, 4] + tot
-    #
-    #     elif i == len(ind) - 1:
-    #
-    #         tot = table.iat[int(len(NAN_finder) - 1), 4]
-    #         diff = int(len(NAN_finder)) - int(ind[i])
-    #         for j in range(diff):
-    #             table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
-    #
-    #     elif (table.iat[int(ind[i]), 1] == 'Rest' and
-    #           table.iat[int(ind[i - 1]), 1] == 'CV_Chg'):
-    #
-    #         tot = table.iat[int(ind[i]) - 1, 4]
-    #         diff = int(ind[i + 1]) - int(ind[i])
-    #         for j in range(diff):
-    #             table.iat[int(ind[i]) + j, 4] = table.iat[int(ind[i]) + j, 4] + tot
-    #
-    #     elif (table.iat[int(ind[i + 1]), 1] == 'Rest' and
-    #           table.iat[int(ind[i]), 1] == 'CC_DChg'):
-    #
-    #         tot = table.iat[int(ind[i + 1]) - 1, 4]
-    #         diff = int(ind[i + 1]) - int(ind[i])
-    #         for j in range(diff):
-    #             table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+    table_temp = table
 
-    # table.to_csv(cycler_path)
+    print '\n'
+    table = table.iloc[1::50, ::]
+
+    # for i in range(len(ind) -1):
+    #     table_id = table_temp.iloc[int(ind[i])]
+    #     table_new = table_temp.iloc[int(ind[i]) + 1: int(ind[i+1]) : 50]
+    #     print '\n'
+    #     table = table.append(table_new, ignore_index=True)
+
+    for idx in ind:
+        table_new = table_temp.iloc[ int(idx)]
+        print '\n'
+        table = table.append(table_new, ignore_index=True)
+        # table = pd.concat([table , table_new], axis=0)
+
+    table.columns = ['extra','id','id_num', 'time', 'current',
+                    'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+                    'en(microWh)', 'Date/Time']
+    # table['extra'].astype(int)
+    table.sort_values('extra')
+    del table['extra']
+
+    #
+    # pd.concat([pd.DataFrame([[0, 0, 0]], columns=df.columns), df]).reset_index(drop=True)
+    #
+    # pd.DataFrame([[0, 0, 0]], columns=df.columns).append(df, ignore_index=True)
+    # print table_new.head().to_string()
+
+
+    table.to_csv(final_log_path)
     return table
 
 keyword         = 'cycle'
-path            = r'Me01-H100_180730/'
+path            = r'Me01-H100_180730/Filtered/'
 cycler_path     = path + 'Cycler_Data_Merc_180730.csv'
 final_log_path  = path + 'test_log_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 
 
-cycler_data = pd.DataFrame()
-with open(path + 'Me01-H100_180730.txt', 'r') as my_file:
-    lines = pd.read_csv(my_file, header=3, sep=r'\s\s+', error_bad_lines=False, engine='python')
-    my_file.close()
+# cycler_data = pd.DataFrame()
+# with open('Me01-H100_180730/Me01-H100_180730.txt', 'r') as my_file:
+#     lines = pd.read_csv(my_file, header=3, sep=r'\s\s+', error_bad_lines=False, engine='python')
+#     my_file.close()
+#
+# # cycler_data = lines.iloc[::10, 0:10]
+# cycler_data = lines.iloc[:, 0:10]
+# print (cycler_data.shape)
+#
+#
+# header_list = ['id_num', 'time', 'del', 'current',
+#                      'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+#                     'en(microWh)', 'Date/Time']
+# cycler_data.columns = header_list
+# del cycler_data['del'], cycler_data['del2']
+#
+# #added extra 'id' columns to shift the first rows
+# header_list = ['id','id_num', 'time', 'current',
+#                'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+#                'en(microWh)', 'Date/Time']
+# cycler_data = cycler_data.reindex(columns = header_list)
+#
+#
+# '''
+# search for rows that need to shift
+# '''
+#
+# # print (cycler_data[ cycler_data['time'].str.contains('CC') ])
+# # print (cycler_data[ cycler_data['time'].str.contains('Rest') ])
+# index = [0, 164141, 368782, 609427, 161139, 365779,606425, 811031]
+# int = index.sort()
+#
+# # transpose the dataframe for shifting rows
+# cycler_data_t = cycler_data.T
+#
+# for i in index:
+#     cycler_data_t[i] = cycler_data_t.iloc[:,i].shift(-1).tolist()
+#
+# cycler_data = cycler_data_t.T
+# cycler_data.to_csv(cycler_path)
 
-# print(table.head().to_string())
-# cycler_data = lines.iloc[::10, 0:10]
-cycler_data = lines.iloc[:, 0:10]
-print (cycler_data.shape)
-
-
-header_list = ['id_num', 'time', 'del', 'current',
-                     'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
-                    'en(microWh)', 'Date/Time']
-cycler_data.columns = header_list
-
-#added extra 'id' columns to shift the first rows
-header_list = ['id','id_num', 'time', 'del', 'current',
-                     'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
-                    'en(microWh)', 'Date/Time']
-cycler_data = cycler_data.reindex(columns = header_list)
-del cycler_data['del'], cycler_data['del2']
-
-
-'''
-search for rows that need to shift
-'''
-
-# print (cycler_data[ cycler_data['time'].str.contains('CC') ])
-# print (cycler_data[ cycler_data['time'].str.contains('Rest') ])
-index = [0, 164141, 368782, 609427, 161139, 365779,606425, 811031]
-int = index.sort()
-
-# transpose the dataframe for shifting rows
-cycler_data_t = cycler_data.T
-
-for i in index:
-    cycler_data_t[i] = cycler_data_t.iloc[:,i].shift(-1).tolist()
-
-cycler_data = cycler_data_t.T
-print (cycler_data.head().to_string())
+#------------------------------------------------------------------------------#
+with open(cycler_path) as outfile:
+    cycler_data = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+outfile.close()
+print(cycler_data.head().to_string())
 
 cycler_data = merge_column(cycler_data)
-print (cycler_data.head().to_string())
+
+
 
 # cycler_data.to_csv(r"data/Merc-temp.csv")
 

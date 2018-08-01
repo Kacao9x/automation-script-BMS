@@ -97,32 +97,51 @@ def merge_column(table):
     print (ind)
 
 
+    # for i in range(len(ind) - 1):
+    #     # ind[ ] need to be changed due to the change of cycling order
+    #     # Rest: remains capacity
+    #     if (table.iat[int(ind[i]), 1] == 'Rest'):
+    #
+    #         tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
+    #         diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+    #         # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
+    #
+    #         for j in range(diff):
+    #             table.iat[int(ind[i]) + j, 4] = tot
+    #
+    #     elif (table.iat[int(ind[i]), 1] == 'CC_DChg'):
+    #         tot = table.iat[int(ind[i + 1]) - 1, 4]
+    #         diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+    #         for j in range(diff):
+    #             table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+
     for i in range(len(ind) - 1):
         # ind[ ] need to be changed due to the change of cycling order
         # Rest: remains capacity
-        if (table.iat[int(ind[i]), 1] == 'Rest'):
+        if (table['id_num'][ int(ind[i]) ] == 'Rest'):
 
-            tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
+            tot = table['cap(mAh)'][int(ind[i]) - 1]                                 # store the capacity
             diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
             # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
 
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] = tot
+                table['cap(mAh)'][ int(ind[i]) + j ] = tot
 
-        elif (table.iat[int(ind[i]), 1] == 'CC_DChg'):
-            tot = table.iat[int(ind[i + 1]) - 1, 4]
+        elif (table['cap(mAh)'][int(ind[i])] == 'CC_DChg'):
+            tot = table['cap(mAh)'][int(ind[i + 1]) - 1]
             diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+                table['cap(mAh)'][int(ind[i]) + j] = tot - table['cap(mAh)'][int(ind[i]) + j]
 
     table.to_csv(cycler_path_new)
     return
 
 
 def _read_time(table):
-    print table.iat[0,2]
-    print table.iat[ _start_row , 9 ]
-    start_time = table.iat[_start_row , 9]
+    print table['id_num'][ 0 ]
+    # print table.iat[ _start_row , 9 ]
+    print table['Date/Time'][_start_row]
+    start_time = table['Date/Time'][_start_row]
 
     if( table.iat[0,1] == 'Record ID' ):
         start_time = table.iat[0, 8]

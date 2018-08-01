@@ -3,12 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="29268513-08b9-4059-b1c2-785190e7b231" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/../ML-basics/3dplot.py" afterPath="$PROJECT_DIR$/../ML-basics/3dplot.py" />
-      <change beforePath="$PROJECT_DIR$/.idea/Python-script.iml" afterPath="$PROJECT_DIR$/.idea/Python-script.iml" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/cycling_combine.py" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/plot.py" afterPath="$PROJECT_DIR$/plot.py" />
-      <change beforePath="$PROJECT_DIR$/sort_and_merge(new).py" afterPath="$PROJECT_DIR$/sort_and_merge(new).py" />
+      <change beforePath="$PROJECT_DIR$/sort_and_merge_big_cycler.py" afterPath="$PROJECT_DIR$/sort_and_merge_big_cycler.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -18,14 +13,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.4965035">
+    <splitter split-orientation="horizontal" split-proportion="0.63776225">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="sort_and_merge(new).py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="sort_and_merge(new).py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sort_and_merge(new).py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="120">
-                  <caret line="254" column="34" lean-forward="true" selection-start-line="254" selection-start-column="34" selection-end-line="254" selection-end-column="34" />
+                <state relative-caret-position="4046">
+                  <caret line="254" column="34" lean-forward="false" selection-start-line="254" selection-start-column="34" selection-end-line="254" selection-end-column="34" />
                   <folding>
                     <element signature="e#585#665#0" expanded="false" />
                     <element signature="e#748#838#0" expanded="false" />
@@ -59,10 +54,10 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="merge_big_cycler.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="merge_big_cycler.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/merge_big_cycler.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="765">
+                <state relative-caret-position="561">
                   <caret line="45" column="5" lean-forward="false" selection-start-line="45" selection-start-column="5" selection-end-line="45" selection-end-column="5" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
@@ -78,8 +73,8 @@
           <file leaf-file-name="sort_and_merge_big_cycler.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sort_and_merge_big_cycler.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="340">
-                  <caret line="77" column="0" lean-forward="true" selection-start-line="77" selection-start-column="0" selection-end-line="77" selection-end-column="0" />
+                <state relative-caret-position="-1849">
+                  <caret line="129" column="59" lean-forward="true" selection-start-line="129" selection-start-column="59" selection-end-line="129" selection-end-column="59" />
                   <folding>
                     <element signature="e#634#714#0" expanded="false" />
                     <element signature="e#797#887#0" expanded="false" />
@@ -115,7 +110,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>calculate_time</find>
       <find>find_capacity</find>
       <find>Cycler_path</find>
       <find>return</find>
@@ -145,6 +139,7 @@
       <find>table.iat</find>
       <find>21000</find>
       <find>del</find>
+      <find>table[</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -724,28 +719,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sort_and_merge_big_cycler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="77" column="0" lean-forward="true" selection-start-line="77" selection-start-column="0" selection-end-line="77" selection-end-column="0" />
-          <folding>
-            <element signature="e#634#714#0" expanded="false" />
-            <element signature="e#797#887#0" expanded="false" />
-            <element signature="e#2001#2226#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/merge_big_cycler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="45" column="5" lean-forward="false" selection-start-line="45" selection-start-column="5" selection-end-line="45" selection-end-column="5" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cycling_combine.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="579">
@@ -764,13 +737,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sort_and_merge(new).py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="254" column="34" lean-forward="true" selection-start-line="254" selection-start-column="34" selection-end-line="254" selection-end-column="34" />
+        <state relative-caret-position="4046">
+          <caret line="254" column="34" lean-forward="false" selection-start-line="254" selection-start-column="34" selection-end-line="254" selection-end-column="34" />
           <folding>
             <element signature="e#585#665#0" expanded="false" />
             <element signature="e#748#838#0" expanded="false" />
             <element signature="e#1456#1513#0" expanded="false" />
             <element signature="e#1952#2177#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sort_and_merge_big_cycler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1849">
+          <caret line="129" column="59" lean-forward="true" selection-start-line="129" selection-start-column="59" selection-end-line="129" selection-end-column="59" />
+          <folding>
+            <element signature="e#634#714#0" expanded="false" />
+            <element signature="e#797#887#0" expanded="false" />
+            <element signature="e#2001#2226#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/merge_big_cycler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="45" column="5" lean-forward="false" selection-start-line="45" selection-start-column="5" selection-end-line="45" selection-end-column="5" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
           </folding>
         </state>
       </provider>

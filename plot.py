@@ -1,12 +1,13 @@
-import matplotlib.pyplot as plt
+import matplotlib as plt
 import numpy as np
 import os
 import glob
 import pandas as pd
-# import pandas as pd
 from scipy.signal import filtfilt, firwin, upfirdn
 
-path = r"data/"
+# from __future__ import division
+
+path = r"NIS3-07-26/Raw"
 file_name = pd.DataFrame()
 for filename in glob.glob(os.path.join(path, "*.dat")):
     my_file = open(filename)
@@ -22,7 +23,7 @@ file_name = file_name.fillna(0)
 print(file_name)
 [row, column] = file_name.shape
 
-fs = 3600000*4
+fs = 7200000*4
 nyq_rate = fs*0.5
 filterlen = 301
 b = firwin(filterlen, 100000.0/fs, window="hamming", pass_zero=False)
@@ -44,7 +45,9 @@ while i < column:
 print(amp_upsample.shape)
 
 N = len(amp_upsample.loc[:, 0])
-dt = 1/fs
+dt = float(1/fs)
+print (dt)
+
 x = np.arange(0, dt*N, dt)
 i = 1
 fig = plt.figure()

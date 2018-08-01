@@ -11,7 +11,7 @@ cycler_path     = path + 'Cycler_Data_Merc_180728.csv'
 final_log_path  = path + 'filtered_sorted_logs.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
-ind = []
+ind = []                                                                        #list of stage index
 
 #==============================================================================#
 
@@ -81,32 +81,33 @@ def read_Dataframe_from_file(filepath):
 # Merge the capacity between stage 1,2 and 4
 # only works with the cycler data logs
 def merge_column(table):
-    # table: Dataframe with a custom header
-    end_row = _row_count(path + 'outfile_raw_.csv')
-    NAN_finder = table['id'].notna()                                            # result is in a boolean list
-    ind = []
-    print ("\n\n")
+    # end_row = _row_count(path + 'outfile_raw_.csv')                           # in case the test endup by CC-CV stage
+    NAN_finder = table['id'].notna()  # a boolean list of ID columns
     print (table.head().to_string())
     print (table.shape)
 
+    global ind
     for i in range(len(NAN_finder)):
-        if NAN_finder[i] == True:
+        if NAN_finder[i] == True and table['id'][i] < 10:
             ind = np.append(ind, i)
 
+    np.delete(ind, 5)  # remove unneccessary index
     print (ind)
-    for i in range(len(ind)):
+
+    for i in range(len(ind) - 1):
         # ind[ ] need to be changed due to the change of cycling order
+        # Addition of cap for CV and CC cycle
         if (table.iat[int(ind[i]), 1] == 'CV_Chg' and
             table.iat[int(ind[i - 1]), 1]) == 'CC_Chg':
 
             tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
-            # diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
-            diff = int(end_row - int(ind[i])) - 1
+            diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+            # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
 
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] = table.iat[int(ind[i]) + j, 4] + tot
+                table.iat[int(ind[i]) + j, 4] += tot
 
-        # #Subtraction
+        # # Subtraction for discharging cycle
         # elif i == len(ind) - 1:
         #
         #     tot = table.iat[int(len(NAN_finder) - 1), 4]
@@ -114,40 +115,28 @@ def merge_column(table):
         #     for j in range(diff):
         #         table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
 
+        # Keep the same capacity of CV_charge for rest cycle
         elif (table.iat[int(ind[i]), 1] == 'Rest' and
               table.iat[int(ind[i - 1]), 1] == 'CV_Chg'):
 
             tot = table.iat[int(ind[i]) - 1, 4]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] = table.iat[int(ind[i]) + j, 4] + tot
+                table.iat[int(ind[i]) + j, 4] += tot
 
+        # Subtraction the capacity for dischage cycle
         elif (table.iat[int(ind[i + 1]), 1] == 'Rest' and
               table.iat[int(ind[i]), 1] == 'CC_DChg'):
 
             tot = table.iat[int(ind[i + 1]) - 1, 4]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+                table.iat[int(ind[i]) + j, 4] = tot - table.iat[
+                    int(ind[i]) + j, 4]
 
     table.to_csv(cycler_path)
-    return
+    return table
 
-# grasp the timestamp in the dataframe
-# return datetime Object
-# def _read_time(table):
-#     print table.iat[0,1]
-#     start_time = table.iat[1, 8]
-#     if( table.iat[0,1] == 'CC_Chg' ):
-#         start_time = table.iat[1, 8]
-#
-#     # grasp automatically instead
-#     # else:
-#         # for i in table.iterrows():
-#         # table[table['']]
-#         # df[df['model'].str.match('Mac')]
-#         # # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),axis=1)
-#     return start_time
 
 def _read_time(table):
     print table.iat[0,2]
@@ -255,29 +244,27 @@ def sort_by_name(filelist, starttime, table):
 
 
 def main():
-
-    table = read_Dataframe_from_file(path + 'Me01-H100_180728.txt')
-    table.to_csv(path + 'outfile_raw_.csv')
-    merge_column(table)
-
+    table = read_Dataframe_from_file(path + 'Me01-H100_180728.txt')                                          # create a custome Dataframe to work on
+    table.to_csv(path + 'outfile_raw_.csv')                                     # for debugging purpose
+    merge_column(table)                                                         # Merge capactity of CC and CV stages
 
     with open(cycler_path) as outfile:
         table = pd.read_csv(outfile, header=0, sep=',')
     outfile.close()
 
-
-    starttime = _read_time(table)
+    starttime = _read_time(table)                                               # when the test kicked-off
     print 'start-time: ' + str(starttime)
 
     # display the list of logfile and grasp the endtime
-    filelist = display_list_of_file(keyword)
+    filelist = display_list_of_file(keyword)                                    # get the endtime instance in filename
     print (filelist)
 
-    table_sorted = sort_by_name(filelist, starttime, table)
+    table_sorted = sort_by_name(filelist, starttime,table)                      # grasp the data instance and sort
     table_sorted.to_csv(final_log_path)
 
-    # Add SoC data values into data frame
-
+    '''
+    Add SoC data values into data frame
+    '''
     for i, name in enumerate( filelist ):
         temp = []
         with open(path + name +'-echoes-b.dat') as readout:

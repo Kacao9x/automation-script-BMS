@@ -181,19 +181,11 @@ def find_capacity(begin, end, table):
     line = _line_to_capture(diff)
     print "diff: %s" % str(line)
 
-    sum = 0
-    if (diff / 5) > ind[0] and (diff / 5) < ind[1]:
-        sum += 0
-    elif (diff / 5) > ind[1] and (diff / 5) < ind[2]:
-        sum += 3
-    elif (diff / 5) > ind[2] and (diff / 5) < ind[3]:
-        sum += 5
-    elif (diff / 5) > ind[3] and (diff / 5) < ind[4]:
-        sum += 8
-    elif (diff / 5) > ind[4] and (diff / 5) < ind[5]:
-        sum += 12
-    elif (diff / 5) > ind[5]:
-        sum += 12
+    # identify the index to grasp the proper row of data instance
+    end_temp = table['Date/Time'][line]
+    print 'end_dt_temp: ' + str(end_temp)
+    error = calculate_time(table['Date/Time'][line], end)
+    line += int(error / 5)
 
     # cap = table.iat[line, 4]                                                  #grasp manually
     # return line, table['cap(mAh)'][line]

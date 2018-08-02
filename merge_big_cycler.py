@@ -15,33 +15,34 @@ def merge_column(table):
             ind = np.append(ind, i)
     print (ind)
 
-    for i in range(2, int(ind[1])):
-        table.iat[i, 5]= 21 + table.iat[i, 5]
+    # for i in range(2, int(ind[1])):
+    #     table['cap(mAh)'][i] = 21 + table['cap(mAh)'][i]
 
+    table_temp = table.copy()
+    del table
+    tb = pd.DataFrame()
+    # table = table.iloc[1::50, ::]
 
-    table_temp = table
+    for i in range(len(ind) -1):
+        table_stage = table_temp.iloc[ : int(ind[i]) ].copy()                            #grasp the stage id
+        table_data = table_temp.iloc[ int(ind[i]) + 1 : int(ind[i + 1]) : 50 ].copy()  #grasp the data instance
+        print table_data.head().to_string()
 
-    print '\n'
-    table = table.iloc[1::50, ::]
-
-    # for i in range(len(ind) -1):
-    #     table_id = table_temp.iloc[int(ind[i])]
-    #     table_new = table_temp.iloc[int(ind[i]) + 1: int(ind[i+1]) : 50]
+        # tb = tb.append(table_stage, table_data, ignore_index=True)
+        tb = pd.concat([table_stage, table_data], axis=0)
+    # for idx in ind:
+    #     table_new = table_temp.iloc[ int(idx)]
     #     print '\n'
     #     table = table.append(table_new, ignore_index=True)
+    #     # table = pd.concat([table , table_new], axis=0)
 
-    for idx in ind:
-        table_new = table_temp.iloc[ int(idx)]
-        print '\n'
-        table = table.append(table_new, ignore_index=True)
-        # table = pd.concat([table , table_new], axis=0)
-
-    table.columns = ['extra','id','id_num', 'time', 'current',
+    tb.columns = ['extra','id','id_num', 'time', 'current',
                     'cap(mAh)', 'cap(microAh)', 'en(mWh)',
                     'en(microWh)', 'Date/Time']
     # table['extra'].astype(int)
-    table.sort_values('extra')
-    del table['extra']
+    tb.sort_values('extra')
+    del tb['extra']
+    print tb.head().to_string()
 
     #
     # pd.concat([pd.DataFrame([[0, 0, 0]], columns=df.columns), df]).reset_index(drop=True)
@@ -50,19 +51,19 @@ def merge_column(table):
     # print table_new.head().to_string()
 
 
-    table.to_csv(final_log_path)
-    return table
+    # tb.to_csv(final_log_path)
+    return tb
 
 keyword         = 'cycle'
-path            = r'Me01-H100_180730/Filtered/'
-cycler_path     = path + 'Cycler_Data_Merc_180730.csv'
+path            = r'Me01-H100_180731/'
+cycler_path     = path + 'Cycler_Data_Merc_180731.csv'
 final_log_path  = path + 'test_log_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 
 
-# cycler_data = pd.DataFrame()
-# with open('Me01-H100_180730/Me01-H100_180730.txt', 'r') as my_file:
+
+# with open(path + 'ME01-H100-073118.txt', 'r') as my_file:
 #     lines = pd.read_csv(my_file, header=3, sep=r'\s\s+', error_bad_lines=False, engine='python')
 #     my_file.close()
 #
@@ -82,21 +83,27 @@ _start_row  = 1                                                                 
 #                'cap(mAh)', 'cap(microAh)', 'en(mWh)',
 #                'en(microWh)', 'Date/Time']
 # cycler_data = cycler_data.reindex(columns = header_list)
-#
+# cycler_data.to_csv(cycler_path)
 #
 # '''
 # search for rows that need to shift
 # '''
 #
-# # print (cycler_data[ cycler_data['time'].str.contains('CC') ])
-# # print (cycler_data[ cycler_data['time'].str.contains('Rest') ])
-# index = [0, 164141, 368782, 609427, 161139, 365779,606425, 811031]
-# int = index.sort()
+# ind = []
+# ind = (cycler_data.index[ cycler_data['time'].str.contains('Chg') ].tolist()) \
+#       + (cycler_data.index[ cycler_data['time'].str.contains('Rest') ].tolist())
+# ind.sort()
+# print ind
+#
+# cycler_data.drop(index=10480)
+#
+# # index = [0, 164141, 368782, 609427, 161139, 365779,606425, 811031]
+# # int = index.sort()
 #
 # # transpose the dataframe for shifting rows
 # cycler_data_t = cycler_data.T
 #
-# for i in index:
+# for i in ind:
 #     cycler_data_t[i] = cycler_data_t.iloc[:,i].shift(-1).tolist()
 #
 # cycler_data = cycler_data_t.T
@@ -106,7 +113,9 @@ _start_row  = 1                                                                 
 with open(cycler_path) as outfile:
     cycler_data = pd.read_csv(outfile, sep=',', error_bad_lines=False)
 outfile.close()
-print(cycler_data.head().to_string())
+# print(cycler_data.head().to_string())
+
+
 
 cycler_data = merge_column(cycler_data)
 

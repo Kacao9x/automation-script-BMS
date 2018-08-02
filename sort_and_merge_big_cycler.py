@@ -6,12 +6,12 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'Me01-H100_180730/'
-cycler_path     = path + 'Cycler_Data_Merc_180730.csv'
-cycler_path_new     = path + 'Cycler_Data_Merc_180730_new.csv'
+path            = 'Me01-H100_180731/Raw/'
+cycler_path     = path + 'Cycler_Data_Merc_180731.csv'
+cycler_path_new     = path + 'Cycler_Data_Merc_180731_new.csv'
 final_log_path  = path + 'raw_sorted_logs.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
-_start_row  = 2                                                                 #number of header to be remove
+_start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
 
 #==============================================================================#
@@ -38,6 +38,7 @@ def _convert_to_time_object(str_obj):
 def _convert_to_time_object_fix(str_obj):
     return dt.datetime.strptime(str_obj, '%m/%d/%Y %H:%M:%S')
 
+
 def _line_to_capture(second):
     return _start_row + int(second/__PERIOD__)
     # return _start_row + int(second)
@@ -51,6 +52,19 @@ def _row_count(filename):
             sum +=1
     readout.close()
     return sum
+
+
+def is_dummy_data(x):
+    last = 0.8
+    count = 0
+    for i in range(0, len(x)):
+        if last > x[i]:
+            count += 1
+
+    if count > 10:
+        return False
+    else:
+        return True
 
 
 # display the file with keyword in ascending using BASH
@@ -93,45 +107,66 @@ def merge_column(table):
             ind = np.append(ind, i)
 
     print (ind)
-    np.delete(ind, 5)  # remove unneccessary index
-    print (ind)
-
-
-    # for i in range(len(ind) - 1):
-    #     # ind[ ] need to be changed due to the change of cycling order
-    #     # Rest: remains capacity
-    #     if (table.iat[int(ind[i]), 1] == 'Rest'):
-    #
-    #         tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
-    #         diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
-    #         # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
-    #
-    #         for j in range(diff):
-    #             table.iat[int(ind[i]) + j, 4] = tot
-    #
-    #     elif (table.iat[int(ind[i]), 1] == 'CC_DChg'):
-    #         tot = table.iat[int(ind[i + 1]) - 1, 4]
-    #         diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
-    #         for j in range(diff):
-    #             table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+    id_num = table.columns.get_loc("id_num")
+    capmAh = table.columns.get_loc("cap(mAh)")
 
     for i in range(len(ind) - 1):
         # ind[ ] need to be changed due to the change of cycling order
-        # Rest: remains capacity
-        if (table['id_num'][ int(ind[i]) ] == 'Rest'):
+        # Addition of cap for CV and CC cycle
+        if (table.iat[int(ind[i]), id_num] == 'CV_Chg' and
+            table.iat[int(ind[i - 1]), id_num]) == 'CC_Chg':
 
-            tot = table['cap(mAh)'][int(ind[i]) - 1]                                 # store the capacity
+            tot = table.iat[int(ind[i]) - 1, capmAh]                                 # store the capacity
             diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
             # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
 
             for j in range(diff):
-                table['cap(mAh)'][ int(ind[i]) + j ] = tot
+                table.iat[int(ind[i]) + j, capmAh] += tot
 
-        elif (table['cap(mAh)'][int(ind[i])] == 'CC_DChg'):
-            tot = table['cap(mAh)'][int(ind[i + 1]) - 1]
-            diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+        # # Subtraction for discharging cycle
+        # elif i == len(ind) - 1:
+        #
+        #     tot = table.iat[int(len(NAN_finder) - 1), 4]
+        #     diff = int(len(NAN_finder)) - int(ind[i])
+        #     for j in range(diff):
+        #         table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
+
+        # Keep the same capacity of CV_charge for rest cycle
+        elif (table.iat[int(ind[i]), id_num] == 'Rest' and
+              table.iat[int(ind[i - 1]), id_num] == 'CV_Chg'):
+
+            tot = table.iat[int(ind[i]) - 1, capmAh]
+            diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table['cap(mAh)'][int(ind[i]) + j] = tot - table['cap(mAh)'][int(ind[i]) + j]
+                table.iat[int(ind[i]) + j, capmAh] += tot
+
+        # Subtraction the capacity for dischage cycle
+        elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
+              table.iat[int(ind[i]), id_num] == 'CC_DChg'):
+
+            tot = table.iat[int(ind[i + 1]) - 1, capmAh]
+            diff = int(ind[i + 1]) - int(ind[i])
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, capmAh] = tot - table.iat[
+                    int(ind[i]) + j, capmAh]
+
+    # for i in range(len(ind) - 1):
+    #     # ind[ ] need to be changed due to the change of cycling order
+    #     # Rest: remains capacity
+    #     if (table['id_num'][ int(ind[i]) ] == 'Rest'):
+    #
+    #         tot = table['cap(mAh)'][int(ind[i]) - 1]                                 # store the capacity
+    #         diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+    #         # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
+    #
+    #         for j in range(diff):
+    #             table['cap(mAh)'][ int(ind[i]) + j ] = tot
+    #
+    #     elif (table['cap(mAh)'][int(ind[i])] == 'CC_DChg'):
+    #         tot = table['cap(mAh)'][int(ind[i + 1]) - 1]
+    #         diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+    #         for j in range(diff):
+    #             table['cap(mAh)'][int(ind[i]) + j] = tot - table['cap(mAh)'][int(ind[i]) + j]
 
     table.to_csv(cycler_path_new)
     return
@@ -178,22 +213,13 @@ def find_capacity(begin, end, table):
     line = _line_to_capture(diff)
     print "diff: %s" % str(line)
 
-    sum = 0
-    if (diff / 5) > ind[0] and (diff / 5) < ind[1]:
-        sum += 0
-    elif (diff / 5) > ind[1] and (diff / 5) < ind[2]:
-        sum += 6
-    elif (diff / 5) > ind[2] and (diff / 5) < ind[3]:
-        sum += 5
-    elif (diff / 5) > ind[3] and (diff / 5) < ind[4]:
-        sum += 16
-    elif (diff / 5) > ind[4] and (diff / 5) < ind[5]:
-        sum += 16
-    elif (diff / 5) > ind[5]:
-        sum += 14
 
-    # cap = table.iat[line, 4]                                                  #grasp manually
-    # return line, table['cap(mAh)'][line]
+    #identify the index to grasp the proper row of data instance
+    end_temp = table['Date/Time'][line]
+    print 'end_dt_temp: ' + str(end_temp)
+    error = calculate_time(table['Date/Time'][line], end)
+    line += int( error / 5 )
+
     return line, table['cap(mAh)'][line]
 
 # add a new header for the column to store echoes amplitude
@@ -276,7 +302,10 @@ def main():
                 temp.append(float(line.rstrip()))
         readout.close()
 
-        col_header = table_sorted.iat[ i, 1 ]                                   #read the corresponding capacity
+        if is_dummy_data(temp):
+            temp[:] = []
+
+        col_header = table_sorted['cap(mAh)'][ i ]                                   #read the corresponding capacity
         tempTable = pd.DataFrame({col_header: temp})
 
         table_sorted = pd.concat([table_sorted, tempTable],

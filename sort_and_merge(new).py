@@ -94,18 +94,22 @@ def merge_column(table):
     np.delete(ind, 5)  # remove unneccessary index
     print (ind)
 
+    # get the columns index to access
+    id_num = table.columns.get_loc("id_num")
+    capmAh = table.columns.get_loc("cap(mAh)")
+
     for i in range(len(ind) - 1):
         # ind[ ] need to be changed due to the change of cycling order
         # Addition of cap for CV and CC cycle
-        if (table.iat[int(ind[i]), 1] == 'CV_Chg' and
-            table.iat[int(ind[i - 1]), 1]) == 'CC_Chg':
+        if (table.iat[int(ind[i]), id_num] == 'CV_Chg' and
+            table.iat[int(ind[i - 1]), id_num]) == 'CC_Chg':
 
-            tot = table.iat[int(ind[i]) - 1, 4]                                 # store the capacity
-            diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
+            tot = table.iat[int(ind[i]) - 1, capmAh]  # store the capacity
+            diff = int(ind[i + 1]) - int(ind[i])  # find the length of the stage
             # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
 
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] += tot
+                table.iat[int(ind[i]) + j, capmAh] += tot
 
         # # Subtraction for discharging cycle
         # elif i == len(ind) - 1:
@@ -116,23 +120,23 @@ def merge_column(table):
         #         table.iat[int(ind[i]) + j, 4] = tot - table.iat[int(ind[i]) + j, 4]
 
         # Keep the same capacity of CV_charge for rest cycle
-        elif (table.iat[int(ind[i]), 1] == 'Rest' and
-              table.iat[int(ind[i - 1]), 1] == 'CV_Chg'):
+        elif (table.iat[int(ind[i]), id_num] == 'Rest' and
+              table.iat[int(ind[i - 1]), id_num] == 'CV_Chg'):
 
-            tot = table.iat[int(ind[i]) - 1, 4]
+            tot = table.iat[int(ind[i]) - 1, capmAh]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] += tot
+                table.iat[int(ind[i]) + j, capmAh] += tot
 
         # Subtraction the capacity for dischage cycle
-        elif (table.iat[int(ind[i + 1]), 1] == 'Rest' and
-              table.iat[int(ind[i]), 1] == 'CC_DChg'):
+        elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
+              table.iat[int(ind[i]), id_num] == 'CC_DChg'):
 
-            tot = table.iat[int(ind[i + 1]) - 1, 4]
+            tot = table.iat[int(ind[i + 1]) - 1, capmAh]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, 4] = tot - table.iat[
-                    int(ind[i]) + j, 4]
+                table.iat[int(ind[i]) + j, capmAh] = tot - table.iat[
+                    int(ind[i]) + j, capmAh]
 
     table.to_csv(cycler_path)
     return table

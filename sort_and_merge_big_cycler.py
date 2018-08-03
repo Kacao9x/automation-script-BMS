@@ -6,10 +6,10 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'Me01-H100_180731/Raw/'
+path            = 'Me01-H100_180731/Filtered/'
 cycler_path     = path + 'Cycler_Data_Merc_180731.csv'
-cycler_path_new     = path + 'Cycler_Data_Merc_180731_new.csv'
-final_log_path  = path + 'raw_sorted_logs.csv'
+cycler_path_new = path + 'Cycler_Data_Merc_180731_new.csv'
+final_log_path  = path + 'filtered_sorted_logs.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
@@ -41,7 +41,6 @@ def _convert_to_time_object_fix(str_obj):
 
 def _line_to_capture(second):
     return _start_row + int(second/__PERIOD__)
-    # return _start_row + int(second)
 
 # return the number of row
 def _row_count(filename):
@@ -173,22 +172,12 @@ def merge_column(table):
 
 
 def _read_time(table):
-    print table['id_num'][ 0 ]
-    # print table.iat[ _start_row , 9 ]
-    print table['Date/Time'][_start_row]
+    # time_begin = table.index[ table['id_num'].str.contains('1') ].values
+    # print 'time begin: %s' % str(time_begin)
+    # print table['Date/Time'][time_begin + 1]
+    # start_time = table['Date/Time'][time_begin + 1]
     start_time = table['Date/Time'][_start_row]
-
-    if( table.iat[0,1] == 'Record ID' ):
-        start_time = table.iat[0, 8]
-
-    # grasp automatically instead
-    # else:
-        # for i in table.iterrows():
-        # table[table['']]
-        # df[df['model'].str.match('Mac')]
-        # # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),axis=1)
     return start_time
-
 
 # calculate the time difference in seconds. Return int
 def calculate_time(begin, end):
@@ -216,8 +205,14 @@ def find_capacity(begin, end, table):
 
     #identify the index to grasp the proper row of data instance
     end_temp = table['Date/Time'][line]
-    print 'end_dt_temp: ' + str(end_temp)
-    error = calculate_time(table['Date/Time'][line], end)
+    check = pd.isnull(table.at[line,'Date/Time'])
+
+    if check:
+        end_temp = table['Date/Time'][line + 1]
+
+
+    print 'end_temp: ' + str(end_temp)
+    error = calculate_time(end_temp, end)
     line += int( error / 5 )
 
     return line, table['cap(mAh)'][line]

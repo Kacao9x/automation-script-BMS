@@ -120,22 +120,4 @@ outfile.close()
 cycler_data = merge_column(cycler_data)
 
 
-
-# cycler_data.to_csv(r"data/Merc-temp.csv")
-
-# row_zeros = cycler_data['cap(mAh)'] == 0.0220
-# print row_zeros
-#
-# #find the index of stage 4
-# for i in range(len(cycler_data.index) - 1):
-#     if cycler_data.iat[i, 4] == 0 and cycler_data.iat[i+1, 4] > 0:
-#         print 'rows: %s' % str(i+1)
-#         row_stage_4 = i+1
-#
-# for i in range(row_stage_4, len(cycler_data.index)):
-#     cycler_data.iat[ i, 4 ] = - cycler_data.iat[ i, 4 ] + \
-#                               cycler_data.iat[ len(cycler_data.index)-1, 4 ]
-#
-#
-# # print(cycler_data.to_string())
 # cycler_data.to_csv(final_log_path)

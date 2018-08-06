@@ -285,13 +285,10 @@ def system_config():
 
 # ==============================================================================#
 # ======================== MAIN FUNCTION =======================================#
-def __capture_raw_data(num=int, output=[]):
-    y = output[0:totalpages * 2048];
-    print("Total samples: " + str(len(y)))
-
+def _save_capture_data( num, key, y):
     # Write file
     ts = time.time()
-    st = 'cycle' + str(num) + '-' \
+    st = 'cycle' + str(num) + '-' + key \
          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     fn = "data/" + st + "-echoes-b.dat"
 
@@ -299,9 +296,16 @@ def __capture_raw_data(num=int, output=[]):
     for samp in y:
         filehandle.write(str(samp) + "\n")
     filehandle.close()
+    return
+
+def capture_raw_data(num=int, output=[]):
+    y = output[0:totalpages * 2048];
+    print("Total samples: " + str(len(y)))
+
+    return y
 
 
-def __capture_filtered_data(num=int, output=[]):
+def capture_filtered_data(num=int, output=[]):
     # fsOriginal = echoes_dsp.getFs()
 
     y = output[0:totalpages * 2048];
@@ -321,19 +325,17 @@ def __capture_filtered_data(num=int, output=[]):
         y = echoes_dsp.normalize(y)
 
     # fs = echoes_dsp.getFs()
-
-    # Write file
-    ts = time.time()
-    st = 'cycle' + str(num) + '-' + 'filtered-' \
-         + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-    fn = "data/" + st + "-echoes-b.dat"
-
-    filehandle = open(fn, "w")
-    for samp in y:
-        filehandle.write(str(samp) + "\n")
-    filehandle.close()
+    return y
 
 
+def is_dummy_data ( x ):
+    last = 0.8
+    count = 0
+    for i in range (0, len(x)):
+        if last > x[i]:
+            count += 1
+
+    return (count > 10)
 # ==============================================================================#
 # ======================== MAIN ACTIVITY =======================================#
 def main():
@@ -343,23 +345,28 @@ def main():
 
     # ======= UNIT TEST =======#
     # execute the activity here over SPI prococol
-
+    system_config()
     for i in range(__REPEAT__):
+
         print '\n\nCycle: ' + str(i)
-        system_config()
-        # Fire and capture the echoes
-        echoes_1.initiateCapture(send_impulse=True)
-        # echoes_1(echoes_1.setImpulseType())
-        totalpages = 1
-        output = echoes_1.readAdcData(pagesToRead=totalpages)
+        #Emulate do-while loop
+        while True:
+            echoes_1.initiateCapture(send_impulse=True)
+            totalpages = 1
+            output = echoes_1.readAdcData(pagesToRead=totalpages)
+            if is_dummy_data( output ):
+                break
 
         if output:
             print '.... Capture raw data...'
-            # __capture_raw_data(i, output)
+            y =  capture_raw_data(i, output)
+            _save_capture_data(i, 'raw', y )
             time.sleep(1 * 10)
+
             print '.... Capture filtered data...'
-            # __capture_filtered_data(i, output)
-            # time.sleep(__MINUTE__ * 60)
+            y = capture_filtered_data(i, output)
+            _save_capture_data(i, 'filtered', y)
+            time.sleep(__MINUTE__ * 60)
 
         print 'End cycle \n \n'
 

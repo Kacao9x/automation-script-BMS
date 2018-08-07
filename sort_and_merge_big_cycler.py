@@ -6,7 +6,7 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'Me01-H100_180731/Filtered/'
+path            = 'Me02-H100_180731/Raw/'
 cycler_path     = path + 'Cycler_Data_Merc_180731.csv'
 cycler_path_new = path + 'Cycler_Data_Merc_180731_new.csv'
 final_log_path  = path + 'filtered_sorted_logs.csv'
@@ -57,13 +57,10 @@ def is_dummy_data(x):
     last = 0.8
     count = 0
     for i in range(0, len(x)):
-        if last > x[i]:
+        if last < x[i]:
             count += 1
 
-    if count > 10:
-        return False
-    else:
-        return True
+    return (count > 10)
 
 
 # display the file with keyword in ascending using BASH

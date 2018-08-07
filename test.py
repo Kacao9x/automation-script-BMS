@@ -354,7 +354,7 @@ def main():
             echoes_1.initiateCapture(send_impulse=True)
             totalpages = 1
             output = echoes_1.readAdcData(pagesToRead=totalpages)
-            if is_dummy_data( output ):
+            if is_dummy_data( output ) == False:
                 break
 
         if output:

@@ -1,6 +1,6 @@
 #library file
 /lib
-/.idea
+/.idea/
 
 #folder
 /31Ah-Battery-1-30-2018
@@ -10,7 +10,15 @@
 /Me01-H100_180726
 /Me01-H100_180728
 /Me01-H100_180730
-/Me01-H100_180731
+/Me02-H100_180731
 
 #python file
 temp.py
+detect_crappy_data.py
+
+#system files
+.idea/Python-script.iml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/workspace.xml
+

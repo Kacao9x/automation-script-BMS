@@ -6,10 +6,10 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'Me02-H100_180731/Raw/'
-cycler_path     = path + 'Cycler_Data_Merc_180731.csv'
-cycler_path_new = path + 'Cycler_Data_Merc_180731_new.csv'
-final_log_path  = path + 'filtered_sorted_logs.csv'
+path            = 'Me02-H100_180810/'
+cycler_path     = path + 'Cycler_Data_Merc_180810.csv'
+cycler_path_new = path + 'Cycler_Data_Merc_180810_new.csv'
+final_log_path  = path + 'raw_sorted_logs.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
@@ -164,8 +164,7 @@ def merge_column(table):
     #         for j in range(diff):
     #             table['cap(mAh)'][int(ind[i]) + j] = tot - table['cap(mAh)'][int(ind[i]) + j]
 
-    table.to_csv(cycler_path_new)
-    return
+    return table
 
 
 def _read_time(table):
@@ -265,10 +264,11 @@ def sort_by_name(filelist, starttime, table):
 def main():
     # table = read_Dataframe_from_file(path + 'Me01-H100_180728.txt')                                          # create a custome Dataframe to work on
     with open(cycler_path) as outfile:
-        table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+        tb = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 
-    merge_column(table)                                                         # Merge capactity of CC and CV stages
+    table = merge_column(tb)                                                         # Merge capactity of CC and CV stages
+    table.to_csv(cycler_path_new)
 
     with open(cycler_path_new) as outfile:
         table = pd.read_csv(outfile, header=0, sep=',')
@@ -282,28 +282,28 @@ def main():
     print (filelist)
 
     table_sorted = sort_by_name(filelist, starttime,table)                      # grasp the data instance and sort
-    table_sorted.to_csv(final_log_path)
 
     '''
     Add SoC data values into data frame
     '''
     for i, name in enumerate( filelist ):
-        temp = []
+        amp = []
         with open(path + name +'-echoes-b.dat') as readout:
             for line in readout:
-                temp.append(float(line.rstrip()))
+                amp.append(float(line.rstrip()))
         readout.close()
 
-        if is_dummy_data(temp):
-            temp[:] = []
+        if is_dummy_data(amp):
+            amp[:] = []
 
-        col_header = table_sorted['cap(mAh)'][ i ]                                   #read the corresponding capacity
-        tempTable = pd.DataFrame({col_header: temp})
+        col_header = table_sorted['cap(mAh)'][ i ]                              #read the corresponding capacity
+        ampTable = pd.DataFrame({col_header: amp})
+        ampTable_concat = pd.concat([ampTable_concat, ampTable], axis=1)
 
-        table_sorted = pd.concat([table_sorted, tempTable],
-                                 axis=1)  # add new column (diff index) into exisiing Dataframe
-        del temp[:], tempTable
+        del amp[:], ampTable
 
+    #table_sorted.sort('index')
+    table_sorted = pd.concat([table_sorted, ampTable_concat], axis=1)           # add new column (diff index) into exisiing Dataframe
     table_sorted.to_csv(final_log_path)
 
     return

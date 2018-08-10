@@ -221,10 +221,10 @@ def _sequence_init():
 
 def _ADC_sampling_init():
     if __ADCconfig__ == 0:
-        print "12bit_3_60msps"
-        result = echoes_1.setAdcConfig(ADC_Config.fs_12bit_3_60msps)
+        print "12bit_7_2msps"
+        result = echoes_1.setAdcConfig(ADC_Config.fs_12bit_7_2msps)
         if result:
-            echoes_dsp.setFs(3600000.0)
+            echoes_dsp.setFs(7200000.0)
             print("  Success!")
     else:
         print "Failed"
@@ -288,7 +288,7 @@ def system_config():
 def _save_capture_data( num, key, y):
     # Write file
     ts = time.time()
-    st = 'cycle' + str(num) + '-' + key \
+    st = 'cycle' + str(num) + '-' + key + '-' \
          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     fn = "data/" + st + "-echoes-b.dat"
 
@@ -298,14 +298,14 @@ def _save_capture_data( num, key, y):
     filehandle.close()
     return
 
-def capture_raw_data(num=int, output=[]):
+def capture_raw_data(output=[]):
     y = output[0:totalpages * 2048];
     print("Total samples: " + str(len(y)))
 
     return y
 
 
-def capture_filtered_data(num=int, output=[]):
+def capture_filtered_data(output=[]):
     # fsOriginal = echoes_dsp.getFs()
 
     y = output[0:totalpages * 2048];
@@ -329,7 +329,7 @@ def capture_filtered_data(num=int, output=[]):
 
 
 def is_dummy_data ( x ):
-    last = 0.8
+    last = 0.8 #threshold value
     count = 0
     for i in range (0, len(x)):
         if last > x[i]:
@@ -350,22 +350,24 @@ def main():
 
         print '\n\nCycle: ' + str(i)
         #Emulate do-while loop
+        #Keep firing until it collects a clean signal
         while True:
             echoes_1.initiateCapture(send_impulse=True)
             totalpages = 1
             output = echoes_1.readAdcData(pagesToRead=totalpages)
-            if is_dummy_data( output ) == False:
+            if not is_dummy_data( output ):
                 break
 
         if output:
             print '.... Capture raw data...'
-            y =  capture_raw_data(i, output)
+            # totalpages = 1
+            y =  capture_raw_data(output)
             _save_capture_data(i, 'raw', y )
             time.sleep(1 * 10)
 
             print '.... Capture filtered data...'
-            y = capture_filtered_data(i, output)
-            _save_capture_data(i, 'filtered', y)
+            z = capture_filtered_data(output)
+            _save_capture_data(i, 'filtered', z)
             time.sleep(__MINUTE__ * 60)
 
         print 'End cycle \n \n'
@@ -391,6 +393,8 @@ __numSEQ__ = args.numSeq
 
 __REPEAT__ = args.repeat
 __MINUTE__ = args.minute
+
+totalpages = 1
 
 echoes_1 = echoes()
 echoes_dsp = echoes_signals(2400000.0)

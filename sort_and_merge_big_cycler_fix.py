@@ -6,10 +6,10 @@ import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'Me02-H100_180810/'
-cycler_path     = path + 'Cycler_Data_Merc_180810.csv'
-cycler_path_new = path + 'Cycler_Data_Merc_180810_new.csv'
-final_log_path  = path + 'Me02-H100_180810_raw_sorted.csv'
+path            = 'Me02-H100_180814/'
+cycler_path     = path + 'Cycler_Data_Merc_180814.csv'
+cycler_path_new = path + 'Cycler_Data_Merc_180814_new.csv'
+final_log_path  = path + 'Me02-H100_180814_raw_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
@@ -107,22 +107,21 @@ def merge_column(table):
     capmAh = table.columns.get_loc("cap(mAh)")
 
     #add 21.00 for real capacity
-    for i in range(0, int(ind[1])):
-        table.iat[i, capmAh] = 22 + table.iat[i, capmAh]
+    # for i in range(0, int(ind[1])):
+    #     table.iat[i, capmAh] = 22 + table.iat[i, capmAh]
 
-    for i in range(len(ind) - 1):
+    for i in range(len(ind) -1 ):
         # ind[ ] need to be changed due to the change of cycling order
-        # Addition of cap for CV and CC cycle
+        # Addition of cap for CV and CC cycle (step 1 and 2)
         if (table.iat[int(ind[i]), id_num] == 'CV_Chg' and
             table.iat[int(ind[i - 1]), id_num]) == 'CC_Chg':
 
             tot = table.iat[int(ind[i]) - 1, capmAh]                                 # store the capacity
             diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
-            # diff = int(end_row - int(ind[i])) - 1                               # in case the test endup by CC-CV stage
 
             for j in range(diff):
                 table.iat[int(ind[i]) + j, capmAh] += tot
-
+        # step 3 and 2
         elif (table.iat[int(ind[i]), id_num] == 'CC_Chg' and
               table.iat[int(ind[i - 1]), id_num] == 'CV_Chg'):
 
@@ -131,25 +130,42 @@ def merge_column(table):
             for j in range(diff):
                 table.iat[int(ind[i]) + j, capmAh] += tot
 
-
+        # step
         # Keep the same capacity of CV_charge for rest cycle
         elif (table.iat[int(ind[i]), id_num] == 'Rest' and
-              table.iat[int(ind[i - 1]), id_num] == 'CC_Chg'):
+              table.iat[int(ind[i - 1]), id_num] == 'CC_Chg' and
+              table.iat[int(ind[i + 1]), id_num] == 'CC_DChg'):
 
             tot = table.iat[int(ind[i]) - 1, capmAh]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
                 table.iat[int(ind[i]) + j, capmAh] += tot
 
-        # Subtraction the capacity for dischage cycle
-        if (table.iat[int(ind[i]), id_num] == 'Rest' and
-              table.iat[int(ind[i + 1]), id_num] == 'CC_DChg'):
+        elif (table.iat[int(ind[i]), id_num] == 'Rest' and
+              table.iat[int(ind[i - 1]), id_num] == 'CCCV_Chg'):
 
-            tot = table.iat[len(table.index) - 1, capmAh]
-            diff = int(len(table.index) - int(ind[i+1]))
+            tot = table.iat[int(ind[i]) - 1, capmAh]
+            diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i+1]) + j, capmAh] = tot - table.iat[
-                    int(ind[i+1]) + j, capmAh]
+                table.iat[int(ind[i]) + j, capmAh] += tot
+
+
+        # Subtraction the capacity for dischage cycle
+        elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
+              table.iat[int(ind[i]), id_num] == 'CC_DChg'):
+
+            tot = table.iat[int(ind[i + 1]) - 1, capmAh]
+            diff = int(ind[i + 1]) - int(ind[i])
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, capmAh] = tot - \
+                                                     table.iat[int(ind[i]) + j, capmAh]
+
+        # else:
+        #     tot = table.iat[len(table.index) - 1, capmAh]
+        #     diff = int(len(table.index) - int(ind[i + 1]))
+        #     for j in range(diff):
+        #         table.iat[int(ind[i + 1]) + j, capmAh] = tot - table.iat[
+        #             int(ind[i + 1]) + j, capmAh]
 
 
     table.to_csv(cycler_path_new)

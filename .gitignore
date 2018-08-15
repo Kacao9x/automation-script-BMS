@@ -2,16 +2,13 @@
 /lib
 /.idea/
 
+
 #folder
 /31Ah-Battery-1-30-2018
-/data/
-/EchOES-test-data
-/Mercs-07-26
-/Me01-H100_180726
-/Me01-H100_180728
-/Me01-H100_180730
-/Me02-H100_180731
-/Me02-H100_180814
+/data
+/bad_data
+/Echoes-test-data/
+
 
 #python file
 temp.py
@@ -20,6 +17,5 @@ detect_crappy_data.py
 #system files
 .idea/Python-script.iml
 .idea/modules.xml
-.idea/vcs.xml
 .idea/workspace.xml
 

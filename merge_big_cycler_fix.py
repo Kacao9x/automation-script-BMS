@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
+import thLib as th
 
 ind = []
 
 keyword         = 'cycle'
-path            = 'Me02-H100_180814/'
+# path            = 'Me02-H100_180814/'
+path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + 'Cycler_Data_Merc_180814.csv'
 cycler_path_new = path + 'Cycler_Data_Merc_180814_new.csv'
 final_log_path  = path + 'raw_sorted_logs.csv'

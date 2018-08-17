@@ -3,13 +3,15 @@ import pandas as pd
 
 import subprocess
 import datetime as dt
-
+import thLib as th
 
 keyword         = 'cycle'
-path            = 'Me02-H100_180814/'
-cycler_path     = path + 'Cycler_Data_Merc_180814.csv'
-cycler_path_new = path + 'Cycler_Data_Merc_180814_new.csv'
-final_log_path  = path + 'Me02-H100_180814_raw_sorted.csv'
+name            = 'Me02-H100_180815'
+# path            = 'Me02-H100_180814/'
+path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+cycler_path     = path + name + '.csv'
+cycler_path_new = path + name + '_new.csv'
+final_log_path  = path + name + '_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
@@ -99,7 +101,7 @@ def merge_column(table):
 
     global ind
     for i in range(len(NAN_finder)):
-        if NAN_finder[i] == True and table['id'][i] < 10:
+        if NAN_finder[i] == True:
             ind = np.append(ind, i)
 
     print (ind)
@@ -173,7 +175,7 @@ def merge_column(table):
 
 
 def _read_time(table):
-    # time_begin = table.index[ table['id_num'].str.contains('1') ].values
+    # time_begin = int(table.index[ table['id'].str.contains(1) ].tolist())
     # print 'time begin: %s' % str(time_begin)
     # print table['Date/Time'][time_begin + 1]
     # start_time = table['Date/Time'][time_begin + 1]
@@ -181,10 +183,15 @@ def _read_time(table):
     return start_time
 
 # calculate the time difference in seconds. Return int
-def calculate_time(begin, end):
+def calculate_time(begin, end, unit):
     # start_dt    = _convert_to_time_object(begin)
     end_dt      = _convert_to_time_object(end)
-    start_dt      = _convert_to_time_object_fix(begin)
+
+    if unit == 'sec':
+        start_dt = _convert_to_time_object_fix(begin)
+    elif unit == 'min':
+        start_dt = _convert_to_time_object(begin)
+
 
     sec = 0
     diff = (end_dt - start_dt)
@@ -193,15 +200,20 @@ def calculate_time(begin, end):
     else:
         sec += diff.days*24*60*60 + diff.seconds
 
-    return sec
+    m, s = divmod(sec, 59)
+    if unit == 'sec':
+        return sec
+    elif unit == 'min':
+        return m
+
 
 # grasp the capacity corresponding to the filename
 # return line and value
 def find_capacity(begin, end, table):
-    diff = calculate_time(begin, end)
+    diff = calculate_time(begin, end, 'sec')
 
     line = _line_to_capture(diff)
-    print "diff: %s" % str(line)
+    print ("diff: %s" % str(line))
 
 
     #identify the index to grasp the proper row of data instance
@@ -213,7 +225,7 @@ def find_capacity(begin, end, table):
 
 
     print 'end_temp: ' + str(end_temp)
-    error = calculate_time(end_temp, end)
+    error = calculate_time(end_temp, end, 'sec')
     line += int( error / 5 )
 
     return line, table['cap(mAh)'][line]
@@ -227,38 +239,53 @@ def _SOC_header_creator():
         header.append('SoC_' + str(i+1))
     return header
 
+
+def _get_timestamp_from_filename( filename ):
+
+    i = filename.split('-')
+    if i[1] == 'raw2018':
+        endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
+                  + i[4] + ':' + i[5] + ':' + i[6]
+        print 'endtime raw: ' + endtime
+
+    else:
+        endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
+                  + i[5] + ':' + i[6] + ':' + i[7]
+        print 'endtime filtered: ' + endtime
+
+    return endtime
+
+
 # return a sorted table with capacity, filename, index
 def sort_by_name(filelist, starttime, table):
     cap     = []
     filename= []
     index   = []
+    timeDelta = []
+    cycle1_time = _get_timestamp_from_filename( filelist[ 0 ] )
 
-    for element in filelist:
+    for i, element in enumerate( filelist ):
 
-        i = element.split('-')
-        print i
+        endtime = _get_timestamp_from_filename( element )
+        row, c  = find_capacity(starttime, endtime, table)
 
-        if i[1] == 'raw2018':
-            endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
-                      + i[4] + ':' + i[5] + ':' + i[6]
-            print 'endtime raw: ' + endtime
-
+        if i == 0:
+            timeDelta.append( 0 )
         else:
-            endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
-                      + i[5] + ':' + i[6] + ':' + i[7]
-            print 'endtime filtered: ' + endtime
+            diff = calculate_time(cycle1_time, endtime, 'min')
+            timeDelta.append( diff )
 
-        i, c = find_capacity(starttime, endtime, table)
         cap.append(c)
-        index.append(i)
+        index.append(row)
         filename.append(element)
 
 
-    column = ['index', 'cap(mAh)', 'FileName']
+    column = ['index', 'cap(mAh)', 'FileName', 'TimeDelta']
 
     table_sorted = pd.DataFrame({'index': index,
                                  'cap(mAh)': cap,
-                                 'FileName': filename},
+                                 'FileName': filename,
+                                 'TimeDelta': timeDelta},
                                 columns=column)                                 # columns=[] used to set order of columns
 
     table_sorted = table_sorted.sort_values('index')
@@ -267,6 +294,7 @@ def sort_by_name(filelist, starttime, table):
 
 
 def main():
+
     # table = read_Dataframe_from_file(path + 'Me01-H100_180728.txt')                                          # create a custome Dataframe to work on
     with open(cycler_path) as outfile:
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
@@ -285,20 +313,17 @@ def main():
     filelist = display_list_of_file(keyword)                                    # get the endtime instance in filename
     print (filelist)
 
-    table_sorted = sort_by_name(filelist, starttime,table)                      # grasp the data instance and sort
+    table_sorted = sort_by_name(filelist, starttime, table)                     # grasp the data instance and sort
     table_sorted.to_csv(final_log_path)
+
     '''
     Add SoC data values into data frame
     '''
-    tC = []
+    tC, delta = [], []
     ampTable_concat = pd.DataFrame()
     for i, name in enumerate( filelist ):
 
         with open(path + name +'-echoes-d.dat') as readout:
-            # for i, line in enumerate(readout):
-            #     if i < len (readout) - 1:
-            #         temp.append(float(line.rstrip()))
-
             y_str = readout.read()
             y_str = y_str.splitlines()
             amp = []
@@ -320,6 +345,7 @@ def main():
         del amp[:], ampTable
 
     # table_sorted.sort('index')
+
     table_sorted['Temperature'] = tC
     table_sorted = pd.concat([table_sorted, ampTable_concat],
                              axis=1)  # add new column (diff index) into exisiing Dataframe

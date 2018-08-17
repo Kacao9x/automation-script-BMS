@@ -13,6 +13,7 @@ import argparse, sys
 # from lib.echoes_spi import *
 from lib.echoes_signalprocessing import *
 from lib.echoes_protocol import *
+from lib.echoes_temp_sensor import *
 
 
 # Command line arguments
@@ -99,11 +100,11 @@ def ParseHelpers():
 
 # ==============================================================================#
 # ================= create a test log file and set the name ====================#
-def __get_filename():
+def _get_filename():
     return "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
 
 
-def __write_test_logs(name=''):
+def _write_test_logs(name=''):
     try:
         with open(name, 'ab') as writeout:
             writeout.writelines('the delay us is: ' + str(__DELAY__) + '\n')
@@ -339,36 +340,48 @@ def is_dummy_data ( x ):
 # ==============================================================================#
 # ======================== MAIN ACTIVITY =======================================#
 def main():
-    __NAME__ = __get_filename()
+    __NAME__ = _get_filename()
     print __NAME__
-    __write_test_logs(__NAME__)
+    _write_test_logs(__NAME__)
 
     # ======= UNIT TEST =======#
     # execute the activity here over SPI prococol
     system_config()
     for i in range(__REPEAT__):
 
-        print '\n\nCycle: ' + str(i)
-        #Emulate do-while loop
-        #Keep firing until it collects a clean signal
-        while True:
-            echoes_1.initiateCapture(send_impulse=True)
-            totalpages = 1
-            output = echoes_1.readAdcData(pagesToRead=totalpages)
-            if not is_dummy_data( output ):
-                break
+        print '\n\nCycle: ' + str(i + 1)
+        # Keep firing until it collects a clean signal
+        output = echoes_1.captureAndRead(sendImpulse=True, pagesToRead=1)
+
+        # emulate do-while loop
+        # check if we get dummy output
+        while not output:
+            echoes_1.resetMicro()
+            system_config()
+            output = echoes_1.captureAndRead(sendImpulse=True, pagesToRead=1)
+
+        # while True:
+        #     echoes_1.resetMicro()
+        #     system_config()
+        #     output = echoes_1.captureAndRead( sendImpulse = True, pagesToRead = 1 )
+        #     if output:
+        #         break
 
         if output:
-            print '.... Capture raw data...'
+            print ('.... Capture raw data...')
             # totalpages = 1
-            y =  capture_raw_data(output)
-            _save_capture_data(i, 'raw', y )
-            time.sleep(1 * 10)
+            y = capture_raw_data(output)
+            temp_c = temp_sense.get_temperature_celcius()
+            _save_capture_data(i, 'raw', y, temp_c)
 
-            print '.... Capture filtered data...'
-            z = capture_filtered_data(output)
-            _save_capture_data(i, 'filtered', z)
+            # print ('.... Capture filtered data...')
+            # z = capture_filtered_data(output)
+            # temp_c = temp_sense.get_temperature_celcius()
+            # _save_capture_data(i, 'filtered', z, temp_c)
+
             time.sleep(__MINUTE__ * 60)
+
+        print ('End cycle \n \n')
 
         print 'End cycle \n \n'
 
@@ -398,6 +411,8 @@ totalpages = 1
 
 echoes_1 = echoes()
 echoes_dsp = echoes_signals(2400000.0)
+
+temp_sense = echoes_temp_sense()
 
 if args.fresh:
     print "Start a new test"

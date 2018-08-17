@@ -3,10 +3,12 @@ import pandas as pd
 
 import subprocess
 import datetime as dt
+import thLib as th
 
 
 keyword         = 'cycle'
-path            = 'Me02-H100_180810/'
+# path            = 'Me02-H100_180810/'
+path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + 'Cycler_Data_Merc_180810.csv'
 cycler_path_new = path + 'Cycler_Data_Merc_180810_new.csv'
 final_log_path  = path + 'raw_sorted_logs.csv'

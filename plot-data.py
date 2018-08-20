@@ -1,5 +1,4 @@
 
-# import matplotlib as plt
 import matplotlib.pyplot as plt
 import numpy as np
 import os, subprocess
@@ -10,7 +9,6 @@ from scipy.signal import filtfilt, firwin, upfirdn
 
 
 address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-# from __future__ import division
 #==============================================================================#
 
 #Subprocess's call command with piped output and active shell
@@ -90,14 +88,16 @@ def concat_all_data( ):
 
 
 testResults, tC = concat_all_data()
-# plt_1 = plt.figure(1)
 
+plt.figure(1)
 plt.plot(tC)
+plt.title('Temperature vs Cycle')
+plt.interactive(True)
 plt.show()
+
+
 print (testResults.shape)
 [row, column] = testResults.shape
-
-
 
 # fs = 7200000*4
 # nyq_rate = fs*0.5
@@ -130,13 +130,14 @@ i = 1
 dt = float(1/7200000)
 x = np.arange(0, 3.47222222e-8*row, 3.47222222e-8)
 
-plt_2 = plt.figure()
+plt.figure(2)
+plt.title('SoC vs Time')
 plt.interactive(False)
 while i < column+1:
     #plt.subplot(column/2, 2, i)
     #change the integers inside this routine as (number of rows, number of columns, plotnumber)
     plt.plot(testResults.loc[:, i-1])
     #plt.xlim((0, 0.00005))
-    i = i+10
+    i = i+1
 # plt_2.legend()
-plt_2.show()
+plt.show()

@@ -135,89 +135,91 @@ def _save_avg_data(num, y):
 #=============================================================================#
 #======================== MAIN FUNCTION ======================================#
 def main ():
-    pos = 39
+    # pos = 1
     # testResults, tC = concat_all_data(pos)
     # [row, column] = testResults.shape
 
-    while pos < 193:
-        testResults, tC = concat_all_data(pos)
-        pos += 1
-        print (bad_data)
-
-        plt.figure(1)
-        plt.plot(tC)
-        plt.title('Temperature vs Cycle')
-        plt.interactive(True)
-        plt.show()
-
-        print (testResults.shape)
-        [row, column] = testResults.shape
-
-        # fs = 7200000*4
-        # nyq_rate = fs*0.5
-        # filterlen = 301
-        # b = firwin(filterlen, 100000.0/fs, window="hamming", pass_zero=False)
-        # i = 0
-        # while i < column:
-        #     file_name.loc[:, i] = filtfilt(b, 1.0, file_name.loc[:, i])
-        #     i = i+1
-        # amp_upsample = pd.DataFrame()
-        # upsample_rate = 4
-        # fs = fs*4
-        # nyq_rate = fs*0.5
-        # b = firwin(101, 1.0 / upsample_rate)
-        # i = 0
-        # while i < column:
-        #     y = pd.DataFrame(upfirdn(b, file_name.loc[:, i], up=upsample_rate))
-        #     amp_upsample = pd.concat([amp_upsample, y], axis=1, ignore_index=True)
-        #     i = i+1
-        #
-        # print(amp_upsample.shape)
-        #
-        # N = len(amp_upsample.loc[:, 0])
-        # dt = float(1/fs)
-        # print (dt)
-        #
-        # x = np.arange(0, dt*N, 3.47222222e-8)
-
-        i = 1
-        dt = float(1/7200000)
-        x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-
-        plt.figure(2)
-        plt.title('SoC vs Time')
-        plt.interactive(False)
-
-        #plot all data
-        while i < column+1:
-            #plt.subplot(column/2, 2, i)
-            #change the integers inside this routine as (number of rows, number of columns, plotnumber)
-            plt.plot(x,testResults.loc[:, i-1])
-            plt.xlim((0, 0.00005))
-            plt.xlabel('time')
-            plt.ylabel('amplitude')
-            i = i+1
-        plt.legend()
-        plt.show()
+    # while pos < 111+1:
+    #     testResults, tC = concat_all_data(pos)
+    #     pos += 1
+    #     print (bad_data)
+    #
+    #     # plt.figure(1)
+    #     # plt.plot(tC)
+    #     # plt.title('Temperature vs Cycle')
+    #     # plt.interactive(True)
+    #     # plt.show()
+    #
+    #     print (testResults.shape)
+    #     [row, column] = testResults.shape
+    #
+    #     # fs = 7200000*4
+    #     # nyq_rate = fs*0.5
+    #     # filterlen = 301
+    #     # b = firwin(filterlen, 100000.0/fs, window="hamming", pass_zero=False)
+    #     # i = 0
+    #     # while i < column:
+    #     #     file_name.loc[:, i] = filtfilt(b, 1.0, file_name.loc[:, i])
+    #     #     i = i+1
+    #     # amp_upsample = pd.DataFrame()
+    #     # upsample_rate = 4
+    #     # fs = fs*4
+    #     # nyq_rate = fs*0.5
+    #     # b = firwin(101, 1.0 / upsample_rate)
+    #     # i = 0
+    #     # while i < column:
+    #     #     y = pd.DataFrame(upfirdn(b, file_name.loc[:, i], up=upsample_rate))
+    #     #     amp_upsample = pd.concat([amp_upsample, y], axis=1, ignore_index=True)
+    #     #     i = i+1
+    #     #
+    #     # print(amp_upsample.shape)
+    #     #
+    #     # N = len(amp_upsample.loc[:, 0])
+    #     # dt = float(1/fs)
+    #     # print (dt)
+    #     #
+    #     # x = np.arange(0, dt*N, 3.47222222e-8)
+    #
+    #     i = 7
+    #     dt = float(1/7200000)
+    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+    #
+    #     plt.figure(2)
+    #     plt.title('SoC vs Time')
+    #     plt.interactive(False)
+    #
+    #     #plot all data
+    #     while i < column+1:
+    #         #plt.subplot(column/2, 2, i)
+    #         #change the integers inside this routine as (number of rows, number of columns, plotnumber)
+    #         plt.plot(x,testResults.loc[:, i-1])
+    #         plt.xlim((0, 0.00005))
+    #         plt.xlabel('time')
+    #         plt.ylabel('amplitude')
+    #         i = i+10
+    #     plt.legend()
+    #     plt.show()
 
 
     #plot avg
 
-    avgNum = 59
-    cycleNum = 1
+    avgNum = 60
+    cycleNum = 150
     avgTable_concat = pd.DataFrame()
     tempTable_concat = pd.DataFrame()
 
-    dt = float(1 / 7200000)
-    x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
+    # dt = float(1 / 7200000)
+    # x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
 
-    plt.figure(2)
-    plt.title('SoC vs Time')
-    plt.interactive(False)
+    # plt.figure(2)
+    # plt.title('SoC vs Time')
+    # plt.interactive(False)
 
     i = 1
     while i < cycleNum + 1:
         # plt.subplot(5, 2, i) #change the integers inside this routine as (number of rows, number of columns, plotnumber)
+        testResults, tC = concat_all_data(i)
+        [row, column] = testResults.shape
         temp = testResults.loc[:, 0:(i * avgNum)]
 
         avg1 = np.mean(temp, axis=1)
@@ -225,15 +227,14 @@ def main ():
         avgTable = pd.DataFrame({col_header : avg1})
         avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
 
-
-        plt.plot(x, avg1, label='Cycle %s ' % str(i))
-        plt.xlim((0, 0.00005))
-        plt.xlabel('time')
-        plt.ylabel('amplitude')
-        tC.append(avg1[round(0.0000295 * 7200000)])
+        # plt.plot(x, avg1, label='Cycle %s ' % str(i))
+        # plt.xlim((0, 0.00005))
+        # plt.xlabel('time')
+        # plt.ylabel('amplitude')
+        # tC.append(avg1[round(0.0000295 * 7200000)])
         i = i + 1
 
-    avgTable_concat.to_csv(address + 'avgData-39.csv')
+    avgTable_concat.to_csv(address + 'avgData.csv')
     plt.legend()
     plt.show()
 

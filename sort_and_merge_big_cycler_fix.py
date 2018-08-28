@@ -69,7 +69,7 @@ def is_dummy_data(x):
 def display_list_of_file(key):
     file_name = []
     list_cmd = ('ls '+ path +' -1v' + " | grep '" + key + "'")
-    print list_cmd
+    print (list_cmd)
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip().split('-echoes')[0])
 
@@ -169,9 +169,7 @@ def merge_column(table):
         #         table.iat[int(ind[i + 1]) + j, capmAh] = tot - table.iat[
         #             int(ind[i + 1]) + j, capmAh]
 
-
-    table.to_csv(cycler_path_new)
-    return
+    return table
 
 
 def _read_time(table):
@@ -224,11 +222,11 @@ def find_capacity(begin, end, table):
         end_temp = table['Date/Time'][line + 1]
 
 
-    print 'end_temp: ' + str(end_temp)
+    print ('end_temp: ' + str(end_temp))
     error = calculate_time(end_temp, end, 'sec')
     line += int( error / 5 )
 
-    return line, table['cap(mAh)'][line]
+    return line, table[''][line], table['cap(mAh)'][line]
 
 # add a new header for the column to store echoes amplitude
 def _SOC_header_creator():
@@ -246,12 +244,12 @@ def _get_timestamp_from_filename( filename ):
     if i[1] == 'raw2018':
         endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
                   + i[4] + ':' + i[5] + ':' + i[6]
-        print 'endtime raw: ' + endtime
+        print ('endtime raw: ' + endtime)
 
     else:
         endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
                   + i[5] + ':' + i[6] + ':' + i[7]
-        print 'endtime filtered: ' + endtime
+        print ('endtime filtered: ' + endtime)
 
     return endtime
 
@@ -295,19 +293,16 @@ def sort_by_name(filelist, starttime, table):
 
 def main():
 
-    # table = read_Dataframe_from_file(path + 'Me01-H100_180728.txt')                                          # create a custome Dataframe to work on
     with open(cycler_path) as outfile:
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 
-    merge_column(table)                                                         # Merge capactity of CC and CV stages
+    table = merge_column(table)                                                 # Merge capactity of CC and CV stages
+    table.to_csv(cycler_path_new)
 
-    with open(cycler_path_new) as outfile:
-        table = pd.read_csv(outfile, header=0, sep=',')
-    outfile.close()
 
     starttime = _read_time(table)                                               # when the test kicked-off
-    print 'start-time: ' + str(starttime)
+    print ('start-time: ' + str(starttime))
 
     # display the list of logfile and grasp the endtime
     filelist = display_list_of_file(keyword)                                    # get the endtime instance in filename

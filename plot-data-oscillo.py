@@ -79,8 +79,11 @@ def main():
     while i < column + 1:
         # plt.subplot(column/2, 2, i)
         # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-        plt.plot(time_table.loc[:,i-1], value_table.loc[:, i - 1])
+        plt.plot(time_table.loc[:,i-1], value_table.loc[:, i - 1], label = '')
         plt.xlim((0, 0.00005))
+        plt.xlabel('time')
+        plt.ylabel('amplitude')
+
         i = i + 1
 
     plt.legend()

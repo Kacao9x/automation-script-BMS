@@ -148,6 +148,13 @@ def merge_column(table):
                 table.iat[int(ind[i]) + j, capmAh] = tot - table.iat[
                     int(ind[i]) + j, capmAh]
 
+        elif (table.iat[int(ind[i]), id_num] == 'Rest' and
+              table.iat[int(ind[i - 1]), id_num] == 'CCCV_Chg'):
+
+            tot = table.iat[int(ind[i]) - 1, capmAh]
+            diff = int(ind[i + 1]) - int(ind[i])
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, capmAh] += tot
     # for i in range(len(ind) - 1):
     #     # ind[ ] need to be changed due to the change of cycling order
     #     # Rest: remains capacity

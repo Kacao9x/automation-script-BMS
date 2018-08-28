@@ -5,11 +5,12 @@ import thLib as th
 ind = []
 
 keyword         = 'cycle'
+name            = 'Me02-H100_180823'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
-cycler_path     = path + 'Cycler_Data_Merc_180814.csv'
-cycler_path_new = path + 'Cycler_Data_Merc_180814_new.csv'
-final_log_path  = path + 'raw_sorted_logs.csv'
+cycler_path     = path + name + '.csv'
+cycler_path_new = path + name + '_new.csv'
+final_log_path  = path + name + '_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1
 
@@ -73,7 +74,8 @@ def merge_column(table):
 
 
 
-with open(path + 'Me02-H100_180814.txt', 'r') as my_file:
+# with open(path + name + '.txt', 'r') as my_file:
+with open(path + name + '.csv', 'r') as my_file:
     lines = pd.read_csv(my_file, header=3, sep=r'\s\s+', error_bad_lines=False, engine='python')
     my_file.close()
 

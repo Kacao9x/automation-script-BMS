@@ -1,14 +1,17 @@
 import numpy as np
 import pandas as pd
 
+import thLib as th
 import subprocess
 import datetime as dt
 
 
 keyword         = 'cycle'
-path            = 'Me01-H100_180728/Filtered/'
-cycler_path     = path + 'Cycler_Data_Merc_180728.csv'
-final_log_path  = path + 'filtered_sorted_logs.csv'
+name            = 'Me02-H100_180823'
+path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+cycler_path     = path + name + '_outfile_raw.csv'
+cycler_path_new = path + name + '_new.csv'
+final_log_path  = path + name + '_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
@@ -39,7 +42,6 @@ def _convert_to_time_object_fix(str_obj):
 
 def _line_to_capture(second):
     return _start_row + int(second/__PERIOD__)
-    # return _start_row + int(second)
 
 # return the number of row
 def _row_count(filename):
@@ -56,7 +58,7 @@ def _row_count(filename):
 def display_list_of_file(key):
     file_name = []
     list_cmd = ('ls '+ path +' -1v' + " | grep '" + key + "'")
-    print list_cmd
+    print (list_cmd)
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip().split('-echoes')[0])
 
@@ -66,14 +68,15 @@ def display_list_of_file(key):
 # with a custom columns
 def read_Dataframe_from_file(filepath):
     with open(filepath) as outfile:
-        table = pd.read_csv(outfile, header=3, sep='\t', error_bad_lines=False)
+        # table = pd.read_csv(outfile, header=3, sep='\t', error_bad_lines=False) #read .txt file
+        table = pd.read_csv(outfile, header=3, sep=',', error_bad_lines=False) #read .csv file
     outfile.close()
 
     table = table.iloc[:, 1:12]
     table.columns = ['id', 'id_num', 'time', 'del', 'current',
                      'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
                      'en(microWh)', 'Date/Time']
-    del table['del'], table['del2']
+    del table['del'], table['del2'], table['en(microWh)'], table['cap(microAh)']
 
     return table
 
@@ -88,10 +91,11 @@ def merge_column(table):
 
     global ind
     for i in range(len(NAN_finder)):
-        if NAN_finder[i] == True and table['id'][i] < 10:
-            ind = np.append(ind, i)
+        if NAN_finder[i] == True and table['id'][i] < 50:
+            # ind = np.append(ind, i)
+            ind.append(i)
 
-    np.delete(ind, 5)  # remove unneccessary index
+    #np.delete(ind, 5)  # remove unneccessary index
     print (ind)
 
     # get the columns index to access
@@ -128,6 +132,15 @@ def merge_column(table):
             for j in range(diff):
                 table.iat[int(ind[i]) + j, capmAh] += tot
 
+        elif (table.iat[int(ind[i]), id_num] == 'Rest' and
+              table.iat[int(ind[i - 1]), id_num] == 'CCCV_Chg'):
+
+            tot = table.iat[int(ind[i]) - 1, capmAh]
+            diff = int(ind[i + 1]) - int(ind[i])
+            for j in range(diff):
+                table.iat[int(ind[i]) + j, capmAh] += tot
+
+
         # Subtraction the capacity for dischage cycle
         elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
               table.iat[int(ind[i]), id_num] == 'CC_DChg'):
@@ -138,32 +151,29 @@ def merge_column(table):
                 table.iat[int(ind[i]) + j, capmAh] = tot - table.iat[
                     int(ind[i]) + j, capmAh]
 
-    table.to_csv(cycler_path)
     return table
 
 
 def _read_time(table):
-    print table.iat[0,2]
-    print table.iat[ _start_row , 9 ]
-    start_time = table.iat[_start_row , 9]
+    # print table.iat[0,2]
+    # print table.iat[ _start_row , 9 ]
+    # start_time = table.iat[_start_row , 9]
 
-    if( table.iat[0,1] == 'Record ID' ):
-        start_time = table.iat[0, 8]
-
-    # grasp automatically instead
-    # else:
-        # for i in table.iterrows():
-        # table[table['']]
-        # df[df['model'].str.match('Mac')]
-        # # I=table.apply(lambda row: 0 if row['id'] == False else _addition_value(row['cap(mAh)']),axis=1)
+    start_time = table['Date/Time'][_start_row]
     return start_time
 
 
 # calculate the time difference in seconds. Return int
-def calculate_time(begin, end):
-    start_dt    = _convert_to_time_object(begin)
+def calculate_time(begin, end, unit):
+    # start_dt    = _convert_to_time_object(begin)
     end_dt      = _convert_to_time_object(end)
-    # start_dt      = _convert_to_time_object_fix(begin)
+
+    if unit == 'sec':
+        start_dt = _convert_to_time_object_fix(begin)
+    elif unit == 'min':
+        start_dt = _convert_to_time_object(begin)
+
+
     sec = 0
     diff = (end_dt - start_dt)
     if ( diff.days == 0 ):
@@ -171,24 +181,31 @@ def calculate_time(begin, end):
     else:
         sec += diff.days*24*60*60 + diff.seconds
 
-    return sec
+    m, s = divmod(sec, 59)
+    if unit == 'sec':
+        return sec
+    elif unit == 'min':
+        return m
 
 # grasp the capacity corresponding to the filename
 # return line and value
 def find_capacity(begin, end, table):
-    diff = calculate_time(begin, end)
+    diff = calculate_time(begin, end, 'sec')
 
     line = _line_to_capture(diff)
-    print "diff: %s" % str(line)
+    print ("diff: %s" % str(line))
 
     # identify the index to grasp the proper row of data instance
     end_temp = table['Date/Time'][line]
-    print 'end_dt_temp: ' + str(end_temp)
-    error = calculate_time(table['Date/Time'][line], end)
+    check = (table.at[line, 'Date/Time'] == '0.0')
+
+    if check:
+        end_temp = table['Date/Time'][line + 1]
+    print ('end_temp: ' + str(end_temp))
+    error = calculate_time(end_temp, end, 'sec')
     line += int(error / 5)
 
-    # cap = table.iat[line, 4]                                                  #grasp manually
-    # return line, table['cap(mAh)'][line]
+
     return line, table['cap(mAh)'][line]
 
 # add a new header for the column to store echoes amplitude
@@ -209,17 +226,17 @@ def sort_by_name(filelist, starttime, table):
     for element in filelist:
 
         i = element.split('-')
-        print i
+        print (i)
 
         if i[1] == '2018':
             endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
                       + i[4] + ':' + i[5] + ':' + i[6]
-            print 'endtime raw: ' + endtime
+            print ('endtime raw: ' + endtime)
 
         else:
             endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
                       + i[5] + ':' + i[6] + ':' + i[7]
-            print 'endtime filtered: ' + endtime
+            print ('endtime filtered: ' + endtime)
 
         i, c = find_capacity(starttime, endtime, table)
         cap.append(c)
@@ -240,16 +257,17 @@ def sort_by_name(filelist, starttime, table):
 
 
 def main():
-    table = read_Dataframe_from_file(path + 'Me01-H100_180728.txt')                                          # create a custome Dataframe to work on
-    table.to_csv(path + 'outfile_raw_.csv')                                     # for debugging purpose
-    merge_column(table)                                                         # Merge capactity of CC and CV stages
+    global name
+    table = read_Dataframe_from_file(path + name + '.csv')                      # create a custome Dataframe to work on
+    table = merge_column(table)                                                 # Merge capactity of CC and CV stages
+    table.to_csv(cycler_path)
 
-    with open(cycler_path) as outfile:
-        table = pd.read_csv(outfile, header=0, sep=',')
-    outfile.close()
+    # with open(cycler_path) as outfile:
+    #     table = pd.read_csv(outfile, header=0, sep=',')
+    # outfile.close()
 
     starttime = _read_time(table)                                               # when the test kicked-off
-    print 'start-time: ' + str(starttime)
+    print ('start-time: ' + str(starttime))
 
     # display the list of logfile and grasp the endtime
     filelist = display_list_of_file(keyword)                                    # get the endtime instance in filename
@@ -261,19 +279,36 @@ def main():
     '''
     Add SoC data values into data frame
     '''
-    for i, name in enumerate( filelist ):
-        temp = []
-        with open(path + name +'-echoes-b.dat') as readout:
-            for line in readout:
-                temp.append(float(line.rstrip()))
+    tC, delta = [], []
+    ampTable_concat = pd.DataFrame()
+    for i, name in enumerate(filelist):
+
+        with open(path + name + '-echoes-d.dat') as readout:
+            y_str = readout.read()
+            y_str = y_str.splitlines()
+            amp = []
+            for j, num in enumerate(y_str):
+                if j < len(y_str) - 1:
+                    amp.append(float(num))
+                else:
+                    temp = num.rstrip().split('Temperature:')[1]
+                    temp = temp.split('oC')[0]
+                    tC.append(float(temp))
         readout.close()
 
-        col_header = table_sorted.iat[ i, 1 ]                                   #read the corresponding capacity
-        tempTable = pd.DataFrame({col_header: temp})
+        col_header = table_sorted['cap(mAh)'][
+            i]  # read the corresponding capacity
+        ampTable = pd.DataFrame({col_header: amp})
 
-        table_sorted = pd.concat([table_sorted, tempTable],
-                                 axis=1)  # add new column (diff index) into exisiing Dataframe
-        del temp[:], tempTable
+        ampTable_concat = pd.concat([ampTable_concat, ampTable], axis=1)
+        # table_sorted = pd.concat([table_sorted, ampTable], axis=1)  # add new column (diff index) into exisiing Dataframe
+        del amp[:], ampTable
+
+    # table_sorted.sort('index')
+
+    table_sorted['Temperature'] = tC
+    table_sorted = pd.concat([table_sorted, ampTable_concat],
+                             axis=1)  # add new column (diff index) into exisiing Dataframe
 
     table_sorted.to_csv(final_log_path)
 

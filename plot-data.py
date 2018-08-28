@@ -137,7 +137,7 @@ def _save_avg_data(num, y):
 def main ():
     avgPos = 1                                                                  #number of capture in each cycle
     avgNum = 60
-    cycle = 4
+    cycle = 100
     cycle_id = 1                                                                #cycle number to plot
 
     """
@@ -239,15 +239,20 @@ def main ():
     """
     Plot Temperature vs Amplitude at 30us
     """
-    with open(address + 'avgData.csv') as outfile:
+    with open(address + 'avgData-thursday.csv') as outfile:
         avgTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
     print (avgTable.head())
 
-    cycle_id = 3
-    while cycle_id < cycle + 1:
-        emptyResults, tC = concat_all_data(cycle_id, 'temp')
-        cycle_id += 1
+    with open(address + 'Me02-H100_180823_sorted.csv') as outfile:
+        tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
+    tC = tempTable['Temperature'][:150]
+
+    # cycle_id = 3
+    # while cycle_id < cycle + 1:
+    #     emptyResults, tC = concat_all_data(cycle_id, 'temp')
+    #     cycle_id += 1
     #calculate the value at 30ns
 
     dt = 1.38888889e-7

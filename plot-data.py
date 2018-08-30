@@ -53,25 +53,39 @@ def find_data_std( x ):
     return np.std( x_arr[50:-1], ddof=1 )
 
 
-def concat_custom_data( ):
-
+def concat_custom_data( key ):
+    tC = []
     file_name = pd.DataFrame()
-    list_file = display_list_of_file('cycle')
+    list_file = display_list_of_file(key)
+    print (list_file)
     for filename in list_file:
     # for filename in glob.glob(os.path.join(address, "*.dat")):
-        my_file = open(filename)
+        my_file = open(address + filename)
         y_str = my_file.read()
         y_str = y_str.splitlines()
-        y = []
+        # y = []
+        # for i, num in enumerate(y_str):
+        #     if i < len(y_str) - 1:
+        #         y.append(float(num))
+        # y = pd.DataFrame(y)
+        # file_name = pd.concat([file_name, y], axis=1, ignore_index=True)
+        data = []
         for i, num in enumerate(y_str):
             if i < len(y_str) - 1:
-                y.append(float(num))
-        y = pd.DataFrame(y)
-        file_name = pd.concat([file_name, y], axis=1, ignore_index=True)
+                data.append(float(num))
+
+            else:
+                # print (len(num.split() ))
+                if len(num.split()) > 2:
+                    temp = num.rstrip().split('Temperature:')[1]
+                    temp = temp.split('oC')[0]
+                    tC.append(float(temp))
+                else:
+                    data.append(float(num))
     # with 0s rather than NaNs
     file_name = file_name.fillna(0)
 
-    return file_name
+    return file_name, tC
 
 
 def concat_all_data(cycle, key):
@@ -139,7 +153,7 @@ def main ():
     avgPos = 1                                                                  #number of capture in each cycle
     avgNum = 60
     cycle = 100
-    cycle_id = 1                                                                #cycle number to plot
+    cycle_id = 4                                                                #cycle number to plot
 
     """
     plot a single data RAW data set
@@ -163,7 +177,7 @@ def main ():
     #         plt.xlim((0, 0.00005))
     #         plt.xlabel('time')
     #         plt.ylabel('amplitude')
-    #         i += 1
+    #         i += 10
     #
     #     plt.legend()
     #     plt.show()
@@ -173,32 +187,32 @@ def main ():
     plot all 60 raw data in one cycle
     detect a bad read by visual inspection
     """
-    while cycle_id < cycle + 1:
-        testResults, tC = concat_all_data(cycle_id, 'raw')
-        cycle_id += 1
-        print (bad_data)
-
-        print (testResults.shape)
-        [row, column] = testResults.shape
-
-        dt = float(1/7200000)
-        x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-
-        plt.figure(2)
-        plt.title('SoC vs Time')
-        plt.interactive(False)
-
-        i = 1
-        while i < column+1:
-            #plt.subplot(column/2, 2, i)
-            #change the integers inside this routine as (number of rows, number of columns, plotnumber)
-            plt.plot(x,testResults.loc[:, i-1])
-            plt.xlim((0, 0.00005))
-            plt.xlabel('time')
-            plt.ylabel('amplitude')
-            i = i+1
-        plt.legend()
-        plt.show()
+    # while cycle_id < cycle + 1:
+    #     testResults, tC = concat_all_data(cycle_id, 'raw')
+    #     cycle_id += 10
+    #     print (bad_data)
+    #
+    #     print (testResults.shape)
+    #     [row, column] = testResults.shape
+    #
+    #     dt = float(1/7200000)
+    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+    #
+    #     plt.figure(2)
+    #     plt.title('SoC vs Time')
+    #     plt.interactive(False)
+    #
+    #     avgPos = 1
+    #     while avgPos < column+1:
+    #         #plt.subplot(column/2, 2, i)
+    #         #change the integers inside this routine as (number of rows, number of columns, plotnumber)
+    #         plt.plot(x,testResults.loc[:, avgPos-1])
+    #         plt.xlim((0, 0.00005))
+    #         plt.xlabel('time')
+    #         plt.ylabel('amplitude')
+    #         avgPos += 1
+    #     plt.legend()
+    #     plt.show()
 
 
 
@@ -208,9 +222,8 @@ def main ():
     # avgTable_concat = pd.DataFrame()
     #
     # plt.figure(3)
-    # plt.title('SoC vs Time for average data')
     # plt.interactive(False)
-    # cycle_id = 10
+    #
     # while cycle_id < cycle + 1:
     #     # plt.subplot(5, 2, i) #change the integers inside this routine as (number of rows, number of columns, plotnumber)
     #     testResults, tC = concat_all_data( cycle_id, 'raw')
@@ -224,11 +237,12 @@ def main ():
     #
     #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
     #     plt.plot(x, avg1, label='Cycle %s ' % str(cycle_id))
+    #     plt.title('SoC vs Time for average data x' + ' (SOC = 46.5%)')
     #     plt.xlim((0, 0.00005))
     #     plt.xlabel('time')
     #     plt.ylabel('amplitude')
     #     tC.append(avg1[round(0.0000295 * 7200000)])
-    #     cycle_id += 10
+    #     cycle_id += 1
     #
     # # avgTable_concat.to_csv(address + 'avgData.csv')
     # plt.legend()
@@ -237,11 +251,11 @@ def main ():
     """
     Plot Temperature vs Amplitude at 30us
     """
-    # # concat temperature
-    # # tempTable = pd.DataFrame()
-    # # testResults, tC = concat_custom_data(cycle_id, 'temp')
-    # # tempTable['Temperature'] = tC
-    # # tempTable.to_csv(address + 'temp.csv')
+    # concat temperature
+    # tempTable = pd.DataFrame()
+    # testResults, tC = concat_custom_data('cycle')
+    # tempTable['Temperature'] = tC
+    # tempTable.to_csv(address + 'temp.csv')
     #
     # with open(address + 'avgData.csv') as outfile:
     #     avgTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
@@ -268,7 +282,7 @@ def main ():
     # print (tC)
     # plt.figure(4)
     # plt.scatter(tC, value)
-    # plt.title('Temperature vs Amp')
+    # plt.title('Temperature vs Amp (SOC = 46.5%)')
     # plt.xlabel('Temperature oC')
     # plt.ylabel('Amplitude')
     # plt.interactive(False)
@@ -276,25 +290,25 @@ def main ():
     """
     Temperature Plot
     """
-    # with open(address + 'temp.csv') as outfile:
-    #     tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    # outfile.close()
-    #
-    # #calculate the value at 30ns
-    # cycle_id = 4
-    # cyc, temp_value = [], []
-    #
-    # while cycle_id < cycle + 1:
-    #     cyc.append(cycle_id)
-    #     temp_value.append(tempTable['Temperature'][ cycle_id - 1])
-    #     cycle_id += 1
-    #
-    # plt.figure(5)
-    # plt.scatter(cyc, temp_value)
-    # plt.title('Temperature vs Cycle')
-    # plt.xlabel('Cycle')
-    # plt.interactive(False)
-    # plt.show()
+    with open(address + 'temp.csv') as outfile:
+        tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
+
+    #calculate the value at 30ns
+    cycle_id = 1
+    cyc, temp_value = [], []
+    cycle = 95
+    while cycle_id < cycle + 1:
+        cyc.append(cycle_id)
+        temp_value.append(tempTable['Temperature'][ cycle_id - 1])
+        cycle_id += 1
+
+    plt.figure(5)
+    plt.scatter(cyc, temp_value)
+    plt.title('Temperature vs Cycle (SOC = 46.5%)')
+    plt.xlabel('Cycle')
+    plt.interactive(False)
+    plt.show()
 
 #==============================================================================#
 address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder

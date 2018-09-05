@@ -4,7 +4,7 @@ import thLib as th
 
 ind = []
 keyword         = 'cycle'
-name            = '180831_Me01-H100'
+name            = '180904_Me-02-H100'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -55,59 +55,59 @@ def merge_column(table):
 
 
 def main ():
-    # with open(path + name + '.txt', 'r') as my_file:
-    #     lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
-    #                         error_bad_lines=False, engine='python')
-    #     my_file.close()
-    #
-    # cycler_data = lines.iloc[:, 0:10]
-    # # cycler_data = lines.iloc[::50, 0:10]
-    # print (cycler_data.shape)
-    #
-    #
-    # header_list = ['id_num', 'time', 'del', 'current',
-    #                      'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
-    #                     'en(microWh)', 'Date/Time']
-    # cycler_data.columns = header_list
-    # del cycler_data['del'], cycler_data['del2'], cycler_data['en(mWh)'], \
-    #     cycler_data['en(microWh)'], cycler_data['cap(microAh)']
-    #
-    # #added extra 'id' columns to shift the first rows
-    # header_list = ['id','id_num', 'time', 'current',
-    #                'cap(mAh)', 'Date/Time']
-    # cycler_data = cycler_data.reindex(columns = header_list)
-    # print (cycler_data.head())
-    # cycler_data.to_csv(cycler_path)
-    #
-    # '''
-    # search for rows that need to shift
-    # '''
-    #
-    # ind = []
-    # #for good cycler data with 5s interval
-    # ind = (cycler_data.index[ cycler_data['time'].str.contains('Chg') ].tolist()) \
-    #       + (cycler_data.index[ cycler_data['time'].str.contains('Rest') ].tolist())
-    #
-    # print ind
-    #
-    # # transpose the dataframe for shifting rows
-    # cycler_data_t = cycler_data.T
-    #
-    # for i in ind:
-    #     cycler_data_t[i] = cycler_data_t.iloc[:,i].shift(-1).tolist()
-    #
-    # cycler_data = cycler_data_t.T
-    # cycler_data.to_csv(cycler_path)
+    with open(path + name + '.txt', 'r') as my_file:
+        lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
+                            error_bad_lines=False, engine='python')
+        my_file.close()
+
+    cycler_data = lines.iloc[:, 0:10]
+    # cycler_data = lines.iloc[::50, 0:10]
+    print (cycler_data.shape)
+
+
+    header_list = ['id_num', 'time', 'del', 'current',
+                         'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+                        'en(microWh)', 'Date/Time']
+    cycler_data.columns = header_list
+    del cycler_data['del'], cycler_data['del2'], cycler_data['en(mWh)'], \
+        cycler_data['en(microWh)'], cycler_data['cap(microAh)']
+
+    #added extra 'id' columns to shift the first rows
+    header_list = ['id','id_num', 'time', 'current',
+                   'cap(mAh)', 'Date/Time']
+    cycler_data = cycler_data.reindex(columns = header_list)
+    print (cycler_data.head())
+    cycler_data.to_csv(cycler_path)
+
+    '''
+    search for rows that need to shift
+    '''
+
+    ind = []
+    #for good cycler data with 5s interval
+    ind = (cycler_data.index[ cycler_data['time'].str.contains('Chg') ].tolist()) \
+          + (cycler_data.index[ cycler_data['time'].str.contains('Rest') ].tolist())
+
+    print ind
+
+    # transpose the dataframe for shifting rows
+    cycler_data_t = cycler_data.T
+
+    for i in ind:
+        cycler_data_t[i] = cycler_data_t.iloc[:,i].shift(-1).tolist()
+
+    cycler_data = cycler_data_t.T
+    cycler_data.to_csv(cycler_path)
 
     #------------------------------------------------------------------------------#
-    with open(cycler_path) as outfile:
-        cycler_data = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    outfile.close()
-    print(cycler_data.head().to_string())
+    # with open(cycler_path) as outfile:
+    #     cycler_data = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    # outfile.close()
+    # print(cycler_data.head().to_string())
 
 
-    cycler_data = merge_column(cycler_data)
-    cycler_data.to_csv(final_log_path)
+    # cycler_data = merge_column(cycler_data)
+    # cycler_data.to_csv(final_log_path)
 
     return
 

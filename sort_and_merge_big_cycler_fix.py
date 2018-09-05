@@ -6,7 +6,7 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = 'Me02-H100_180815'
+name            = '180831_Me01-H100'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -110,7 +110,7 @@ def merge_column(table):
 
     #add 21.00 for real capacity
     # for i in range(0, int(ind[1])):
-    #     table.iat[i, capmAh] = 22 + table.iat[i, capmAh]
+    #     table.iat[i, capmAh] = 38 + table.iat[i, capmAh]
 
     for i in range(len(ind) -1 ):
         # ind[ ] need to be changed due to the change of cycling order
@@ -198,7 +198,7 @@ def calculate_time(begin, end, unit):
     else:
         sec += diff.days*24*60*60 + diff.seconds
 
-    m, s = divmod(sec, 59)
+    m, s = divmod(sec, 60)
     if unit == 'sec':
         return sec
     elif unit == 'min':
@@ -226,7 +226,7 @@ def find_capacity(begin, end, table):
     error = calculate_time(end_temp, end, 'sec')
     line += int( error / 5 )
 
-    return line, table[''][line], table['cap(mAh)'][line]
+    return line, table['cap(mAh)'][line]
 
 # add a new header for the column to store echoes amplitude
 def _SOC_header_creator():
@@ -241,14 +241,15 @@ def _SOC_header_creator():
 def _get_timestamp_from_filename( filename ):
 
     i = filename.split('-')
-    if i[1] == 'raw2018':
-        endtime = '2018' + '-' + i[2] + '-' + i[3] + ' ' \
-                  + i[4] + ':' + i[5] + ':' + i[6]
+    # cycle1 - raw - 0 - 2018 - 08 - 31 - 16 - 44 - 34 - echoes - d
+    if i[1] == 'temp':
+        endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
+                  + i[5] + ':' + i[6] + ':' + i[7]
         print ('endtime raw: ' + endtime)
 
     else:
-        endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
-                  + i[5] + ':' + i[6] + ':' + i[7]
+        endtime = '2018' + '-' + i[4] + '-' + i[5] + ' ' \
+                  + i[6] + ':' + i[7] + ':' + i[8]
         print ('endtime filtered: ' + endtime)
 
     return endtime
@@ -314,37 +315,50 @@ def main():
     '''
     Add SoC data values into data frame
     '''
-    tC, delta = [], []
-    ampTable_concat = pd.DataFrame()
-    for i, name in enumerate( filelist ):
+    # tC, delta = [], []
+    # ampTable_concat = pd.DataFrame()
+    # for i, name in enumerate( filelist ):
+    #
+    #     with open(path + name +'-echoes-d.dat') as readout:
+    #         y_str = readout.read()
+    #         y_str = y_str.splitlines()
+    #         amp = []
+    #         for j, num in enumerate(y_str):
+    #             if j < len(y_str) - 1:
+    #                 amp.append(float(num))
+    #             else:
+    #                 if len(num.split()) > 2:
+    #                     temp = num.rstrip().split('Temperature:')[1]
+    #                     temp = temp.split('oC')[0]
+    #                     tC.append(float(temp))
+    #                 else:
+    #                     amp.append(float(num))
+    #     readout.close()
 
-        with open(path + name +'-echoes-d.dat') as readout:
-            y_str = readout.read()
-            y_str = y_str.splitlines()
-            amp = []
-            for j, num in enumerate(y_str):
-                if j < len(y_str) - 1:
-                    amp.append(float(num))
-                else:
-                    temp = num.rstrip().split('Temperature:')[1]
-                    temp = temp.split('oC')[0]
-                    tC.append (float( temp ))
-        readout.close()
-
-        col_header = table_sorted['cap(mAh)'][i]  # read the corresponding capacity
-        ampTable = pd.DataFrame({col_header: amp})
-
-
-        ampTable_concat = pd.concat([ampTable_concat, ampTable], axis=1)
-        # table_sorted = pd.concat([table_sorted, ampTable], axis=1)  # add new column (diff index) into exisiing Dataframe
-        del amp[:], ampTable
+        # col_header = table_sorted['cap(mAh)'][i]  # read the corresponding capacity
+        # ampTable = pd.DataFrame({col_header: amp})
+        #
+        #
+        # ampTable_concat = pd.concat([ampTable_concat, ampTable], axis=1)
+        # # table_sorted = pd.concat([table_sorted, ampTable], axis=1)  # add new column (diff index) into exisiing Dataframe
+        # del amp[:], ampTable
 
     # table_sorted.sort('index')
 
-    table_sorted['Temperature'] = tC
+    # table_sorted['Temperature'] = tC
+    with open(path + 'avgData.csv') as outfile:
+        ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
+
+    with open(path + 'temp.csv') as outfile:
+        tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
+    tC = tempTable['Temperature']
+
+    table_sorted = pd.concat([table_sorted, tC],
+                             axis=1)  # add new column (diff index) into exisiing Dataframe
     table_sorted = pd.concat([table_sorted, ampTable_concat],
                              axis=1)  # add new column (diff index) into exisiing Dataframe
-
     table_sorted.to_csv(final_log_path)
 
     return

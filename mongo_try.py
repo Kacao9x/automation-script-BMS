@@ -53,10 +53,10 @@ def main():
 
     cycle = 36
     avgNum = 60
-    amp, tC = []
+    amp, tC = [], []
     for cycle_num in range(cycle):
 
-        filelist = display_list_of_file('cycle' + str(cycle_num + 1))
+        filelist = display_list_of_file('cycle' + str(cycle_num + 1) + '-')
         print (filelist)
 
         for avg_num, name in enumerate( filelist ):

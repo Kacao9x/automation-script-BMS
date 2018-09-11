@@ -6,7 +6,7 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = '180831_Me01-H100'
+name            = '180910_Me02-H100'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -98,6 +98,7 @@ def merge_column(table):
     NAN_finder = table['id'].notna()  # a boolean list of ID columns
     print (table.head().to_string())
     print (table.shape)
+    row, col = table.shape
 
     global ind
     for i in range(len(NAN_finder)):
@@ -226,7 +227,7 @@ def find_capacity(begin, end, table):
     error = calculate_time(end_temp, end, 'sec')
     line += int( error / 5 )
 
-    return line, table['cap(mAh)'][line]
+    return line, table['cap(mAh)'][line], table['current'][line]
 
 # add a new header for the column to store echoes amplitude
 def _SOC_header_creator():
@@ -261,12 +262,13 @@ def sort_by_name(filelist, starttime, table):
     filename= []
     index   = []
     timeDelta = []
+    current = []
     cycle1_time = _get_timestamp_from_filename( filelist[ 0 ] )
 
     for i, element in enumerate( filelist ):
 
         endtime = _get_timestamp_from_filename( element )
-        row, c  = find_capacity(starttime, endtime, table)
+        row, c, curr  = find_capacity(starttime, endtime, table)
 
         if i == 0:
             timeDelta.append( 0 )
@@ -275,14 +277,16 @@ def sort_by_name(filelist, starttime, table):
             timeDelta.append( diff )
 
         cap.append(c)
+        current.append(curr)
         index.append(row)
         filename.append(element)
 
 
-    column = ['index', 'cap(mAh)', 'FileName', 'TimeDelta']
+    column = ['index', 'cap(mAh)', 'current', 'FileName', 'TimeDelta']
 
     table_sorted = pd.DataFrame({'index': index,
                                  'cap(mAh)': cap,
+                                 'current': current,
                                  'FileName': filename,
                                  'TimeDelta': timeDelta},
                                 columns=column)                                 # columns=[] used to set order of columns

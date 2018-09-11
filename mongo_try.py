@@ -30,35 +30,66 @@ def display_list_of_file(key):
 
     return list_name
 
+
+def _get_timestamp_from_filename( filename ):
+
+    i = filename.split('-')
+    # cycle1 - raw - 0 - 2018 - 08 - 31 - 16 - 44 - 34 - echoes - d
+    if i[1] == 'temp':
+        endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
+                  + i[5] + ':' + i[6] + ':' + i[7]
+        print ('endtime raw: ' + endtime)
+
+    else:
+        endtime = '2018' + '-' + i[4] + '-' + i[5] + ' ' \
+                  + i[6] + ':' + i[7] + ':' + i[8]
+        print ('endtime filtered: ' + endtime)
+
+    return endtime
+
+
+
 def main():
-    filelist = display_list_of_file( 'temp' )
-    print (filelist)
 
-    tC = []
-    for i, name in enumerate( filelist ):
-        with open( address + name ) as readout:
-            y_str = readout.read()
-            y_str = y_str.splitlines()
-            amp = []
-            for j, num in enumerate(y_str):
-                if j < len(y_str) - 1:
-                    amp.append(float(num))
-                else:
-                    if len(num.split()) > 2:
-                        temp = num.rstrip().split('Temperature:')[1]
-                        temp = temp.split('oC')[0]
-                        tC.append(float(temp))
-                    else:
+    cycle = 36
+    avgNum = 60
+    amp, tC = []
+    for cycle_num in range(cycle):
+
+        filelist = display_list_of_file('cycle' + str(cycle_num + 1))
+        print (filelist)
+
+        for avg_num, name in enumerate( filelist ):
+            #read the amplitude value
+            with open( address + name ) as readout:
+                y_str = readout.read()
+                y_str = y_str.splitlines()
+                amp = []
+                for j, num in enumerate(y_str):
+                    if j < len(y_str) - 1:
                         amp.append(float(num))
-        readout.close()
+                    else:
+                        if len(num.split()) > 2:
+                            temp = num.rstrip().split('Temperature:')[1]
+                            temp = temp.split('oC')[0]
+                            tC.append(float(temp))
+                        else:
+                            amp.append(float(num))
+            readout.close()
 
 
-    record = echoes_1.getSessionData()
-    record['capture_data'] = tC
-    record['session'] = 'ambient tempC'
-    echoes_db.insert_capture( record )
+            record = echoes_1.getSessionData()
+            record['capture_data'] = amp
+            record['session'] = 'amplitude in time domain'
+            record['cycle_number']  = cycle_num
+            record['avg_number']    = avg_num
+            record['source_filename'] = name
+            record['timestamp']     = str(datetime.datetime.now())
+            echoes_db.insert_capture(record)
 
     print("time:" + str(datetime.datetime.now()))
+
+    echoes_db.close()
 
     return
 
@@ -68,14 +99,15 @@ print("Initializing EchOES")
 
 echoes_1 = echoes()
 echoes_1.startNewSession()
-echoes_1.setImpulseType(Impulse_Type.full)
-echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_40v)
-echoes_1.setVgaGain(0.6)
+echoes_1.setImpulseType(Impulse_Type.half)
+echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_70v)
+echoes_1.setVgaGain(0.55)
 
 print("Initializing database")
 echoes_db = database()
+echoes_db.mongo_db = 'echoes-captures'
 
-address = 'tempC/'                           # prompts user to select folder
+address = 'data/'                           # prompts user to select folder
 
 if __name__ == '__main__':
     main()

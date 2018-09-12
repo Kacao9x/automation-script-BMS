@@ -331,7 +331,7 @@ def _save_capture_data( num, key, y, temper):
         fn = "tempC/" + st + "-echoes-d.dat"
         #tempC = temp_sense.get_temperature_celcius()
         tempC = temp_sense.get_average_temperature_celcius(16)
-    filehandle = open(fn, "w")
+	filehandle = open(fn, "w")
         filehandle.write('Temperature: %s oC' % str(tempC))
         filehandle.close()
     else:

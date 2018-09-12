@@ -14,6 +14,7 @@ from lib.echoes_protocol import *
 from lib.echoes_spi import *
 from lib.echoes_temp_sensor import *
 from lib.echoes_signalprocessing import *
+from lib.echoes_database import *
 
 # Command line arguments
 def ParseHelpers():
@@ -321,28 +322,49 @@ def system_config():
 
 #==============================================================================#
 #======================== MAIN FUNCTION =======================================#
-def _save_capture_data( num, key, y, temper):
+def _save_capture_data( cycleID, key, data, temper):
     # Write file
     ts = time.time()
-    st = 'cycle' + str(num+1) + '-' + key +'-'\
+    st = 'cycle' + str(cycleID + 1) + '-' + key +'-'\
          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     
     if temper:
-        fn = "tempC/" + st + "-echoes-d.dat"
+        fn = "tempC/" + st + "-echoes-e.dat"
         #tempC = temp_sense.get_temperature_celcius()
         tempC = temp_sense.get_average_temperature_celcius(16)
-    filehandle = open(fn, "w")
+        filehandle = open(fn, "w")
         filehandle.write('Temperature: %s oC' % str(tempC))
         filehandle.close()
     else:
-        fn = "data/" + st + "-echoes-d.dat"
+        fn = "data/" + st + "-echoes-e.dat"
         filehandle = open(fn, "w")
-        for samp in y:
+        for samp in data:
             filehandle.write(str(samp) + "\n")
         filehandle.close()
     return
 
-def capture_raw_data(output=[]):
+
+def _save_capture_to_Mongodb( cycleID=int, key=str, data=[], temper=bool,
+                              record = {} ):
+    ts = time.time()
+    st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
+         + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+
+    record['capture_data'] = data
+    record['session'] = 'Me02-H100'
+    record['cycle_number'] = cycleID + 1
+    record['avg_number'] = key.strip('-')[2]
+    record['source_filename'] = st
+
+    if temper:
+        tempC = temp_sense.get_average_temperature_celcius(16)
+        record['temperature'] = tempC
+
+    echoes_db.insert_capture(record)
+    return
+
+
+def filter_raw_data(output=[]):
     y = output[0 : totalpages * 2048]
     print("Total samples: " + str(len(y)))
     if True:
@@ -387,8 +409,8 @@ def capture_and_average_output(num, key, pagesToRead, offset):
     y_avg = np.array(outputs).mean(0)
     for i, output in enumerate(outputs):
         # output = [element - offset for element in output]
-        y = capture_raw_data( output )
-        _save_capture_data( num, key + '-' + str( i ), output, False )          #don't save temperature
+        y = filter_raw_data( output )                                           #enable bandpass
+        _save_capture_data( num, key + '-' + str( i + 1 ), output, False )      #don't save temperature
         
     return y_avg
 
@@ -424,15 +446,14 @@ def main():
         
         goodRead = False
         # output = echoes_1.captureAndRead( sendImpulse = True, pagesToRead = 1 )
-        y = capture_and_average_output( i, 'raw', 1, offSet )           # don't save temperature
-        y = capture_raw_data( y )
-        # y = [element - offSet for element in y]
+        y_avg = capture_and_average_output( i, 'raw', 1, offSet )               # don't save temperature
+        y_avg = filter_raw_data( y_avg )
+        # y_avg = [element - offSet for element in y]
 
         #detect a bad read
-        count = count_good_value( y )
-        std_value = find_data_std( y )
+        count = count_good_value( y_avg )
+        std_value = find_data_std( y_avg )
         goodRead = (count > 15 and std_value > 0.0020 )
-        # goodRead = True
         # _save_capture_data(i, 'avg', y, False)
             #Keep firing until it collects a clean signal        
         while not goodRead:
@@ -444,9 +465,9 @@ def main():
             offSet = echoes_1.dcOffset
             _write_test_logs(__NAME__, offSet)
             
-            y = capture_and_average_output( i, 'raw', 1, offSet )               # don't save temperature
-            count = count_good_value( y )
-            std_value = find_data_std( y )
+            y_avg = capture_and_average_output( i, 'raw', 1, offSet )           # don't save temperature
+            count = count_good_value( y_avg )
+            std_value = find_data_std( y_avg )
         
             #detect a bad read
             goodRead = (count > 15 and std_value > 0.0020 )
@@ -485,12 +506,18 @@ __MINUTE__ = args.minute
 
 totalpages = 1
 
+print("Initializing EchOES")
 echoes_1        = echoes()
 echoes_1.resetMicro()
 echoes_1.startNewSession()
 
+print("Initializing database")
+echoes_db       = database()
+
+print("Initializing signal processing")
 echoes_dsp      = echoes_signals( 2400000.0 )
 
+print("Initializing temp sensor")
 temp_sense      = echoes_temp_sense()
 
 if args.fresh:

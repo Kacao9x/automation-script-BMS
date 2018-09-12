@@ -49,13 +49,14 @@ def _get_timestamp_from_filename( filename ):
 
 
 def read_pickle():
-    record = echoes.getSessionData()
-    print ('impulseVoltage: ' + record['impulseVoltage'])
-    print ('impulseType' + record['impulseType'])
-    print ('impulseCycle: ' + record['impulseCycles'])
-    print ('capture ADC: ' + record['captureAdc'])
-    print ('adc Sync Delay: ' + record['adcSynchroDelay'])
-    print ('vga Gain: ' + record['vgaGain'])
+    record = echoes_1.getSessionData()
+    print ('impulseVoltage: ' + str(record['impulseVoltage']))
+    print ('impulseType: ' + str(record['impulseType']))
+    print ('vga Gain: ' + str(record['vgaGain']))
+    # print ('impulseCycle: ' + str(record['impulseCycles']))
+    # print ('capture ADC: ' + str(record['captureAdc']))
+    # print ('adc Sync Delay: ' + str(record['adcSynchroDelay']))
+
     return
 
 
@@ -63,6 +64,7 @@ def main(packet=None):
 
     read_pickle()
 
+    packet = {}
     cycle = 10
     avgNum = 60
     amp, tC = [], []
@@ -91,16 +93,23 @@ def main(packet=None):
 
 
             record = echoes_1.getSessionData()
-            record['capture_data'] = amp
-            record['session'] = 'Me02-H100'
-            record['cycle_number']  = cycle_num + 1
-            record['avg_number']    = avg_num
-            record['source_filename'] = name
+            # record['capture_data'] = amp
+            # record['session'] = 'Me02-H100'
+            # record['cycle_number']  = cycle_num + 1
+            # record['avg_number']    = avg_num
+            # record['source_filename'] = name
 
-            # packet['test_setting']['impulseVoltage']= record['impulseVoltage']
-            # packet['test_setting']['impulseType']   = record['impulseType']
-            # packet['test_result']['data']           =
-            echoes_db.insert_capture(record)
+            packet['test_setting']['impulseVoltage']= record['impulseVoltage']
+            packet['test_setting']['impulseType']   = record['impulseType']
+            packet['test_setting']['vgaGain']       = record['vgaGain']
+
+            packet['test_result']['data']           = amp
+            packet['test_result']['session']        = 'Me02-H100'
+            packet['test_result']['cycle_number']   = cycle_num + 1
+            packet['test_result']['avg_number']     = avg_num
+            packet['test_result']['source_filename']= name
+
+            echoes_db.insert_capture(packet)
 
     print("time:" + str(datetime.datetime.now()))
 

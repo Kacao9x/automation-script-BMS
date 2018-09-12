@@ -48,10 +48,22 @@ def _get_timestamp_from_filename( filename ):
     return endtime
 
 
+def read_pickle():
+    record = echoes.getSessionData()
+    print ('impulseVoltage: ' + record['impulseVoltage'])
+    print ('impulseType' + record['impulseType'])
+    print ('impulseCycle: ' + record['impulseCycles'])
+    print ('capture ADC: ' + record['captureAdc'])
+    print ('adc Sync Delay: ' + record['adcSynchroDelay'])
+    print ('vga Gain: ' + record['vgaGain'])
+    return
 
-def main():
 
-    cycle = 36
+def main(packet=None):
+
+    read_pickle()
+
+    cycle = 10
     avgNum = 60
     amp, tC = [], []
     for cycle_num in range(cycle):
@@ -80,11 +92,14 @@ def main():
 
             record = echoes_1.getSessionData()
             record['capture_data'] = amp
-            record['session'] = 'amplitude in time domain'
-            record['cycle_number']  = cycle_num
+            record['session'] = 'Me02-H100'
+            record['cycle_number']  = cycle_num + 1
             record['avg_number']    = avg_num
             record['source_filename'] = name
-            record['timestamp']     = str(datetime.datetime.now())
+
+            # packet['test_setting']['impulseVoltage']= record['impulseVoltage']
+            # packet['test_setting']['impulseType']   = record['impulseType']
+            # packet['test_result']['data']           =
             echoes_db.insert_capture(record)
 
     print("time:" + str(datetime.datetime.now()))

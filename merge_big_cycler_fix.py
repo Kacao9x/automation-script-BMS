@@ -4,9 +4,9 @@ import thLib as th
 
 ind = []
 keyword         = 'cycle'
-name            = '180904_Me-02-H100'
-# path            = 'Me02-H100_180814/'
-path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+name            = '180911_Me02-H100'
+path            = '/media/jean/Data/titan-echo-board/Me02-H100_180911/'
+# path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
 final_log_path  = path + name + '_sorted.csv'
@@ -40,7 +40,7 @@ def merge_column(table):
         print (table_stage.head())
         tb = pd.concat([tb, table_stage], axis=0)
         table_data = table.iloc[ int(ind[i]) + 1 : int(ind[i + 1]) : 50 ].copy()  #grasp the data instance
-        print table_data.head().to_string()
+        print (table_data.head().to_string())
 
         # tb = tb.append(table_stage, table_data, ignore_index=True)
         # tb = pd.concat([table_stage, table_data], axis=0)
@@ -65,15 +65,15 @@ def main ():
     print (cycler_data.shape)
 
 
-    header_list = ['id_num', 'time', 'del', 'current',
+    header_list = ['id_num', 'time', 'volt', 'current',
                          'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
                         'en(microWh)', 'Date/Time']
     cycler_data.columns = header_list
-    del cycler_data['del'], cycler_data['del2'], cycler_data['en(mWh)'], \
+    del cycler_data['del2'], cycler_data['en(mWh)'], \
         cycler_data['en(microWh)'], cycler_data['cap(microAh)']
 
     #added extra 'id' columns to shift the first rows
-    header_list = ['id','id_num', 'time', 'current',
+    header_list = ['id','id_num', 'time', 'volt', 'current',
                    'cap(mAh)', 'Date/Time']
     cycler_data = cycler_data.reindex(columns = header_list)
     print (cycler_data.head())
@@ -88,7 +88,7 @@ def main ():
     ind = (cycler_data.index[ cycler_data['time'].str.contains('Chg') ].tolist()) \
           + (cycler_data.index[ cycler_data['time'].str.contains('Rest') ].tolist())
 
-    print ind
+    print (ind)
 
     # transpose the dataframe for shifting rows
     cycler_data_t = cycler_data.T
@@ -98,6 +98,7 @@ def main ():
 
     cycler_data = cycler_data_t.T
     cycler_data.to_csv(cycler_path)
+    print (cycler_data.head())
 
     #------------------------------------------------------------------------------#
     # with open(cycler_path) as outfile:

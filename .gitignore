@@ -17,5 +17,5 @@ detect_crappy_data.py
 #system files
 .idea/Python-script.iml
 .idea/modules.xml
-.idea/workspace.xml
+/.idea/workspace.xml
 

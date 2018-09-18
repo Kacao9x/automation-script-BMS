@@ -8,8 +8,8 @@ import thLib as th
 keyword         = 'cycle'
 name            = '180911_Me02-H100'
 # path            = 'Me02-H100_180814/'
-# path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
-path            = '/media/jean/Data/titan-echo-board/Me02-H100_180911/'
+path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+# path            = '/media/jean/Data/titan-echo-board/Me02-H100_180911/'
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
 final_log_path  = path + name + '_sorted.csv'

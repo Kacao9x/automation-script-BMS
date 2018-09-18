@@ -6,7 +6,7 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = '180911_Me02-H100'
+name            = '180914_Me02-H100'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -79,12 +79,11 @@ def display_list_of_file(key):
 # Merge the capacity between stage 1,2 and 4
 # only works with the cycler data logs
 def merge_column(table):
-
-    NAN_finder = table['id'].notna()  # a boolean list of ID columns
     print (table.head().to_string())
     print (table.shape)
     row, col = table.shape
 
+    NAN_finder = table['id'].notna()  # a boolean list of ID columns
     global ind
     for i in range(len(NAN_finder)):
         if NAN_finder[i] == True:
@@ -314,7 +313,7 @@ def _filter_data_by_timeInterval(table, sec):
 
         tb = pd.concat([tb, table_stage], axis=0)
         table_data = table.iloc[ int(ind[i]) + 1 : int(ind[i + 1]) : sec * 10].copy()  #grasp the data instance
-        print table_data.head().to_string()
+        print (table_data.head().to_string())
 
         tb = pd.concat([tb, table_data], axis=0)
 
@@ -362,7 +361,7 @@ def clean_test_data(fix = bool):
           + (cycler_data.index[
                  cycler_data['time'].str.contains('Rest')].tolist())
 
-    print ind
+    print (ind)
 
     # transpose the dataframe for shifting rows
     cycler_data_t = cycler_data.T
@@ -388,6 +387,7 @@ def main():
 
     ''' select data in 5s interval '''
     # table = clean_test_data(fix = False)
+
 
     table = merge_column(table)                                                 # Merge capactity of CC and CV stages
     table.to_csv(cycler_path_new)

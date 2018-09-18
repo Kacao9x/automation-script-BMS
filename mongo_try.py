@@ -94,22 +94,24 @@ def main(packet=None):
 
             record = echoes_1.getSessionData()
             # record['capture_data'] = amp
-            # record['session'] = 'Me02-H100'
-            # record['cycle_number']  = cycle_num + 1
-            # record['avg_number']    = avg_num
-            # record['source_filename'] = name
+            record['session'] = 'Me02-H100_180914'
 
-            packet['test_setting']['impulseVoltage']= record['impulseVoltage']
-            packet['test_setting']['impulseType']   = record['impulseType']
-            packet['test_setting']['vgaGain']       = record['vgaGain']
+            record['test_results'] = {}
+            record['test_results']['data'] = amp
+            record['test_results']['cycle_number']  = cycle_num + 1
+            record['test_results']['avg_number']    = avg_num
+            record['test_results']['name']          = name
+            # packet['test_setting']['impulseVoltage']= record['impulseVoltage']
+            # packet['test_setting']['impulseType']   = record['impulseType']
+            # packet['test_setting']['vgaGain']       = record['vgaGain']
 
-            packet['test_result']['data']           = amp
-            packet['test_result']['session']        = 'Me02-H100'
-            packet['test_result']['cycle_number']   = cycle_num + 1
-            packet['test_result']['avg_number']     = avg_num
-            packet['test_result']['source_filename']= name
+            # packet['test_result']['data']           = amp
+            # packet['test_result']['session']        = 'Me02-H100'
+            # packet['test_result']['cycle_number']   = cycle_num + 1
+            # packet['test_result']['avg_number']     = avg_num
+            # packet['test_result']['source_filename']= name
 
-            echoes_db.insert_capture(packet)
+            echoes_db.insert_capture(record)
 
     print("time:" + str(datetime.datetime.now()))
 

@@ -7,7 +7,7 @@ See Github repo for documentation
 @author: kacao
 '''
 # python titan_cmd.py --start-fresh -a 15 -rate 2400000 -g 0.75 -v 85 --input 1
-# --impulse 2 --half-pw 100 --adc-config 0 --num-seq 1 --repeat 60 --minute 20
+# --impulse 2 --half-pw 600 --adc-config 0 --num-seq 1 --repeat 60 --minute 20
 import numpy as np
 import argparse, sys
 from lib.echoes_protocol import *
@@ -350,15 +350,28 @@ def _save_capture_to_Mongodb( cycleID=int, key=str, data=[], temper=bool,
     st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
 
-    record['capture_data'] = data
-    record['session'] = 'Me02-H100'
-    record['cycle_number'] = cycleID + 1
-    record['avg_number'] = key.strip('-')[2]
-    record['source_filename'] = st
+    packet = {}
+    packet['test_results'] = {}
+    packet['test_setting'] = {}
+    packet['test_apparatus'] = {}
+
+    record = echoes_1.getSessionData()
+    packet['test_results']['data'] = data
+    packet['test_results']['cycle_number'] = cycleID +1
+    packet['test_results']['avg_number'] = key.strip('-')[1]
+    packet['test_results']['timestamp'] = st
+
+
+    packet['test_setting']['Impulse_Voltage']= record['Impulse_Voltage']
+    packet['test_setting']['Impulse_Type']  = record['impulseType']
+    packet['test_setting']['vgaGain']       = record['vgaGain']
+    
+    packet['test_apparatus']['session'] = 'Me02-H100'
+
 
     if temper:
         tempC = temp_sense.get_average_temperature_celcius(16)
-        record['temperature'] = tempC
+        packet['test_results']['temperature'] = tempC
 
     echoes_db.insert_capture(record)
     return
@@ -411,6 +424,7 @@ def capture_and_average_output(num, key, pagesToRead, offset):
         # output = [element - offset for element in output]
         y = filter_raw_data( output )                                           #enable bandpass
         _save_capture_data( num, key + '-' + str( i + 1 ), output, False )      #don't save temperature
+        _save_capture_to_Mongodb( num, key + '-' + str( i + 1 ), output, False )
         
     return y_avg
 

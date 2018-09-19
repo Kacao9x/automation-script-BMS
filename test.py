@@ -147,37 +147,37 @@ def _write_test_logs(name='', offset=float):
 def _voltage_init():
     print str(__VOLTAGE__)
     if __VOLTAGE__ == 85:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_85v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_85v)
     elif __VOLTAGE__ == 80:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_80v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_80v)
     elif __VOLTAGE__ == 75:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_75v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_75v)
     elif __VOLTAGE__ == 70:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_70v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_70v)
     elif __VOLTAGE__ == 65:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_65v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_65v)
     elif __VOLTAGE__ == 60:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_60v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_60v)
     elif __VOLTAGE__ == 55:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_55v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_55v)
     elif __VOLTAGE__ == 50:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_50v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_50v)
     elif __VOLTAGE__ == 45:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_45v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_45v)
     elif __VOLTAGE__ == 40:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_40v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_40v)
     elif __VOLTAGE__ == 35:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_35v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_35v)
     elif __VOLTAGE__ == 30:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_30v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_30v)
     elif __VOLTAGE__ == 25:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_25v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_25v)
     elif __VOLTAGE__ == 20:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_20v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_20v)
     elif __VOLTAGE__ == 15:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_15v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_15v)
     elif __VOLTAGE__ == 10:
-        return echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_10v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_10v)
     else:
         return False
 
@@ -185,42 +185,42 @@ def _voltage_init():
 def _input_type_init():
     if __TYPE__ == 1:
         print ("unipolar: ")
-        return echoes_1.setImpulseType(Impulse_Type.half)
+        return echoes_1.set_impulse_type(Impulse_Type.half)
     elif __TYPE__ == 2:
         print ("bipolar: ")
-        return echoes_1.setImpulseType(Impulse_Type.full)
+        return echoes_1.set_impulse_type(Impulse_Type.full)
     elif __TYPE__ == -1:
         print ("unipolar-negative: ")
-        return echoes_1.setImpulseType(Impulse_Type.half_negative)
+        return echoes_1.set_impulse_type(Impulse_Type.half_negative)
     elif __TYPE__ == -2:
         print ("bipolar-negative: ")
-        return echoes_1.setImpulseType(Impulse_Type.full_negative)
+        return echoes_1.set_impulse_type(Impulse_Type.full_negative)
     return False
 
 
 def _half_pw_pulse_init():
     if __HALF__ == 0:
         print ("step 65535ns: ")
-        return echoes_1.setImpulseHalfPeriodWidth(65535)
+        return echoes_1.set_impulse_half_period_width(65535)
     elif (__HALF__ > 99) and (__HALF__ < 1400):
         print str(__HALF__) + 'ns'
-        return echoes_1.setImpulseHalfPeriodWidth(__HALF__)
+        return echoes_1.set_impulse_half_period_width(__HALF__)
 
     else:
         return False
 
 
 def _period_impulse_init():
-    return echoes_1.setImpulseCycles(__PERIOD__)
+    return echoes_1.set_impulse_cycles(__PERIOD__)
 
 
 def _input_capture_init():
     if __INPUT__ == 1:
         print ("primary: ")
-        return echoes_1.setCaptureADC(Capture_Adc.adc_primary)
+        return echoes_1.set_capture_adc(Capture_Adc.adc_primary)
     elif __INPUT__ == 2:
         print ("secondary: ")
-        return echoes_1.setCaptureADC(Capture_Adc.adc_secondary)
+        return echoes_1.set_capture_adc(Capture_Adc.adc_secondary)
     else:
         return False
 
@@ -244,43 +244,20 @@ def _sequence_init():
 def _ADC_sampling_init():
     if __ADCconfig__ == 0:
         print ("12bit_7_2msps")
-        result = echoes_1.setAdcConfig(ADC_Config.fs_12bit_7_2msps)
+        result = echoes_1.ADC_Config(ADC_Config.fs_12bit_7_2msps)
         if result:
             echoes_dsp.setFs(7200000.0)
             print("  Success!")
         else:
             print ('error updating sampling rate')
-    elif __ADCconfig__ == 1:
-        print ("10bit_8_31msps")
-        result = echoes_1.setAdcConfig(ADC_Config.fs_10bit_8_31msps)
-        if result:
-            echoes_dsp.setFs(8310000.0)
-            print("  Success!")
-        else:
-            print ('error updating sampling rate')
-    elif __ADCconfig__ == 2:
-        print ("8bit_9_82msps")
-        result = echoes_1.setAdcConfig(ADC_Config.fs_08bit_9_82msps)
-        if result:
-            echoes_dsp.setFs(9820000.0)
-            print("  Success!")
-        else:
-            print ('error updating sampling rate')
-    elif __ADCconfig__ == 3:
-        print ("6bit_12_00msps")
-        result = echoes_1.setAdcConfig(ADC_Config.fs_06bit_12_00msps)
-        if result:
-            echoes_dsp.setFs(12000000.0)
-            print("  Success!")
-        else:
-            print ('error updating sampling rate')
+
     else:
         print ("Failed setting samping rate")
 
 
 def _VGA_gain_init():
     print __GAIN__
-    return echoes_1.setVgaGain(__GAIN__)
+    return echoes_1.set_vga_gain(__GAIN__)
 
 
 def system_config():
@@ -310,16 +287,16 @@ def system_config():
     time.sleep(5)
 
     # 6. select ADC sampling config:
-    print ("\n(6) select ADC sampling bits: ")
+    # print ("\n(6) select ADC sampling bits: ")
     # _ADC_sampling_init()
-    echoes_dsp.setFs(7200000.0)
-    print("  Success!")
-    time.sleep(5)
+    # echoes_dsp.setFs(7200000.0)
+    # print("  Success!")
+    # time.sleep(5)
 
     # 7. Set how many sequences to average together
-    print ("\n(7) sequence to average: ")
-    print (str(_sequence_init()))
-    time.sleep(5)
+    # print ("\n(7) sequence to average: ")
+    # print (str(_sequence_init()))
+    # time.sleep(5)
 
     # 8. Set VGA gain
     print ("\n(8) set VGA gain: ")
@@ -370,7 +347,7 @@ def _save_capture_data(cycleID, key, data, temper):
 #     packet['test_setting'] = {}
 #     packet['test_apparatus'] = {}
 #
-#     record = echoes_1.getSessionData()
+#     record = echoes_1.get_session_data()
 #     packet['test_results']['data'] = data
 #     packet['test_results']['cycle_number'] = cycleID + 1
 #     packet['test_results']['avg_number'] = key.split('-')[1]
@@ -403,7 +380,8 @@ def filter_raw_data(output=[]):
         print("enable Bandpass in raw data")
         bandpass_upper = float(3500000)
         bandpass_lower = float(300000)
-        y = echoes_dsp.applyBandpass(y, bandpass_lower, bandpass_upper, 51)
+        y = echoes_dsp.apply_bandpass_filter(y, bandpass_lower, bandpass_upper,
+                                             51)
     return y
 
 
@@ -415,7 +393,7 @@ def capture_filtered_data(output=[]):
 
     if True:
         print("Removing DC offset")
-        y = echoes_dsp.removeDcOffset(y)
+        y = echoes_dsp.remove_dc_offset(y)
 
     if True:
         print("Upsampling")
@@ -470,7 +448,7 @@ def main():
     # ======= SET UP TEST PARAMETERs =======#
     system_config()
     echoes_1.measure_dc_offset()
-    offSet = echoes_1.dcOffset
+    offSet = echoes_1.dc_offset
     echoes_1.set_total_adc_captures(total_capture)
     _write_test_logs(__NAME__, offSet)
 
@@ -493,11 +471,11 @@ def main():
             print ('bad data: count %s  std_value: %s' %
                    (str(count), str(std_value)))
 
-            echoes_1.resetMicro()
+            echoes_1.reset_micro()
             time.sleep(10)
             system_config()
-            echoes_1.measureDcOffset()
-            offSet = echoes_1.dcOffset
+            echoes_1.measure_dc_offset()
+            offSet = echoes_1.dc_offset
             _write_test_logs(__NAME__, offSet)
 
             y_avg = capture_and_average_output(i, 'raw', 1,
@@ -544,8 +522,8 @@ totalpages = 1
 
 print("Initializing EchOES")
 echoes_1 = echoes()
-echoes_1.resetMicro()
-echoes_1.startNewSession()
+echoes_1.reset_micro()
+echoes_1.start_new_session()
 
 # print("Initializing database")
 # echoes_db       = database()
@@ -564,7 +542,3 @@ if args.fresh:
 else:
     print ("resume test")
 
-# if args.test:
-#     pass
-# else:
-#     parser.print_help()

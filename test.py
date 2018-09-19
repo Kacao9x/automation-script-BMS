@@ -16,6 +16,7 @@ from lib.echoes_temp_sensor import *
 from lib.echoes_signalprocessing import *
 from lib.echoes_database import *
 
+
 # Command line arguments
 def ParseHelpers():
     global parser, args
@@ -36,10 +37,12 @@ def ParseHelpers():
 
     parser.add_argument('-b', '--rate', default='2400000', type=int,
                         dest='rate', help='set sampling rate',
-                        choices=range(10000, 2500001), metavar="[10000-2500000]")
+                        choices=range(10000, 2500001),
+                        metavar="[10000-2500000]")
 
     parser.add_argument('-g', '--gain', default='0.0', type=str,
-                        dest='gain', help='set the VGA gain', metavar="[0.0, 1.0]")
+                        dest='gain', help='set the VGA gain',
+                        metavar="[0.0, 1.0]")
 
     parser.add_argument('-v', '--voltage', default='10', type=int,
                         dest='voltage', help='set transducer voltage',
@@ -50,10 +53,11 @@ def ParseHelpers():
                         help='select input channel to collect data ' +
                              '1.adc-primary  2.adc-secondary')
 
-    parser.add_argument('--impulse', default=1, nargs='*', choices=[-2,-1, 1, 2],
-                        dest='type', metavar='[1 or 2]',type=int,
-                        help='select type of impulse\n' + 
-                        '1.unipolar  2.bipolar  -1.unipolar-neg  -2.bipolar-neg')
+    parser.add_argument('--impulse', default=1, nargs='*',
+                        choices=[-2, -1, 1, 2],
+                        dest='type', metavar='[1 or 2]', type=int,
+                        help='select type of impulse\n' +
+                             '1.unipolar  2.bipolar  -1.unipolar-neg  -2.bipolar-neg')
 
     parser.add_argument('--period', type=int, default=1, help='periods',
                         dest='period', choices=[1, 2, 3], metavar='[1,2,3]')
@@ -64,11 +68,15 @@ def ParseHelpers():
                                           '0.step' + '[100ns, 1250ns, 50]',
                         metavar='select 0 or value in range [100-1250]')
 
-    parser.add_argument('--adc-config', type=int, default=0, choices=range(0, 5),
-                        dest='adcConfig', help='Input ADC config', metavar='[0,4]')
+    parser.add_argument('--adc-config', type=int, default=0,
+                        choices=range(0, 5),
+                        dest='adcConfig', help='Input ADC config',
+                        metavar='[0,4]')
 
-    parser.add_argument('--num-seq', type=int, default='1', choices=[1, 2, 4, 8, 16],
-                        dest='numSeq', help='how many sequence to average together',
+    parser.add_argument('--num-seq', type=int, default='1',
+                        choices=[1, 2, 4, 8, 16],
+                        dest='numSeq',
+                        help='how many sequence to average together',
                         metavar='[1,2,4,8,16]')
 
     # ============================ Add-on feature ==============================#
@@ -77,7 +85,8 @@ def ParseHelpers():
                         help='the number of repetition')
 
     parser.add_argument('--minute', default=20, type=int, choices=range(1, 60),
-                        dest='minute', metavar='[1,59]', help='minutes to sleep')
+                        dest='minute', metavar='[1,59]',
+                        help='minutes to sleep')
 
     parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='Enable debug mode')
@@ -98,27 +107,32 @@ def ParseHelpers():
     if args.resume:
         print ("Resume the test")
 
-#==============================================================================#
-#================= create a test log file and set the name ====================#
+
+# ==============================================================================#
+# ================= create a test log file and set the name ====================#
 def _get_filename():
-    return  "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
+    return "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
 
 
-def _write_test_logs(name='', offset = float):
+def _write_test_logs(name='', offset=float):
     try:
         with open(name, 'ab') as writeout:
             writeout.writelines('the delay us is: ' + str(__DELAY__) + '\n')
             writeout.writelines('the VGA gain is: ' + __GAIN__ + '\n')
-            writeout.writelines('the sampling rate is: ' + str(__SAMPLING__) + '\n')
-            writeout.writelines('The volt transducer is ' + str(__VOLTAGE__) + '\n')
-            writeout.writelines('The input channel to collect data ' + str(__INPUT__) + '\n')
+            writeout.writelines(
+                'the sampling rate is: ' + str(__SAMPLING__) + '\n')
+            writeout.writelines(
+                'The volt transducer is ' + str(__VOLTAGE__) + '\n')
+            writeout.writelines(
+                'The input channel to collect data ' + str(__INPUT__) + '\n')
             writeout.writelines('The impulse type ' + str(__TYPE__) + '\n')
-            writeout.writelines('The impulse half period?  ' + str(__HALF__) + '\n')
+            writeout.writelines(
+                'The impulse half period?  ' + str(__HALF__) + '\n')
             writeout.writelines('Set conver sequence ' + str(__numSEQ__) + '\n')
             writeout.writelines('Set ADC config ' + str(__ADCconfig__) + '\n')
             writeout.writelines('number of Repeat ' + str(__REPEAT__) + '\n')
             writeout.writelines('%s minutes to delay ' % str(__MINUTE__) + '\n')
-            writeout.writelines('DC offset %s' % str(offset) + '\n')
+            writeout.writelines('DC offset %s: ' % str(offset) + '\n')
             writeout.writelines('\n')
 
     except:
@@ -128,8 +142,8 @@ def _write_test_logs(name='', offset = float):
     return
 
 
-#==============================================================================#
-#======================== System Config =======================================#
+# ==============================================================================#
+# ======================== System Config =======================================#
 def _voltage_init():
     print str(__VOLTAGE__)
     if __VOLTAGE__ == 85:
@@ -270,7 +284,6 @@ def _VGA_gain_init():
 
 
 def system_config():
-
     # 1. set voltage limit for transducer
     print ("(1) Voltage setup: %s " % str(_voltage_init()))
     time.sleep(5)
@@ -320,20 +333,22 @@ def system_config():
     #     print "Failed delay_us"
 
 
-#==============================================================================#
-#======================== MAIN FUNCTION =======================================#
-def _save_capture_data( cycleID, key, data, temper):
+# ==============================================================================#
+# ======================== MAIN FUNCTION =======================================#
+def _save_capture_data(cycleID, key, data, temper):
     # Write file
     ts = time.time()
-    st = 'cycle' + str(cycleID + 1) + '-' + key +'-'\
+    st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-    
+
     if temper:
         fn = "tempC/" + st + "-echoes-e.dat"
-        #tempC = temp_sense.get_temperature_celcius()
-        tempC = temp_sense.get_average_temperature_celcius(16)
+
+        tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
+        tempC_2 = temp_sense_primary.get_average_temperature_celcius(16)
         filehandle = open(fn, "w")
-        filehandle.write('Temperature: %s oC' % str(tempC))
+        filehandle.write('Temperature_1_and_2: %s  %s oC' % (str(tempC_1),
+                                                             str(tempC_2)))
         filehandle.close()
     else:
         fn = "data/" + st + "-echoes-e.dat"
@@ -344,41 +359,43 @@ def _save_capture_data( cycleID, key, data, temper):
     return
 
 
-def _save_capture_to_Mongodb( cycleID=int, key=str, data=[], temper=bool,
-                              record = {} ):
-    ts = time.time()
-    st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
-         + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-
-    packet = {}
-    packet['test_results'] = {}
-    packet['test_setting'] = {}
-    packet['test_apparatus'] = {}
-
-    record = echoes_1.getSessionData()
-    packet['test_results']['data'] = data
-    packet['test_results']['cycle_number'] = cycleID +1
-    packet['test_results']['avg_number'] = key.strip('-')[1]
-    packet['test_results']['timestamp'] = st
-
-
-    packet['test_setting']['Impulse_Voltage']= record['Impulse_Voltage']
-    packet['test_setting']['Impulse_Type']  = record['impulseType']
-    packet['test_setting']['vgaGain']       = record['vgaGain']
-    
-    packet['test_apparatus']['session'] = 'Me02-H100'
-
-
-    if temper:
-        tempC = temp_sense.get_average_temperature_celcius(16)
-        packet['test_results']['temperature'] = tempC
-
-    echoes_db.insert_capture(record)
-    return
+# def _save_capture_to_Mongodb(cycleID=int, key=str, data=[], temper=bool,
+#                              record={}):
+#     ts = time.time()
+#     st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
+#          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+#
+#     packet = {}
+#     packet['test_results'] = {}
+#     packet['test_setting'] = {}
+#     packet['test_apparatus'] = {}
+#
+#     record = echoes_1.getSessionData()
+#     packet['test_results']['data'] = data
+#     packet['test_results']['cycle_number'] = cycleID + 1
+#     packet['test_results']['avg_number'] = key.split('-')[1]
+#     packet['test_results']['timestamp'] = st
+#
+#     packet['test_setting']['impulseVoltage'] = record['impulseVoltage']
+#     packet['test_setting']['impulseType'] = record['impulseType']
+#     packet['test_setting']['vgaGain'] = record['vgaGain']
+#
+#     packet['test_apparatus']['session'] = 'Me02-H100'
+#
+#     if temper:
+#         # tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
+#         # tempC_2 = temp_sense_secondary.get_average_temperature_celcius(16)
+#         packet['test_results']['temperature_1'] = \
+#             temp_sense_primary.get_average_temperature_celcius(16)
+#         packet['test_results']['temperature_2'] = \
+#             temp_sense_secondary.get_average_temperature_celcius(16)
+#
+#     echoes_db.insert_capture(packet)
+#     return
 
 
 def filter_raw_data(output=[]):
-    y = output[0 : totalpages * 2048]
+    y = output[0: totalpages * 2048]
     print("Total samples: " + str(len(y)))
     if True:
         print("enable Bandpass in raw data")
@@ -391,8 +408,7 @@ def filter_raw_data(output=[]):
 def capture_filtered_data(output=[]):
     # fsOriginal = echoes_dsp.getFs()
 
-    y = output[0 : totalpages * 2048]
-
+    y = output[0: totalpages * 2048]
     print("Total samples: " + str(len(y)))
 
     if True:
@@ -413,94 +429,97 @@ def capture_filtered_data(output=[]):
 
 def capture_and_average_output(num, key, pagesToRead, offset):
     outputs = []
-    total_capture = 60                                                          #average number
-    while total_capture > 0:
-        total_capture -= 1
-        outp = echoes_1.captureAndRead( sendImpulse = True, pagesToRead = 1 )
-        outputs.append( outp )
 
-    y_avg = np.array(outputs).mean(0)
-    for i, output in enumerate(outputs):
-        # output = [element - offset for element in output]
-        y = filter_raw_data( output )                                           #enable bandpass
-        _save_capture_data( num, key + '-' + str( i + 1 ), output, False )      #don't save temperature
-        _save_capture_to_Mongodb( num, key + '-' + str( i + 1 ), output, False )
-        
+    adc_captures = echoes_1.capture_and_read(send_impulse=True)
+    adc_captures_float = echoes.convert_adc_raw_to_float(adc_captures)
+    adc_captures_float = echoes.remove_bad_reads(adc_captures_float)
+
+    y_avg = np.array(adc_captures_float).mean(0)
+    for i, output in enumerate(adc_captures_float):
+        # y = filter_raw_data( output )                                           #enable bandpass
+        _save_capture_data(num, key + '-' + str(i + 1), output,
+                           False)  # don't save temperature
+        # _save_capture_to_Mongodb( num, key + '-' + str( i + 1 ), output, False )
+
     return y_avg
 
 
-def count_good_value ( x ):
+def count_good_value(x):
     boundary = 0.015
     count = 0
-    for i in range (0, len(x)):
-        if boundary < abs( x[i] ):
+    for i in range(0, len(x)):
+        if boundary < abs(x[i]):
             count += 1
 
     return count
 
-def find_data_std( x ):
-    x_arr = np.array( x )
-    x_arr = np.absolute( x_arr )
-    return np.std( x_arr[50:-1], ddof=1 )
 
-#==============================================================================#
-#======================== MAIN ACTIVITY =======================================#
+def find_data_std(x):
+    x_arr = np.array(x)
+    x_arr = np.absolute(x_arr)
+    return np.std(x_arr[50:-1], ddof=1)
+
+
+# ==============================================================================#
+# ======================== MAIN ACTIVITY =======================================#
 def main():
     __NAME__ = _get_filename()
 
-    # ======= UNIT TEST =======#
-    # execute the activity here over SPI prococol
+    # ======= SET UP TEST PARAMETERs =======#
     system_config()
-    echoes_1.measureDcOffset()
+    echoes_1.measure_dc_offset()
     offSet = echoes_1.dcOffset
+    echoes_1.set_total_adc_captures(total_capture)
     _write_test_logs(__NAME__, offSet)
 
     for i in range(__REPEAT__):
-        print ('\n\nCycle: ' + str(i+1))
-        
-        goodRead = False
-        # output = echoes_1.captureAndRead( sendImpulse = True, pagesToRead = 1 )
-        y_avg = capture_and_average_output( i, 'raw', 1, offSet )               # don't save temperature
-        y_avg = filter_raw_data( y_avg )
-        # y_avg = [element - offSet for element in y]
+        print ('\nCycle: ' + str(i + 1))
 
-        #detect a bad read
-        count = count_good_value( y_avg )
-        std_value = find_data_std( y_avg )
-        goodRead = (count > 15 and std_value > 0.0020 )
-        # _save_capture_data(i, 'avg', y, False)
-            #Keep firing until it collects a clean signal        
+        goodRead = False
+        y_avg = capture_and_average_output(i, 'raw', totalpages,
+                                           offSet)  # don't save temperature
+        y_avg = filter_raw_data(y_avg)
+
+        # detect a bad read
+        count = count_good_value(y_avg)
+        std_value = find_data_std(y_avg)
+        goodRead = (count > 15 and std_value > 0.0020)
+        # _save_capture_data(i, 'avg', y_avg, False)
+
+        # Keep firing until it collects a clean signal
         while not goodRead:
-            print ('bad data: count %s  std_value: %s' % (str(count), str(std_value)))
+            print ('bad data: count %s  std_value: %s' %
+                   (str(count), str(std_value)))
+
             echoes_1.resetMicro()
             time.sleep(10)
             system_config()
             echoes_1.measureDcOffset()
             offSet = echoes_1.dcOffset
             _write_test_logs(__NAME__, offSet)
-            
-            y_avg = capture_and_average_output( i, 'raw', 1, offSet )           # don't save temperature
-            count = count_good_value( y_avg )
-            std_value = find_data_std( y_avg )
-        
-            #detect a bad read
-            goodRead = (count > 15 and std_value > 0.0020 )
-        
-        print ('good data: count %s  std_value: %s' % (str(count), str(std_value)))
-        
-        # print ('.... Capture filtered data...')
-        # z = capture_filtered_data(output)
-        # temp_c = temp_sense.get_temperature_celcius()
-        # _save_capture_data(i, 'filtered', z, temp_c)
-        
-        _save_capture_data(i, 'temp', 0, True)                                  #save temperature
+
+            y_avg = capture_and_average_output(i, 'raw', 1,
+                                               offSet)  # don't save temperature
+            count = count_good_value(y_avg)
+            std_value = find_data_std(y_avg)
+
+            # detect a bad read
+            goodRead = (count > 15 and std_value > 0.0020)
+
+        print ('good: count %s  std_value: %s' % (str(count), str(std_value)))
+        _save_capture_data(i, 'avg', y_avg, False)
+
+        _save_capture_data(i, 'temp', 0, True)  # save temperature
         time.sleep(__MINUTE__ * 60)
-        
+
         print ('End cycle \n \n')
+    # echoes_db.close()
+    echoes_1.close()
 
     # ======= END UNIT TEST =======#
 
-#==============================================================================#
+
+# ==============================================================================#
 
 ParseHelpers()
 
@@ -518,28 +537,30 @@ __numSEQ__ = args.numSeq
 __REPEAT__ = args.repeat
 __MINUTE__ = args.minute
 
+total_capture = 64
 totalpages = 1
 
 print("Initializing EchOES")
-echoes_1        = echoes()
+echoes_1 = echoes()
 echoes_1.resetMicro()
 echoes_1.startNewSession()
 
-print("Initializing database")
-echoes_db       = database()
+# print("Initializing database")
+# echoes_db       = database()
+# echoes_db.mongo_db = 'echoes-captures'
 
 print("Initializing signal processing")
-echoes_dsp      = echoes_signals( 2400000.0 )
+echoes_dsp = echoes_signals(2400000.0)
 
 print("Initializing temp sensor")
-temp_sense      = echoes_temp_sense()
+temp_sense_primary = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
+temp_sense_secondary = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
 
 if args.fresh:
     print ("Start a new test")
     main()
 else:
     print ("resume test")
-
 
 # if args.test:
 #     pass

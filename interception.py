@@ -10,5 +10,10 @@ import numpy
 # pylab.plot(x,numpy.sin(x),x,numpy.cos(x),result,numpy.sin(result),'ro')
 # pylab.show()
 
-st = 'raw-1'
-print (st.split('-')[1])
+st = 'Temperature_1_and_2: 23.567  25.676 oC'
+if len(st.split()) > 2:
+    temp_1 = st.split()[1]
+    temp_2 = st.split()[2]
+    # temp_2 = st.rstrip().split('Temperature_1_and_2:')[2]
+print (temp_1)
+print (temp_2)

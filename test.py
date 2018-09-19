@@ -359,8 +359,8 @@ def _save_capture_data(cycleID, key, data, temper):
     return
 
 
-# def _save_capture_to_Mongodb(cycleID=int, key=str, data=[], temper=bool,
-#                              record={}):
+# def _save_capture_to_Mongodb( cycleID=int, key=str, data=[], temper=bool,
+#                               record = {} ):
 #     ts = time.time()
 #     st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
 #          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
@@ -376,11 +376,13 @@ def _save_capture_data(cycleID, key, data, temper):
 #     packet['test_results']['avg_number'] = key.split('-')[1]
 #     packet['test_results']['timestamp'] = st
 #
-#     packet['test_setting']['impulseVoltage'] = record['impulseVoltage']
-#     packet['test_setting']['impulseType'] = record['impulseType']
-#     packet['test_setting']['vgaGain'] = record['vgaGain']
+#
+#     packet['test_setting']['impulseVoltage']= record['impulseVoltage']
+#     packet['test_setting']['impulseType']  = record['impulseType']
+#     packet['test_setting']['vgaGain']      = record['vgaGain']
 #
 #     packet['test_apparatus']['session'] = 'Me02-H100'
+#
 #
 #     if temper:
 #         # tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)

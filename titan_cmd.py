@@ -9,7 +9,7 @@ See Github repo for documentation
 # python titan_cmd.py --start-fresh -a 15 -rate 2400000 -g 0.75 -v 85 --input 1
 # --impulse 2 --half-pw 600 --adc-config 0 --num-seq 1 --repeat 750 --minute 5
 import numpy as np
-import argparse
+import argparse, socket
 from lib.echoes_protocol import *
 from lib.echoes_spi import *
 from lib.echoes_temp_sensor import *
@@ -318,12 +318,13 @@ def _save_capture_data(cycleID = int, key = str, data = [], temper = bool,
     ts = time.time()
     st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-    tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
-    tempC_2 = temp_sense_primary.get_average_temperature_celcius(16)
 
     if temper:
+        tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
+        tempC_2 = temp_sense_primary.get_average_temperature_celcius(16)
+
         if file:
-            fn = "tempC/" + st + "-echoes-e.dat"
+            fn = "tempC/" + st + "-" +__HOST__+".dat"
             with open (fn, "w") as filehandle:
                 filehandle.write('TempC_1_and_2: %s  %s oC' % (str(tempC_1),
                                                                str(tempC_2)))
@@ -332,7 +333,7 @@ def _save_capture_data(cycleID = int, key = str, data = [], temper = bool,
             pass
 
     else: #or just if
-        fn = "data/" + st + "-echoes-e.dat"
+        fn = "data/" + st + "-" +__HOST__+".dat"
         with open (fn, "w") as filehandle:
             for samp in data:
                 filehandle.write(str(samp) + "\n")
@@ -411,7 +412,7 @@ def capture_filtered_data(output=[]):
     return y
 
 
-def capture_and_average_output(num, key, pagesToRead, offset):
+def capture_and_average_output(num, key, offset):
     outputs = []
 
     adc_captures = echoes_1.capture_and_read(send_impulse=True)
@@ -459,7 +460,7 @@ def main():
         print ('\nCycle: ' + str(i + 1))
 
         goodRead = False
-        y_avg = capture_and_average_output(i, 'raw', totalpages,offSet)         # don't save temperature
+        y_avg = capture_and_average_output(i, 'raw',offSet)                     # don't save temperature
         y_avg = filter_raw_data(y_avg)
 
         # detect a bad read
@@ -481,7 +482,7 @@ def main():
             offSet = echoes_1.dc_offset
             _write_test_logs(__NAME__, offSet)
 
-            y_avg = capture_and_average_output(i, 'raw', 1, offSet)             # don't save temperature
+            y_avg = capture_and_average_output(i, 'raw', offSet)                # don't save temperature
             count = count_good_value(y_avg)
             std_value = find_data_std(y_avg)
 
@@ -505,20 +506,21 @@ def main():
 
 ParseHelpers()
 
-__GAIN__ = args.gain
-__SAMPLING__ = args.rate
-__DELAY__ = args.delay_us
+__GAIN__    = args.gain
+__SAMPLING__= args.rate
+__DELAY__   = args.delay_us
 __VOLTAGE__ = args.voltage
-__INPUT__ = args.input
-__TYPE__ = args.type[0]
-__PERIOD__ = args.period
-__HALF__ = args.half
+__INPUT__   = args.input
+__TYPE__    = args.type[0]
+__PERIOD__  = args.period
+__HALF__    = args.half
 __ADCconfig__ = args.adcConfig
-__numSEQ__ = args.numSeq
+__numSEQ__  = args.numSeq
 
-__REPEAT__ = args.repeat
-__MINUTE__ = args.minute
+__REPEAT__  = args.repeat
+__MINUTE__  = args.minute
 
+__HOST__    = str(socket.gethostname())
 total_capture = 64
 totalpages = 1
 

@@ -6,7 +6,7 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = '180914_Me02-H100'
+name            = '180917_Me02-H100'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -218,7 +218,8 @@ def find_capacity(begin, end, table):
     line += int(diff / 5)
     print ('end_temp: ' + str(end_temp))
     print ("diff: %s" % str(line))
-    return line, table['cap(mAh)'][line], table['current'][line]
+    return line, table['cap(mAh)'][line], table['current'][line], \
+           table['volt'][line]
 
 
 # add a new header for the column to store echoes amplitude
@@ -254,13 +255,14 @@ def sort_by_name(filelist, starttime, table):
     filename= []
     index   = []
     timeDelta = []
+    volt = []
     current = []
     cycle1_time = _get_timestamp_from_filename( filelist[ 0 ] )
 
     for i, element in enumerate( filelist ):
 
         endtime = _get_timestamp_from_filename( element )
-        row, c, curr  = find_capacity(starttime, endtime, table)
+        row, c, curr, voltage  = find_capacity(starttime, endtime, table)
 
         if i == 0:
             timeDelta.append( 0 )
@@ -270,15 +272,17 @@ def sort_by_name(filelist, starttime, table):
 
         cap.append(c)
         current.append(curr)
+        volt.append(volt)
         index.append(row)
         filename.append(element)
 
 
-    column = ['index', 'cap(mAh)', 'current', 'FileName', 'TimeDelta']
+    column = ['index', 'cap(mAh)', 'current', 'volt', 'FileName', 'TimeDelta']
 
     table_sorted = pd.DataFrame({'index': index,
                                  'cap(mAh)': cap,
                                  'current': current,
+                                 'volt':volt,
                                  'FileName': filename,
                                  'TimeDelta': timeDelta},
                                 columns=column)                                 # columns=[] used to set order of columns
@@ -317,7 +321,7 @@ def _filter_data_by_timeInterval(table, sec):
 
         tb = pd.concat([tb, table_data], axis=0)
 
-    tb.columns = ['extra','id','id_num', 'time', 'current',
+    tb.columns = ['extra','id','id_num', 'time', 'volt', 'current',
                     'cap(mAh)', 'Date/Time']
     tb.sort_values('id')
     del tb['extra']
@@ -336,16 +340,16 @@ def clean_test_data(fix = bool):
     # cycler_data = lines.iloc[::50, 0:10]
     print (cycler_data.shape)
 
-    header_list = ['id_num', 'time', 'del', 'current',
+    header_list = ['id_num', 'time', 'volt', 'current',
                    'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
                    'en(microWh)', 'Date/Time']
     cycler_data.columns = header_list
-    del cycler_data['del'], cycler_data['del2'], cycler_data['en(mWh)'], \
+    del cycler_data['del2'], cycler_data['en(mWh)'], \
         cycler_data['en(microWh)'], cycler_data['cap(microAh)']
 
 
     # added extra 'id' columns to shift the first rows
-    header_list = ['id', 'id_num', 'time', 'current',
+    header_list = ['id', 'id_num', 'time', 'volt','current',
                    'cap(mAh)', 'Date/Time']
     cycler_data = cycler_data.reindex(columns=header_list)
     print (cycler_data.head())
@@ -358,8 +362,7 @@ def clean_test_data(fix = bool):
     ind = []
     # for good cycler data with 5s interval
     ind = (cycler_data.index[cycler_data['time'].str.contains('Chg')].tolist()) \
-          + (cycler_data.index[
-                 cycler_data['time'].str.contains('Rest')].tolist())
+          + (cycler_data.index[cycler_data['time'].str.contains('Rest')].tolist())
 
     print (ind)
 
@@ -381,13 +384,14 @@ def clean_test_data(fix = bool):
 
 def main():
 
+    ''' select data in 5s interval '''
+    table = clean_test_data(fix = False)
+
+    return
+
     with open(cycler_path) as outfile:
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
-
-    ''' select data in 5s interval '''
-    # table = clean_test_data(fix = False)
-
 
     table = merge_column(table)                                                 # Merge capactity of CC and CV stages
     table.to_csv(cycler_path_new)

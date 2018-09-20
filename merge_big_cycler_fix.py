@@ -4,9 +4,9 @@ import thLib as th
 
 ind = []
 keyword         = 'cycle'
-name            = '180911_Me02-H100'
-path            = '/media/jean/Data/titan-echo-board/Me02-H100_180911/'
-# path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+name            = '180914_Me02-H100'
+# path            = '/media/jean/Data/titan-echo-board/Me02-H100_180911/'
+path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
 final_log_path  = path + name + '_sorted.csv'
@@ -46,7 +46,7 @@ def merge_column(table):
         # tb = pd.concat([table_stage, table_data], axis=0)
         tb = pd.concat([tb, table_data], axis=0)
 
-    tb.columns = ['extra','id','id_num', 'time', 'current',
+    tb.columns = ['extra','id','id_num', 'time', 'volt', 'current',
                     'cap(mAh)', 'Date/Time']
     tb.sort_values('id')
     del tb['extra']
@@ -66,8 +66,8 @@ def main ():
 
 
     header_list = ['id_num', 'time', 'volt', 'current',
-                         'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
-                        'en(microWh)', 'Date/Time']
+                    'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+                    'en(microWh)', 'Date/Time']
     cycler_data.columns = header_list
     del cycler_data['del2'], cycler_data['en(mWh)'], \
         cycler_data['en(microWh)'], cycler_data['cap(microAh)']

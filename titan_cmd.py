@@ -7,9 +7,9 @@ See Github repo for documentation
 @author: kacao
 '''
 # python titan_cmd.py --start-fresh -a 15 -rate 2400000 -g 0.75 -v 85 --input 1
-# --impulse 2 --half-pw 600 --adc-config 0 --num-seq 1 --repeat 60 --minute 20
+# --impulse 2 --half-pw 600 --adc-config 0 --num-seq 1 --repeat 750 --minute 5
 import numpy as np
-import argparse, sys
+import argparse
 from lib.echoes_protocol import *
 from lib.echoes_spi import *
 from lib.echoes_temp_sensor import *
@@ -54,10 +54,10 @@ def ParseHelpers():
                              '1.adc-primary  2.adc-secondary')
 
     parser.add_argument('--impulse', default=1, nargs='*',
-                        choices=[-2, -1, 1, 2],
-                        dest='type', metavar='[1 or 2]', type=int,
-                        help='select type of impulse\n' +
-                             '1.unipolar  2.bipolar  -1.unipolar-neg  -2.bipolar-neg')
+                        choices=[-2, -1, 1, 2],dest='type', metavar='[1 or 2]',
+                        type=int, help='select type of impulse\n' +
+                             '1.unipolar  2.bipolar -1.unipolar-neg '
+                             '-2.bipolar-neg')
 
     parser.add_argument('--period', type=int, default=1, help='periods',
                         dest='period', choices=[1, 2, 3], metavar='[1,2,3]')
@@ -79,7 +79,7 @@ def ParseHelpers():
                         help='how many sequence to average together',
                         metavar='[1,2,4,8,16]')
 
-    # ============================ Add-on feature ==============================#
+    #============================ Add-on feature ==============================#
     parser.add_argument('--repeat', default=1, type=int, choices=range(1, 1001),
                         dest='repeat', metavar='[1,100]',
                         help='the number of repetition')
@@ -142,8 +142,8 @@ def _write_test_logs(name='', offset=float):
     return
 
 
-# ==============================================================================#
-# ======================== System Config =======================================#
+#==============================================================================#
+#======================== System Config =======================================#
 def _voltage_init():
     print str(__VOLTAGE__)
     if __VOLTAGE__ == 85:
@@ -310,28 +310,32 @@ def system_config():
     #     print "Failed delay_us"
 
 
-# ==============================================================================#
-# ======================== MAIN FUNCTION =======================================#
-def _save_capture_data(cycleID, key, data, temper):
+#==============================================================================#
+#======================== MAIN FUNCTION =======================================#
+def _save_capture_data(cycleID = int, key = str, data = [], temper = bool,
+                       file = bool, mongo = bool):
     # Write file
     ts = time.time()
     st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+    tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
+    tempC_2 = temp_sense_primary.get_average_temperature_celcius(16)
 
     if temper:
-        fn = "tempC/" + st + "-echoes-e.dat"
+        if file:
+            fn = "tempC/" + st + "-echoes-e.dat"
+            with open (fn, "w") as filehandle:
+                filehandle.write('TempC_1_and_2: %s  %s oC' % (str(tempC_1),
+                                                               str(tempC_2)))
+            filehandle.close()
+        if mongo:
+            pass
 
-        tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
-        tempC_2 = temp_sense_primary.get_average_temperature_celcius(16)
-        filehandle = open(fn, "w")
-        filehandle.write('Temperature_1_and_2: %s  %s oC' % (str(tempC_1),
-                                                             str(tempC_2)))
-        filehandle.close()
-    else:
+    else: #or just if
         fn = "data/" + st + "-echoes-e.dat"
-        filehandle = open(fn, "w")
-        for samp in data:
-            filehandle.write(str(samp) + "\n")
+        with open (fn, "w") as filehandle:
+            for samp in data:
+                filehandle.write(str(samp) + "\n")
         filehandle.close()
     return
 
@@ -416,9 +420,8 @@ def capture_and_average_output(num, key, pagesToRead, offset):
 
     y_avg = np.array(adc_captures_float).mean(0)
     for i, output in enumerate(adc_captures_float):
-        # y = filter_raw_data( output )                                           #enable bandpass
-        _save_capture_data(num, key + '-' + str(i + 1), output,
-                           False)  # don't save temperature
+        # y = filter_raw_data( output )                                         # enable bandpass
+        _save_capture_data(num, key + '-' + str(i+1), output, False, True, False)# don't save temperature
         # _save_capture_to_Mongodb( num, key + '-' + str( i + 1 ), output, False )
 
     return y_avg
@@ -440,8 +443,8 @@ def find_data_std(x):
     return np.std(x_arr[50:-1], ddof=1)
 
 
-# ==============================================================================#
-# ======================== MAIN ACTIVITY =======================================#
+#==============================================================================#
+#======================== MAIN ACTIVITY =======================================#
 def main():
     __NAME__ = _get_filename()
 
@@ -456,8 +459,7 @@ def main():
         print ('\nCycle: ' + str(i + 1))
 
         goodRead = False
-        y_avg = capture_and_average_output(i, 'raw', totalpages,
-                                           offSet)  # don't save temperature
+        y_avg = capture_and_average_output(i, 'raw', totalpages,offSet)         # don't save temperature
         y_avg = filter_raw_data(y_avg)
 
         # detect a bad read
@@ -468,18 +470,18 @@ def main():
 
         # Keep firing until it collects a clean signal
         while not goodRead:
-            print ('bad data: count %s  std_value: %s' %
-                   (str(count), str(std_value)))
+            print ('bad data: count %s  std_value: %s' % (str(count),
+                                                          str(std_value)))
 
             echoes_1.reset_micro()
             time.sleep(10)
+
             system_config()
             echoes_1.measure_dc_offset()
             offSet = echoes_1.dc_offset
             _write_test_logs(__NAME__, offSet)
 
-            y_avg = capture_and_average_output(i, 'raw', 1,
-                                               offSet)  # don't save temperature
+            y_avg = capture_and_average_output(i, 'raw', 1, offSet)             # don't save temperature
             count = count_good_value(y_avg)
             std_value = find_data_std(y_avg)
 
@@ -487,19 +489,19 @@ def main():
             goodRead = (count > 15 and std_value > 0.0020)
 
         print ('good: count %s  std_value: %s' % (str(count), str(std_value)))
-        _save_capture_data(i, 'avg', y_avg, False)
+        _save_capture_data(i, 'avg', y_avg, temper=False, file=True, mongo=False)
 
-        _save_capture_data(i, 'temp', 0, True)  # save temperature
+        _save_capture_data(i, 'temp', 0, temper=True, file=True, mongo=False)   # save temperature
         time.sleep(__MINUTE__ * 60)
 
         print ('End cycle \n \n')
     # echoes_db.close()
     echoes_1.close()
 
-    # ======= END UNIT TEST =======#
+    # ======= END TEST =======#
 
 
-# ==============================================================================#
+#==============================================================================#
 
 ParseHelpers()
 
@@ -520,8 +522,9 @@ __MINUTE__ = args.minute
 total_capture = 64
 totalpages = 1
 
-print("Initializing EchOES")
+print("Initializing EchOES 1 and 2")
 echoes_1 = echoes()
+# echoes_2 = echoes()
 echoes_1.reset_micro()
 echoes_1.start_new_session()
 
@@ -533,8 +536,8 @@ print("Initializing signal processing")
 echoes_dsp = echoes_signals(2400000.0)
 
 print("Initializing temp sensor")
-temp_sense_primary = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
-temp_sense_secondary = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
+temp_sense_primary      = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
+temp_sense_secondary    = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
 
 if args.fresh:
     print ("Start a new test")

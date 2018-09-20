@@ -461,7 +461,7 @@ def main():
 
         goodRead = False
         y_avg = capture_and_average_output(i, 'raw',offSet)                     # don't save temperature
-        y_avg = filter_raw_data(y_avg)
+        # y_avg = filter_raw_data(y_avg)
 
         # detect a bad read
         count = count_good_value(y_avg)
@@ -525,8 +525,7 @@ total_capture = 64
 totalpages = 1
 
 print("Initializing EchOES 1 and 2")
-echoes_1 = echoes()
-# echoes_2 = echoes()
+echoes_1 = echoes() #''' remember impule = True for using secondary transducer'''
 echoes_1.reset_micro()
 echoes_1.start_new_session()
 

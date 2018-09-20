@@ -152,7 +152,7 @@ def main ():
     avgPos = 1                                                                  #number of capture in each cycle
     avgNum = 60
     cycle = 708
-    cycle_id = 23
+    cycle_id = 1
     #cycle number to plot
 
     """
@@ -189,7 +189,7 @@ def main ():
     """
     while cycle_id < cycle + 1:
         testResults, tC = concat_all_data(cycle_id, 'raw')
-        cycle_id += 10
+        cycle_id += 1
         print (bad_data)
 
         print (testResults.shape)
@@ -315,8 +315,8 @@ def main ():
     # plt.show()
 
 #==============================================================================#
-# address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/Me02-H100_180917/data/'
+address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
+# address = '/media/jean/Data/titan-echo-board/Me02-H100_180917/data/'
 bad_data = []
 
 if __name__ == '__main__':

@@ -4,9 +4,9 @@ import thLib as th
 
 ind = []
 keyword         = 'cycle'
-name            = '180914_Me02-H100'
-# path            = '/media/jean/Data/titan-echo-board/Me02-H100_180911/'
-path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+name            = '180813_Me02-H100'
+path            = '/media/jean/ESD-USB/Mercedes_Cycler_Data/'
+# path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
 final_log_path  = path + name + '_sorted.csv'

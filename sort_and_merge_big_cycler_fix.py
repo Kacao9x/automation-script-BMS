@@ -272,11 +272,11 @@ def sort_by_name(filelist, starttime, table):
 
         cap.append(c)
         current.append(curr)
-        volt.append(volt)
+        volt.append(voltage)
         index.append(row)
         filename.append(element)
 
-
+    print ("start sorting")
     column = ['index', 'cap(mAh)', 'current', 'volt', 'FileName', 'TimeDelta']
 
     table_sorted = pd.DataFrame({'index': index,
@@ -288,7 +288,7 @@ def sort_by_name(filelist, starttime, table):
                                 columns=column)                                 # columns=[] used to set order of columns
 
     table_sorted = table_sorted.sort_values('index')
-
+    print ("done sorting")
     return table_sorted
 
 
@@ -385,9 +385,9 @@ def clean_test_data(fix = bool):
 def main():
 
     ''' select data in 5s interval '''
-    table = clean_test_data(fix = False)
+    # table = clean_test_data(fix = False)
+    # return
 
-    return
 
     with open(cycler_path) as outfile:
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)

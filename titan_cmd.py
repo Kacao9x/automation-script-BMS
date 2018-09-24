@@ -419,18 +419,48 @@ def capture_filtered_data(output=[]):
     return y
 
 
-def capture_and_average_output(num, key, offset):
-
+def capture_raw_output():
     adc_captures = echoes_1.capture_and_read(send_impulse=True)
     adc_captures_float = echoes_1.convert_adc_raw_to_float(adc_captures)
     # adc_captures_float = echoes_1.remove_bad_reads(adc_captures_float)        # doesnt work for secondary trans
 
-    y_avg = np.array(adc_captures_float).mean(0)
-    for i, output in enumerate(adc_captures_float):
-        _save_capture_data(num, key +'-'+ str(i+1), output, False, True, False) # don't save temperature
-        # _save_capture_to_Mongodb( num, key + '-' + str( i + 1 ), output, False )
+    return adc_captures_float
 
-    return y_avg
+
+def capture_and_average_output( adc_captures_float ):
+
+    y_avg = np.array(adc_captures_float).mean(0)
+
+    #### detect a bad read for transmission echo ######
+    count = count_good_value(y_avg)
+    std_value = find_data_std(y_avg)
+    goodRead = (count > 8 and std_value > 0.0020)
+
+    # Keep firing until it collects a clean signal
+    while not goodRead:
+        print ('bad: cnt %s std_value: %s' % (str(count), str(std_value)))
+
+        echoes_1.reset_micro()
+        time.sleep(10)
+        system_config()
+
+        echoes_1.measure_dc_offset()
+        offSet = echoes_1.dc_offset
+
+        adc_captures_float = capture_raw_output()
+        y_avg = np.array(adc_captures_float).mean(0)
+
+        count = count_good_value(y_avg)
+        std_value = find_data_std(y_avg)
+
+        # detect a bad read
+        goodRead = (count > 8 and std_value > 0.0020)
+
+    print ('good echo: count %s  std_value: %s'
+           % (str(count), str(std_value)))
+
+
+    return adc_captures_float
 
 
 def count_good_value(x):
@@ -463,83 +493,45 @@ def main():
     
     _write_test_logs(__NAME__, offSet)
 
-    for i in range(__REPEAT__):
-        print ('\nCycle: ' + str(i + 1))
+    for cycleID in range(__REPEAT__):
+        print ('\nCycle: ' + str( cycleID + 1 ))
 
         # ======= TRANSMISSION ECHO =======#
-        __INPUT__ = 2
+        key         = 'raw_trans'
+        __INPUT__   = 2
         print ("\n(2) Set input type: %s" %str(__INPUT__))
         print str( _input_capture_init())
         time.sleep(1)
 
-        goodRead = False
-        y_avg = capture_and_average_output(i, 'raw',offSet)                     # don't save temperature
+        adc_captures_float = capture_raw_output()
+        adc_captures_float = capture_and_average_output( adc_captures_float )
 
-        # detect a bad read for transmission echo
-        count = count_good_value(y_avg)
-        std_value = find_data_std(y_avg)
-        goodRead = (count > 8 and std_value > 0.0020)
-
-        # Keep firing until it collects a clean signal
-        while not goodRead:
-            print ('bad: cnt %s std_value: %s' % (str(count),str(std_value)))
-
-            echoes_1.reset_micro()
-            time.sleep(10)
-
-            system_config()
-            echoes_1.measure_dc_offset()
-            offSet = echoes_1.dc_offset
-
-            y_avg = capture_and_average_output(i, 'raw', offSet)                # don't save temperature
-            count = count_good_value(y_avg)
-            std_value = find_data_std(y_avg)
-
-            # detect a bad read
-            goodRead = (count > 8 and std_value > 0.0020)
-
-        print ('good transmission: count %s  std_value: %s' 
-            % ( str(count), str(std_value)))
+        for captureID, output in enumerate(adc_captures_float):
+            _save_capture_data( cycleID, key + '-' + str(captureID + 1), output,
+                               False, True, False)                              # don't save temperature
+            # _save_capture_to_Mongodb( cycleID, key+'-'+ str(i + 1), output, False )
 
         time.sleep(60)
 
 
-        # ======= PRIMARY ECHO =======#
-        goodRead = False
 
+        # ======= PRIMARY ECHO =======#
         # Set the ADC channel
-        __INPUT__ = 1
+        key         = 'raw_echo'
+        __INPUT__   = 2
         print ("\n(2) Set input type: %s" %str(__INPUT__))
         print str( _input_capture_init())
         time.sleep(1)
 
-        y_avg = capture_and_average_output(i, 'raw',offSet)                     # don't save temperature
+        adc_captures_float = capture_raw_output()
+        adc_captures_float = capture_and_average_output(adc_captures_float)
 
-        # detect a bad read for transmission echo
-        count = count_good_value(y_avg)
-        std_value = find_data_std(y_avg)
-        goodRead = (count > 8 and std_value > 0.0020)
+        for captureID, output in enumerate(adc_captures_float):
+            _save_capture_data(cycleID, key + '-' + str(captureID + 1), output,
+                               False, True, False)                              # don't save temperature
 
-        # Keep firing until it collects a clean signal
-        while not goodRead:
-            print ('bad: cnt %s std_value: %s' % (str(count),str(std_value)))
-
-            echoes_1.reset_micro()
-            time.sleep(10)
-
-            system_config()
-            echoes_1.measure_dc_offset()
-            offSet = echoes_1.dc_offset
-
-            y_avg = capture_and_average_output(i, 'raw', offSet)                # don't save temperature
-            count = count_good_value(y_avg)
-            std_value = find_data_std(y_avg)
-
-            # detect a bad read
-            goodRead = (count > 8 and std_value > 0.0020)
-            print ('good echo: count %s  std_value: %s' % ( str(count), str(std_value)))
-        
-        _save_capture_data(i, 'temp', [], True, True, False)                     #save temperature
+        #======= Save Temperature =======#
+        _save_capture_data(cycleID, 'temp', [], True, True, False)
         print ('End cycle \n \n')
         time.sleep(__MINUTE__ * 60)
 

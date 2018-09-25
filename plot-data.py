@@ -189,7 +189,7 @@ def main ():
     """
     while cycle_id < cycle + 1:
         testResults, tC = concat_all_data(cycle_id, 'raw')
-        cycle_id += 10
+        cycle_id += 1
         print (bad_data)
 
         print (testResults.shape)

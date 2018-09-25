@@ -306,10 +306,11 @@ def system_config():
     time.sleep(2)
 
     # 9 delay btw capture
+    print ("\n(9) set delay btw capture: ")
     if _set_delay_capture():
-        print "Successfully delay_us"
+        print "Successfully delay_us\n"
     else:
-        print "Failed delay_us"
+        print "Failed delay_us\n"
 
 
 #==============================================================================#
@@ -518,7 +519,7 @@ def main():
         # ======= PRIMARY ECHO =======#
         # Set the ADC channel
         key         = 'raw_echo'
-        __INPUT__   = 2
+        __INPUT__   = 1
         print ("\n(2) Set input type: %s" %str(__INPUT__))
         print str( _input_capture_init())
         time.sleep(1)
@@ -530,8 +531,11 @@ def main():
             _save_capture_data(cycleID, key + '-' + str(captureID + 1), output,
                                False, True, False)                              # don't save temperature
 
+        print ("Successfully capture raw data")
         #======= Save Temperature =======#
         _save_capture_data(cycleID, 'temp', [], True, True, False)
+        print ("Successfully capture temperature\n")
+
         print ('End cycle \n \n')
         time.sleep(__MINUTE__ * 60)
 

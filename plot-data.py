@@ -53,21 +53,16 @@ def find_data_std( x ):
 
 
 def concat_custom_data( key ):
-    tC = []
+    tC_1, tC_2 = [], []
     file_name = pd.DataFrame()
     list_file = display_list_of_file(key)
     print (list_file)
     for filename in list_file:
-    # for filename in glob.glob(os.path.join(address, "*.dat")):
+
         my_file = open(address + filename)
         y_str = my_file.read()
         y_str = y_str.splitlines()
-        # y = []
-        # for i, num in enumerate(y_str):
-        #     if i < len(y_str) - 1:
-        #         y.append(float(num))
-        # y = pd.DataFrame(y)
-        # file_name = pd.concat([file_name, y], axis=1, ignore_index=True)
+
         data = []
         for i, num in enumerate(y_str):
             if i < len(y_str) - 1:
@@ -76,15 +71,14 @@ def concat_custom_data( key ):
             else:
                 # print (len(num.split() ))
                 if len(num.split()) > 2:
-                    temp = num.rstrip().split('Temperature:')[1]
-                    temp = temp.split('oC')[0]
-                    tC.append(float(temp))
+                    tC_1.append( num.split()[1] )
+                    tC_2.append( num.split()[2] )
                 else:
                     data.append(float(num))
     # with 0s rather than NaNs
     file_name = file_name.fillna(0)
 
-    return file_name, tC
+    return file_name, tC_1, tC_2
 
 
 def concat_all_data(cycle, key):
@@ -150,8 +144,8 @@ def _save_avg_data(num, y):
 #======================== MAIN FUNCTION ======================================-#
 def main ():
     avgPos = 1                                                                  #number of capture in each cycle
-    avgNum = 60
-    cycle = 212
+    avgNum = 64
+    cycle = 500
     cycle_id =1
     #cycle number to plot
 
@@ -187,32 +181,32 @@ def main ():
     plot all 60 raw data in one cycle
     detect a bad read by visual inspection
     """
-    while cycle_id < cycle + 1:
-        testResults, tC = concat_all_data(cycle_id, 'raw')
-        cycle_id += 1
-        print (bad_data)
-
-        print (testResults.shape)
-        [row, column] = testResults.shape
-
-        dt = float(1/7200000)
-        x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-
-        plt.figure(2)
-        plt.title('SoC vs Time')
-        plt.interactive(False)
-
-        avgPos = 1
-        while avgPos < column:
-            #plt.subplot(column/2, 2, i)
-            #change the integers inside this routine as (number of rows, number of columns, plotnumber)
-            plt.plot(x,testResults.loc[:, avgPos])
-            plt.xlim((0, 0.00005))
-            plt.xlabel('time')
-            plt.ylabel('amplitude')
-            avgPos += 1
-        plt.legend()
-        plt.show()
+    # while cycle_id < cycle + 1:
+    #     testResults, tC = concat_all_data(cycle_id, 'raw')
+    #     cycle_id += 1
+    #     print (bad_data)
+    #
+    #     print (testResults.shape)
+    #     [row, column] = testResults.shape
+    #
+    #     dt = float(1/7200000)
+    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+    #
+    #     plt.figure(2)
+    #     plt.title('SoC vs Time')
+    #     plt.interactive(False)
+    #
+    #     avgPos = 1
+    #     while avgPos < column:
+    #         #plt.subplot(column/2, 2, i)
+    #         #change the integers inside this routine as (number of rows, number of columns, plotnumber)
+    #         plt.plot(x,testResults.loc[:, avgPos])
+    #         plt.xlim((0, 0.00005))
+    #         plt.xlabel('time')
+    #         plt.ylabel('amplitude')
+    #         avgPos += 1
+    #     plt.legend()
+    #     plt.show()
 
 
 
@@ -257,10 +251,11 @@ def main ():
     Plot Temperature vs Amplitude at 30us
     """
     # concat temperature
-    # tempTable = pd.DataFrame()
-    # testResults, tC = concat_custom_data('cycle')
-    # tempTable['Temperature'] = tC
-    # tempTable.to_csv(address + 'temp.csv')
+    tempTable = pd.DataFrame()
+    testResults, tC_1, tC_2 = concat_custom_data('cycle')
+    tempTable['Temperature_top'] = tC_1
+    tempTable['Temperature_bottom'] = tC_2
+    tempTable.to_csv(address + 'temp.csv')
     #
     # with open(address + 'avgData.csv') as outfile:
     #     avgTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)

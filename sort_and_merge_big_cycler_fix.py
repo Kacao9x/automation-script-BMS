@@ -6,7 +6,7 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = '180917_Me02-H100'
+name            = '180919_Me01-H100'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -321,10 +321,10 @@ def _filter_data_by_timeInterval(table, sec):
 
         tb = pd.concat([tb, table_data], axis=0)
 
-    tb.columns = ['extra','id','id_num', 'time', 'volt', 'current',
+    tb.columns = ['id','id_num', 'time', 'volt', 'current',
                     'cap(mAh)', 'Date/Time']
     tb.sort_values('id')
-    del tb['extra']
+    # del tb['extra']
 
     return tb
 
@@ -448,9 +448,10 @@ def main():
     with open(path + 'temp.csv') as outfile:
         tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
-    tC = tempTable['Temperature']
+    tC_1 = tempTable['Temperature_top']
+    tC_2 = tempTable['Temperature_bottom']
 
-    table_sorted = pd.concat([table_sorted, tC],
+    table_sorted = pd.concat([table_sorted, tC_1, tC_2],
                              axis=1)  # add new column (diff index) into exisiing Dataframe
     table_sorted = pd.concat([table_sorted, ampTable_concat],
                              axis=1)  # add new column (diff index) into exisiing Dataframe

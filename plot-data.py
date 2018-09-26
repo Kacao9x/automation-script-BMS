@@ -145,8 +145,8 @@ def _save_avg_data(num, y):
 def main ():
     avgPos = 1                                                                  #number of capture in each cycle
     avgNum = 64
-    cycle = 500
-    cycle_id =1
+    cycle = 750
+    cycle_id = 1
     #cycle number to plot
 
     """
@@ -182,31 +182,31 @@ def main ():
     detect a bad read by visual inspection
     """
     # while cycle_id < cycle + 1:
-    #     testResults, tC = concat_all_data(cycle_id, 'raw')
-    #     cycle_id += 1
-    #     print (bad_data)
-    #
-    #     print (testResults.shape)
-    #     [row, column] = testResults.shape
-    #
-    #     dt = float(1/7200000)
-    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-    #
-    #     plt.figure(2)
-    #     plt.title('SoC vs Time')
-    #     plt.interactive(False)
-    #
-    #     avgPos = 1
-    #     while avgPos < column:
-    #         #plt.subplot(column/2, 2, i)
-    #         #change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #         plt.plot(x,testResults.loc[:, avgPos])
-    #         plt.xlim((0, 0.00005))
-    #         plt.xlabel('time')
-    #         plt.ylabel('amplitude')
-    #         avgPos += 1
-    #     plt.legend()
-    #     plt.show()
+        # testResults, tC = concat_all_data(cycle_id, 'raw')
+        # cycle_id += 10
+        # print (bad_data)
+        #
+        # print (testResults.shape)
+        # [row, column] = testResults.shape
+        #
+        # dt = float(1/7200000)
+        # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+        #
+        # plt.figure(2)
+        # plt.title('SoC vs Time')
+        # plt.interactive(False)
+        #
+        # avgPos = 1
+        # while avgPos < column:
+        #     #plt.subplot(column/2, 2, i)
+        #     #change the integers inside this routine as (number of rows, number of columns, plotnumber)
+        #     plt.plot(x,testResults.loc[:, avgPos])
+        #     plt.xlim((0, 0.00005))
+        #     plt.xlabel('time')
+        #     plt.ylabel('amplitude')
+        #     avgPos += 10
+        # plt.legend()
+        # plt.show()
 
 
 
@@ -295,23 +295,22 @@ def main ():
     # outfile.close()
     #
     #calculate the value at 30ns
-    # cycle_id = 1
-    # cyc, temp_value = [], []
-    # while cycle_id < cycle + 1:
-    #     cyc.append(cycle_id)
-    #     temp_value.append(tempTable['Temperature'][ cycle_id - 1])
-    #     cycle_id += 1
-    #
-    # plt.figure(5)
-    # plt.scatter(cyc, temp_value)
-    # plt.title('Temperature vs Cycle | SOC = 0%')
-    # plt.xlabel('Cycle')
-    # plt.interactive(False)
-    # plt.show()
+    cyc, temp_value = [], []
+    while cycle_id < cycle + 1:
+        cyc.append(cycle_id)
+        temp_value.append(tempTable['Temperature_top'][ cycle_id - 1])
+        cycle_id += 1
+
+    plt.figure(5)
+    plt.scatter(cyc, temp_value)
+    plt.title('Temperature vs Cycle | SOC = 0%')
+    plt.xlabel('Cycle')
+    plt.interactive(False)
+    plt.show()
 
 #==============================================================================#
-address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-# address = '/media/jean/Data/titan-echo-board/Me02-H100_180917/tempC/'
+# address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
+address = '/media/jean/Data/titan-echo-board/Me01-H100_180919/tempC/'
 bad_data = []
 
 if __name__ == '__main__':

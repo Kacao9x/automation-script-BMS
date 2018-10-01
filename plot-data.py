@@ -51,6 +51,23 @@ def find_data_std( x ):
     x_arr = np.absolute( x_arr )
     return np.std( x_arr[50:-1], ddof=1 )
 
+def find_dup_run( x ):
+    return max( x ) == min( x )
+
+def longest_dup_run( x ):
+   streak = 0
+   longest_streak = 0
+   last = 1000 #arbitrary large number outside the range
+   for i in range(0, len(x)):
+        if last == x[i]:
+              streak += 1
+        else:
+              last = x[i]
+              if streak > longest_streak:
+                  longest_streak = streak
+              streak = 0
+        return longest_streak
+
 
 def concat_custom_data( key ):
     tC_1, tC_2 = [], []
@@ -89,7 +106,7 @@ def concat_all_data(cycle, key):
     list_file = display_list_of_file('cycle'+str(cycle)+'-')
     # list_file = display_list_of_file(key + '-')
     print (list_file)
-    for filename in list_file:
+    for captureID, filename in enumerate( list_file ):
     # for filename in glob.glob(os.path.join(address, "*.dat")):
         my_file = open(address + filename)
         y_str = my_file.read()
@@ -108,18 +125,20 @@ def concat_all_data(cycle, key):
                 else:
                     data.append(float(num))
 
-        # # check good read and bad read
-        # count = count_good_value(data)
-        # print ('Cycle %s: %s' % (str(i + 1), str(count)))
-        # std_value = find_data_std(data)
-        # print ('value: %s' % str(std_value))
-        #
-        # if (count > 15 and std_value > 0.0020):
-        #     print ('good data')
-        # else:
-        #     print ('bad bad')
-        #     bad_data.append(filename)
+        # detect a bad read
+        if find_dup_run( data ):
+            print ("bad one")
+            with open('/media/jean/Data/titan-echo-board/180924-TC02-H75/data/bad.txt', 'ab') as writeout:
+                writeout.writelines( filename + '\n')
+            writeout.close()
 
+        # long_streak = longest_dup_run( data )
+        # print ("long_streak %s" % str(long_streak))
+        # if long_streak > 100:
+        #     bad_data.append( captureID )
+        #     with open(address + 'bad.txt') as writeout:
+        #         writeout.writelines( filename )
+        #     writeout.close()
 
         # concat all data set into a singl dataframe
         data = pd.DataFrame( data )
@@ -138,6 +157,8 @@ def _save_avg_data(num, y):
         filehandle.write(str(samp) + "\n")
     filehandle.close()
     return
+
+
 
 
 #==============================================================================#
@@ -181,11 +202,11 @@ def main ():
     plot all 60 raw data in one cycle
     detect a bad read by visual inspection
     """
-    # while cycle_id < cycle + 1:
-        # testResults, tC = concat_all_data(cycle_id, 'raw')
-        # cycle_id += 10
+    while cycle_id < cycle + 1:
+        testResults, tC = concat_all_data(cycle_id, 'raw')
+        cycle_id += 1
         # print (bad_data)
-        #
+
         # print (testResults.shape)
         # [row, column] = testResults.shape
         #
@@ -204,7 +225,7 @@ def main ():
         #     plt.xlim((0, 0.00005))
         #     plt.xlabel('time')
         #     plt.ylabel('amplitude')
-        #     avgPos += 10
+        #     avgPos += 1
         # plt.legend()
         # plt.show()
 
@@ -251,11 +272,11 @@ def main ():
     Plot Temperature vs Amplitude at 30us
     """
     # concat temperature
-    tempTable = pd.DataFrame()
-    testResults, tC_1, tC_2 = concat_custom_data('cycle')
-    tempTable['Temperature_top'] = tC_1
-    tempTable['Temperature_bottom'] = tC_2
-    tempTable.to_csv(address + 'temp.csv')
+    # tempTable = pd.DataFrame()
+    # testResults, tC_1, tC_2 = concat_custom_data('cycle')
+    # tempTable['Temperature_top'] = tC_1
+    # tempTable['Temperature_bottom'] = tC_2
+    # tempTable.to_csv(address + 'temp.csv')
     #
     # with open(address + 'avgData.csv') as outfile:
     #     avgTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
@@ -295,22 +316,22 @@ def main ():
     # outfile.close()
     #
     #calculate the value at 30ns
-    cyc, temp_value = [], []
-    while cycle_id < cycle + 1:
-        cyc.append(cycle_id)
-        temp_value.append(tempTable['Temperature_top'][ cycle_id - 1])
-        cycle_id += 1
-
-    plt.figure(5)
-    plt.scatter(cyc, temp_value)
-    plt.title('Temperature vs Cycle | SOC = 0%')
-    plt.xlabel('Cycle')
-    plt.interactive(False)
-    plt.show()
+    # cyc, temp_value = [], []
+    # while cycle_id < cycle + 1:
+    #     cyc.append(cycle_id)
+    #     temp_value.append(tempTable['Temperature_top'][ cycle_id - 1])
+    #     cycle_id += 1
+    #
+    # plt.figure(5)
+    # plt.scatter(cyc, temp_value)
+    # plt.title('Temperature vs Cycle | SOC = 0%')
+    # plt.xlabel('Cycle')
+    # plt.interactive(False)
+    # plt.show()
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/Me01-H100_180919/tempC/'
+address = '/media/jean/Data/titan-echo-board/180924-TC02-H75/data/primary/'
 bad_data = []
 
 if __name__ == '__main__':

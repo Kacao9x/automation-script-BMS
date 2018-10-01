@@ -22,14 +22,15 @@ def main():
     with open(address + 'bad.txt', 'rb') as readout:
         for cnt, line in enumerate( readout ):
             print (str(cnt))
-            Call( address + 'line' )
+            print (line)
+            Call( 'rm ' + address + 'primary/' + line )
     readout.close()
     return
 
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/180924-TC02-H75/data/primary/'
+address = '/media/jean/Data/titan-echo-board/180924-TC01-H80/data/'
 bad_data = []
 
 if __name__ == '__main__':

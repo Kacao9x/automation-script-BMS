@@ -8,7 +8,7 @@ from scipy.signal import filtfilt, firwin, upfirdn
 
 
 
-#=============================================================================#
+#==============================================================================#
 
 #Subprocess's call command with piped output and active shell
 def Call(cmd):
@@ -24,7 +24,7 @@ def Popen(cmd):
 def PopenIter(cmd):
     return subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             shell=True).stdout.readline
-#=============================================================================#
+#==============================================================================#
 
 # display the file with keyword in ascending using BASH
 def display_list_of_file(key):

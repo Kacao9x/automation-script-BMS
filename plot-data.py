@@ -54,20 +54,14 @@ def find_data_std( x ):
 def find_dup_run( x ):
     return (max( x ) - min( x )) < 0.015
 
-def longest_dup_run( x ):
-   streak = 0
-   longest_streak = 0
-   last = 1000 #arbitrary large number outside the range
-   for i in range(0, len(x)):
-        if last == x[i]:
-              streak += 1
-        else:
-              last = x[i]
-              if streak > longest_streak:
-                  longest_streak = streak
-              streak = 0
-        return longest_streak
+def _locate_2ndEcho_index( data ):
+    data = data[ 170 : 260 ]
+    return data.index( max(data) )
 
+
+def find_timeshift_signal( ):
+
+    return
 
 def concat_custom_data( key ):
     tC_1, tC_2 = [], []
@@ -99,7 +93,7 @@ def concat_custom_data( key ):
 
 
 def concat_all_data(cycle, key):
-    global bad_data
+    global bad_data, echoes_index
     file_name = pd.DataFrame()
     tC = []
 
@@ -132,6 +126,8 @@ def concat_all_data(cycle, key):
         #         writeout.writelines( filename + '\n')
         #     writeout.close()
 
+        echo_idx = _locate_2ndEcho_index( data )
+        echoes_index. append( echo_idx )
 
         # concat all data set into a singl dataframe
         data = pd.DataFrame( data )
@@ -152,7 +148,8 @@ def _save_avg_data(num, y):
     return
 
 
-
+def _find_avg( numbers ):
+    return (sum(numbers)) / max(len(numbers), 1)
 
 #==============================================================================#
 #======================== MAIN FUNCTION ======================================-#
@@ -197,6 +194,11 @@ def main ():
     """
     while cycle_id < cycle + 1:
         testResults, tC = concat_all_data(cycle_id, 'raw')
+        avg = _find_avg( echoes_index )
+        for i, element in enumerate(echoes_index):
+            if abs( element - avg ) > 2:
+                print ("bad read %s" % str(i))
+        
         cycle_id += 1
     #     # print (bad_data)
     #
@@ -325,6 +327,7 @@ def main ():
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 address = '/media/jean/Data/titan-echo-board/Me04-H100_180928/data/primary/'
 bad_data = []
+echoes_index = []
 
 avgPos = 6  # number of capture in each cycle
 avgNum = 64

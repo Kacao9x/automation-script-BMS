@@ -6,7 +6,7 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = '180919_Me01-H100'
+name            = '180924-TC01-H75'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -441,7 +441,7 @@ def main():
     # table_sorted.sort('index')
 
     # table_sorted['Temperature'] = tC
-    with open(path + 'avgData.csv') as outfile:
+    with open(path + 'avgData-primary.csv') as outfile:
         ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 

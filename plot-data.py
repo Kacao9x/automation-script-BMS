@@ -90,7 +90,7 @@ def concat_custom_data( key ):
     # with 0s rather than NaNs
     file_name = file_name.fillna(0)
 
-    return file_name, tC_1, tC_2
+    return file_name, tC_2, tC_1
 
 
 def concat_all_data(cycle, key):
@@ -196,78 +196,77 @@ def main ():
     plot all 64 raw data in one cycle
     detect a bad read by visual inspection
     """
-    while cycle_id < cycle + 1:
-        testResults, tC = concat_all_data(cycle_id, 'raw')
-        avg = _find_avg( echoes_index )
-        for i, element in enumerate(echoes_index):
-            if abs( element - avg ) > 2:
-                print ("bad read %s" % str(i+1))
-                with open(address + 'bad-shift.txt', 'ab') as writeout:
-                    writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
-                writeout.close()
-
-        cycle_id += 1
-        #
-        print (testResults.shape)
-        [row, column] = testResults.shape
-
-        dt = float(1/7200000)
-        x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-
-        plt.figure(2)
-        plt.title('SoC vs Time')
-        plt.interactive(False)
-
-        avgPos = 1
-        while avgPos < column:
-            #plt.subplot(column/2, 2, i)
-            #change the integers inside this routine as (number of rows, number of columns, plotnumber)
-            plt.plot(x,testResults.loc[:, avgPos])
-            plt.xlim((0, 0.00005))
-            plt.xlabel('time')
-            plt.ylabel('amplitude')
-            avgPos += 1
-        plt.legend()
-        plt.show()
+    # while cycle_id < cycle + 1:
+    #     testResults, tC = concat_all_data(cycle_id, 'raw')
+    #     avg = _find_avg( echoes_index )
+    # #     for i, element in enumerate(echoes_index):
+    # #         if abs( element - avg ) > 3:
+    # #             print ("bad read %s" % str(i+1))
+    # #             with open(address + 'bad-shift.txt', 'ab') as writeout:
+    # #                 writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
+    # #             writeout.close()
+    # #
+    #     cycle_id += 1
+    #
+    #     print (testResults.shape)
+    #     [row, column] = testResults.shape
+    #
+    #     dt = float(1/7200000)
+    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+    #
+    #     plt.figure(2)
+    #     plt.title('SoC vs Time')
+    #     plt.interactive(False)
+    #
+    #     avgPos = 1
+    #     while avgPos < column:
+    #         # change the integers inside this routine as (number of rows, number of columns, plotnumber)
+    #         plt.plot(x,testResults.loc[:, avgPos])
+    #         plt.xlim((0, 0.00005))
+    #         plt.xlabel('time')
+    #         plt.ylabel('amplitude')
+    #         avgPos += 1
+    #     plt.legend()
+    #     plt.show()
 
 
 
     """
     plot avg of each cycle. Save avg (mean) to csv file
     """
-    # avgTable_concat = pd.DataFrame()
-    #
-    # plt.figure(3)
-    # plt.interactive(False)
-    # # black_list = list( range(138, 147))
-    # # black_list.append( 83 )
-    # # print (black_list)
-    #
-    # while cycle_id < cycle + 1:
-    #     # if (cycle_id == ele for ele in black_list):
-    #     #     continue
-    #     # plt.subplot(5, 2, i) #change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #     testResults, tC = concat_all_data( cycle_id, 'raw')
-    #     [row, column] = testResults.shape
-    #     temp = testResults.iloc[:, 0:(cycle_id * avgNum)]
-    #
-    #     avg1 = np.mean(temp, axis=1)
-    #     col_header = cycle_id
-    #     avgTable = pd.DataFrame({col_header : avg1})
-    #     avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
-    #
-    #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-    #     plt.plot(x, avg1, label='Cycle %s ' % str(cycle_id))
-    #     plt.title('SoC vs Time for average data |' + ' TC02 - (SOC = 75%)')
-    #     plt.xlim((0, 0.00005))
-    #     plt.xlabel('time')
-    #     plt.ylabel('amplitude')
-    #     tC.append(avg1[round(0.0000295 * 7200000)])
-    #     cycle_id += 1
-    #
-    # avgTable_concat.to_csv(address + 'avgData-secondary.csv')
-    # plt.legend()
-    # plt.show()
+    avgTable_concat = pd.DataFrame()
+
+    plt.figure(3)
+    plt.interactive(False)
+    # black_list = list( range(138, 147))
+    # black_list.append( 83 )
+    # print (black_list)
+
+    while cycle_id < cycle + 1:
+        # if (cycle_id == ele for ele in black_list):
+        #     continue
+        # plt.subplot(5, 2, i) #change the integers inside this routine as (number of rows, number of columns, plotnumber)
+        testResults, tC = concat_all_data( cycle_id, 'raw')
+        [row, column] = testResults.shape
+        temp = testResults.iloc[:, 0:(cycle_id * avgNum)]
+
+        avg1 = np.mean(temp, axis=1)
+        col_header = cycle_id
+        avgTable = pd.DataFrame({col_header : avg1})
+        avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
+
+        x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
+        plt.plot(x, avg1, label='Cycle %s ' % str(cycle_id))
+        plt.title('SoC vs Time for average data |' + ' Me03 - (SOC = 100%)')
+        plt.xlim((0, 0.00005))
+        plt.xlabel('time')
+        plt.ylabel('amplitude')
+        tC.append(avg1[round(0.0000295 * 7200000)])
+        cycle_id += 1
+
+    avgTable_concat.to_csv(address + 'avgData-primary.csv')
+    plt.legend()
+    plt.show()
 
     """
     Plot Temperature vs Amplitude at 30us
@@ -315,8 +314,8 @@ def main ():
     # with open(address + 'temp.csv') as outfile:
     #     tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     # outfile.close()
-    #
-    #calculate the value at 30ns
+
+    # calculate the value at 30ns
     # cyc, temp_value = [], []
     # while cycle_id < cycle + 1:
     #     cyc.append(cycle_id)
@@ -332,14 +331,14 @@ def main ():
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/Me02-H100-180925-echo-c/data/primary/'
+address = '/media/jean/Data/titan-echo-board/Me03-H100_180925-echo-e/data/'
 bad_data = []
 echoes_index = []
 
 avgPos = 1  # number of capture in each cycle
-avgNum = 64
+avgNum = 60
 cycle = 750
-cycle_id = 235
+cycle_id = 1
 # cycle number to plot
 
 if __name__ == '__main__':

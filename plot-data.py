@@ -52,7 +52,8 @@ def find_data_std( x ):
     return np.std( x_arr[50:-1], ddof=1 )
 
 def find_dup_run( x ):
-    return (max( x ) - min( x )) < 0.015
+    return max(x) == min(x)   # for echo C + D
+    # return (max( x ) - min( x )) < 0.02 # for echo E
 
 def _locate_2ndEcho_index( data ):
     data = data[ 170 : 260 ]
@@ -94,6 +95,7 @@ def concat_custom_data( key ):
 
 def concat_all_data(cycle, key):
     global bad_data, echoes_index
+    echoes_index[:] = []
     file_name = pd.DataFrame()
     tC = []
 
@@ -118,21 +120,23 @@ def concat_all_data(cycle, key):
                     tC.append(float(temp))
                 else:
                     data.append(float(num))
-
-        # detect a bad read
-        # if find_dup_run( data ):
-        #     print ("bad one")
-        #     with open(address + 'bad.txt', 'ab') as writeout:
-        #         writeout.writelines( filename + '\n')
-        #     writeout.close()
-
-        echo_idx = _locate_2ndEcho_index( data )
-        echoes_index. append( echo_idx )
+        #===== end-loop to read data ===== #
 
         # concat all data set into a singl dataframe
-        data = pd.DataFrame( data )
-        file_name = pd.concat([file_name, data], axis=1, ignore_index=True)
+        data_fr = pd.DataFrame(data)
+        file_name = pd.concat([file_name, data_fr], axis=1,
+                              ignore_index=True)
 
+        # detect a a flat steak read
+        if find_dup_run( data ):
+            print ("flat : %s" % str(captureID + 1))
+            with open(address + 'bad-flat.txt', 'ab') as writeout:
+                writeout.writelines( filename + '\n')
+            writeout.close()
+
+        # detect a time-shift signal
+        echo_idx = _locate_2ndEcho_index( data )
+        echoes_index. append( echo_idx )
 
     # with 0s rather than NaNs
     file_name = file_name.fillna(0)
@@ -197,21 +201,24 @@ def main ():
         avg = _find_avg( echoes_index )
         for i, element in enumerate(echoes_index):
             if abs( element - avg ) > 2:
-                print ("bad read %s" % str(i))
-        
+                print ("bad read %s" % str(i+1))
+                with open(address + 'bad-shift.txt', 'ab') as writeout:
+                    writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
+                writeout.close()
+
         cycle_id += 1
-    #     # print (bad_data)
-    #
+        #
         print (testResults.shape)
         [row, column] = testResults.shape
 
-        # dt = float(1/7200000)
+        dt = float(1/7200000)
         x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
 
         plt.figure(2)
         plt.title('SoC vs Time')
         plt.interactive(False)
 
+        avgPos = 1
         while avgPos < column:
             #plt.subplot(column/2, 2, i)
             #change the integers inside this routine as (number of rows, number of columns, plotnumber)
@@ -219,7 +226,7 @@ def main ():
             plt.xlim((0, 0.00005))
             plt.xlabel('time')
             plt.ylabel('amplitude')
-            avgPos += 10
+            avgPos += 1
         plt.legend()
         plt.show()
 
@@ -325,14 +332,14 @@ def main ():
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/Me04-H100_180928/data/primary/'
+address = '/media/jean/Data/titan-echo-board/Me02-H100-180925-echo-c/data/primary/'
 bad_data = []
 echoes_index = []
 
-avgPos = 6  # number of capture in each cycle
+avgPos = 1  # number of capture in each cycle
 avgNum = 64
-cycle = 738
-cycle_id = 125
+cycle = 750
+cycle_id = 235
 # cycle number to plot
 
 if __name__ == '__main__':

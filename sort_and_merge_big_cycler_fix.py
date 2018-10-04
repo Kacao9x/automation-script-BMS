@@ -6,9 +6,9 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = 'Me04-H100_180928'
-# path            = 'Me02-H100_180814/'
-path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+name            = 'Me01-H100_180928'
+path            = 'F:/EchOES_test_data/echo-C/Me01-H100_180928-echo-c/tempC/'
+# path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
 final_log_path  = path + name + '_sorted.csv'
@@ -235,7 +235,7 @@ def _SOC_header_creator():
 def _get_timestamp_from_filename( filename ):
 
     i = filename.split('-')
-    # cycle1 - raw - 0 - 2018 - 08 - 31 - 16 - 44 - 34 - echoes - d
+
     if i[1] == 'temp':
         endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
                   + i[5] + ':' + i[6] + ':' + i[7]
@@ -254,21 +254,14 @@ def sort_by_name(filelist, starttime, table):
     cap     = []
     filename= []
     index   = []
-    timeDelta = []
     volt = []
     current = []
-    cycle1_time = _get_timestamp_from_filename( filelist[ 0 ] )
+    charging = []
 
     for i, element in enumerate( filelist ):
 
         endtime = _get_timestamp_from_filename( element )
         row, c, curr, voltage  = find_capacity(starttime, endtime, table)
-
-        if i == 0:
-            timeDelta.append( 0 )
-        else:
-            diff = calculate_time(cycle1_time, endtime, 'min')
-            timeDelta.append( diff )
 
         cap.append(c)
         current.append(curr)
@@ -276,18 +269,24 @@ def sort_by_name(filelist, starttime, table):
         index.append(row)
         filename.append(element)
 
+        if curr < 0:
+            charging.append( -1 )
+        else:
+            charging.append( 1 )
+
     print ("start sorting")
-    column = ['index', 'cap(mAh)', 'current', 'volt', 'FileName', 'TimeDelta']
+    column = ['index', 'charging', 'volt', 'current', 'cap(mAh)', 'FileName']
 
     table_sorted = pd.DataFrame({'index': index,
-                                 'cap(mAh)': cap,
+                                 'charging': charging,
+                                 'volt': volt,
                                  'current': current,
-                                 'volt':volt,
-                                 'FileName': filename,
-                                 'TimeDelta': timeDelta},
+                                 'cap(mAh)': cap,
+                                 'FileName': filename},
                                 columns=column)                                 # columns=[] used to set order of columns
 
-    table_sorted = table_sorted.sort_values('index')
+    del table_sorted['index']
+    # table_sorted = table_sorted.sort_values('index')
     print ("done sorting")
     return table_sorted
 
@@ -411,42 +410,13 @@ def main():
     '''
     Add SoC data values into data frame
     '''
-    # tC, delta = [], []
-    # ampTable_concat = pd.DataFrame()
-    # for i, name in enumerate( filelist ):
-    #
-    #     with open(path + name +'-echoes-d.dat') as readout:
-    #         y_str = readout.read()
-    #         y_str = y_str.splitlines()
-    #         amp = []
-    #         for j, num in enumerate(y_str):
-    #             if j < len(y_str) - 1:
-    #                 amp.append(float(num))
-    #             else:
-    #                 if len(num.split()) > 2:
-    #                     temp = num.rstrip().split('Temperature:')[1]
-    #                     temp = temp.split('oC')[0]
-    #                     tC.append(float(temp))
-    #                 else:
-    #                     amp.append(float(num))
-    #     readout.close()
-
-        # col_header = table_sorted['cap(mAh)'][i]  # read the corresponding capacity
-        # ampTable = pd.DataFrame({col_header: amp})
-        #
-        #
-        # ampTable_concat = pd.concat([ampTable_concat, ampTable], axis=1)
-        # # table_sorted = pd.concat([table_sorted, ampTable], axis=1)  # add new column (diff index) into exisiing Dataframe
-        # del amp[:], ampTable
-
-    # table_sorted.sort('index')
 
     # table_sorted['Temperature'] = tC
     with open(path + 'avgData-primary.csv') as outfile:
         ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
-    # ampTable_concat = ampTable_concat.T
-    # ampTable_concat.to_csv(path + 'avg_data.csv')
+    ampTable_concat = ampTable_concat.T
+    ampTable_concat.to_csv(path + 'avg_data_transpose.csv')
 
     with open(path + 'temp.csv') as outfile:
         tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
@@ -457,15 +427,13 @@ def main():
     table_sorted = pd.concat([table_sorted, tC_1, tC_2],
                              axis=1)  # add new column (diff index) into exisiing Dataframe
     del tC_2, tC_1
-    table_sorted = pd.concat([table_sorted, ampTable_concat],
-                             axis=1)  # add new column (diff index) into exisiing Dataframe
+    # table_sorted = pd.concat([table_sorted, ampTable_concat],
+    #                          axis=1)  # add new column (diff index) into exisiing Dataframe
 
     table_sorted.to_csv(final_log_path)
     # ampTable_concat.to_csv(final_log_path, mode='a', index=False, columns=False)
 
-
     del ampTable_concat
-
 
     return
 

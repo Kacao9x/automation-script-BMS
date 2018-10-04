@@ -244,8 +244,8 @@ def main ():
     # print (black_list)
 
     while cycle_id < cycle + 1:
-        if cycle_id == 467:
-            cycle_id +=1
+        # if cycle_id == 467:
+        #     cycle_id +=1
         # if (cycle_id == ele for ele in black_list):
         #     continue
         # plt.subplot(5, 2, i) #change the integers inside this routine as (number of rows, number of columns, plotnumber)

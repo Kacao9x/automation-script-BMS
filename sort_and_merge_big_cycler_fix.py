@@ -6,7 +6,7 @@ import datetime as dt
 import thLib as th
 
 keyword         = 'cycle'
-name            = '180924_Me03-H100'
+name            = 'Me04-H100_180928'
 # path            = 'Me02-H100_180814/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
@@ -445,8 +445,8 @@ def main():
     with open(path + 'avgData-primary.csv') as outfile:
         ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
-    ampTable_concat = ampTable_concat.T
-    ampTable_concat.to_csv(path + 'avg_data.csv')
+    # ampTable_concat = ampTable_concat.T
+    # ampTable_concat.to_csv(path + 'avg_data.csv')
 
     with open(path + 'temp.csv') as outfile:
         tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
@@ -457,8 +457,8 @@ def main():
     table_sorted = pd.concat([table_sorted, tC_1, tC_2],
                              axis=1)  # add new column (diff index) into exisiing Dataframe
     del tC_2, tC_1
-    # table_sorted = pd.concat([table_sorted, ampTable_concat],
-    #                          axis=1)  # add new column (diff index) into exisiing Dataframe
+    table_sorted = pd.concat([table_sorted, ampTable_concat],
+                             axis=1)  # add new column (diff index) into exisiing Dataframe
 
     table_sorted.to_csv(final_log_path)
     # ampTable_concat.to_csv(final_log_path, mode='a', index=False, columns=False)

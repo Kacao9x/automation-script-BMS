@@ -5,16 +5,6 @@ import subprocess
 import datetime as dt
 import thLib as th
 
-keyword         = 'cycle'
-name            = 'Me01-H100_180928'
-path            = 'F:/EchOES_test_data/echo-C/Me01-H100_180928-echo-c/tempC/'
-# path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
-cycler_path     = path + name + '.csv'
-cycler_path_new = path + name + '_new.csv'
-final_log_path  = path + name + '_sorted.csv'
-__PERIOD__  = 5                                                                 #time difference btw each log
-_start_row  = 1                                                                 #number of header to be remove
-ind = []                                                                        #list of stage index
 
 #==============================================================================#
 
@@ -338,7 +328,6 @@ def clean_test_data(fix = bool):
     cycler_data = lines.iloc[:, 0:10]
     # cycler_data = lines.iloc[::50, 0:10]
     print (cycler_data.shape)
-
     header_list = ['id_num', 'time', 'volt', 'current',
                    'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
                    'en(microWh)', 'Date/Time']
@@ -383,7 +372,8 @@ def clean_test_data(fix = bool):
 
 def main():
 
-    ''' select data in 5s interval '''
+    ''' select data in 5s interval.
+    Fix=True if the general report captured data every 0.1s '''
     # table = clean_test_data(fix = False)
     # return
 
@@ -391,7 +381,6 @@ def main():
     with open(cycler_path) as outfile:
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
-    # print (table.head().to_string())
 
     table = merge_column(table)                                                 # Merge capactity of CC and CV stages
     table.to_csv(cycler_path_new)
@@ -411,7 +400,6 @@ def main():
     Add SoC data values into data frame
     '''
 
-    # table_sorted['Temperature'] = tC
     with open(path + 'avgData-primary.csv') as outfile:
         ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
@@ -431,11 +419,29 @@ def main():
     #                          axis=1)  # add new column (diff index) into exisiing Dataframe
 
     table_sorted.to_csv(final_log_path)
-    # ampTable_concat.to_csv(final_log_path, mode='a', index=False, columns=False)
 
     del ampTable_concat
 
     return
+
+#==============================================================================#
+#                                                                              #
+#                       constant variable                                      #
+#                                                                              #
+#==============================================================================#
+
+
+keyword         = 'cycle'
+name            = 'Me04-H100_181005'
+# path            = 'C:/Users/eel/TitanAES/echo-board-data/Me04-H100_181005/tempC/'
+path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+cycler_path     = path + name + '.csv'
+cycler_path_new = path + name + '_new.csv'
+final_log_path  = path + name + '_sorted.csv'
+__PERIOD__  = 5                                                                 #time difference btw each log
+_start_row  = 1                                                                 #number of header to be remove
+ind = []                                                                        #list of stage index
+
 
 
 if __name__ == '__main__':

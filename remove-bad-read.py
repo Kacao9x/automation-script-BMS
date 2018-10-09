@@ -30,7 +30,7 @@ def main():
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/180928-TC03-H-echo-d/data/'
+address = 'C:/Users/eel/TitanAES/echo-board-data/Me04-H100_181005/data/'
 bad_data = []
 
 if __name__ == '__main__':

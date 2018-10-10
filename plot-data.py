@@ -4,7 +4,7 @@ import numpy as np
 import os, subprocess
 import thLib as th
 import pandas as pd
-from scipy.signal import filtfilt, firwin, upfirdn
+from lib.echoes_signalprocessing import *
 
 
 
@@ -183,7 +183,7 @@ def main ():
     #     # plt.subplot(column/2, 2, i)
     #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
     #         plt.plot(x, testResults.loc[:, i - 1])
-    #         plt.xlim((0, 0.00005))
+    #         plt.xlim((0, 0.00010))
     #         plt.xlabel('time')
     #         plt.ylabel('amplitude')
     #         i += 10
@@ -216,13 +216,15 @@ def main ():
         x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
 
         plt.figure(2)
-        plt.title('SoC vs Time')
+        plt.title('SoC vs Time at SoC = 0')
         plt.interactive(False)
 
-        avgPos = 1
+        avgPos = 0
         while avgPos < column:
+            y = echoes_dsp.apply_bandpass_filter(testResults.loc[:, avgPos],
+                                                 300000, 1200000, 51)
             # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-            plt.plot(x,testResults.loc[:, avgPos])
+            plt.plot(x, testResults.loc[:, avgPos], label='ME 0%s ' % str(avgPos +1))
             plt.xlim((0, 0.00005))
             plt.xlabel('time')
             plt.ylabel('amplitude')
@@ -333,8 +335,8 @@ def main ():
     # plt.show()
 
 #==============================================================================#
-address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-# address = 'C:/Users/eel/TitanAES/echo-board-data/Me04-H100_181005/tempC/'
+# address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
+address = 'C:/Users/eel/TitanAES/echo-board-data/test/'
 bad_data = []
 echoes_index = []
 
@@ -344,5 +346,6 @@ cycle = 750
 cycle_id = 1
 # cycle number to plot
 
+echoes_dsp = echoes_signals( 72000000.0 )
 if __name__ == '__main__':
     main()

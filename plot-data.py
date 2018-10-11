@@ -102,14 +102,6 @@ def concat_all_data(cycle, key):
     '''
     background noise
     '''
-    # my_file = open(address + 'noise.dat')
-    # y_str = my_file.read()
-    # y_str = y_str.splitlines()
-    # backgrd = []
-    #
-    # for num in y_str:
-    #     backgrd.append(float(num))
-    # my_file.close()
 
     list_file = display_list_of_file('cycle'+str(cycle)+'-')
     # list_file = display_list_of_file(key + '-')
@@ -134,7 +126,11 @@ def concat_all_data(cycle, key):
                     data.append(float(num))
         my_file.close()
         #===== end-loop to read data ===== #
-        # data = [a_i - b_i for a_i, b_i in zip(data, backgrd)]
+
+        # remove background noise from the signal
+        data = [a_i - b_i for a_i, b_i in zip(data, backgrd)]
+        for i in range(512):
+            data[i] = data[i] - backgrd[i]
 
         # concat all data set into a singl dataframe
         data_fr = pd.DataFrame(data)
@@ -179,6 +175,7 @@ def main ():
     global avgNum
     global cycle
     global cycle_id
+    global backgrd
 
     """
     (1) plot a single data RAW data set
@@ -255,38 +252,38 @@ def main ():
     """
     (3) plot avg of each cycle. Save avg (mean) to csv file
     """
-    # avgTable_concat = pd.DataFrame()
-    #
-    # plt.figure(3)
-    # plt.interactive(False)
-    #
-    # while cycle_id < cycle + 1:
-    #     if cycle_id == 39:
-    #         cycle_id +=25
-    #     # if (cycle_id == ele for ele in black_list):
-    #     #     continue
-    #     # plt.subplot(5, 2, i) #change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #     testResults, tC = concat_all_data( cycle_id, 'raw')
-    #     [row, column] = testResults.shape
-    #     temp = testResults.iloc[:, 0:(cycle_id * avgNum)]
-    #
-    #     avg1 = np.mean(temp, axis=1)
-    #     col_header = cycle_id
-    #     avgTable = pd.DataFrame({col_header : avg1})
-    #     avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
-    #
-    #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-    #     plt.plot(x, avg1, label='Cycle %s ' % str(cycle_id))
-    #     plt.title('SoC vs Time for average data |' + ' Me04 S0H = 100 | echo-C')
-    #     plt.xlim((0, 0.00005))
-    #     plt.xlabel('time')
-    #     plt.ylabel('amplitude')
-    #     tC.append(avg1[round(0.0000295 * 7200000)])
-    #     cycle_id += 1
-    #
-    # avgTable_concat.to_csv(address + 'avgData-primary.csv')
-    # plt.legend()
-    # plt.show()
+    avgTable_concat = pd.DataFrame()
+
+    plt.figure(3)
+    plt.interactive(False)
+
+    while cycle_id < cycle + 1:
+        # if cycle_id == 39:
+        #     cycle_id +=25
+
+        testResults, tC = concat_all_data( cycle_id, 'raw')
+        [row, column] = testResults.shape
+
+        # temp = testResults.iloc[:, 0:(cycle_id * avgNum)]                     #
+        avg = np.mean(testResults, axis=1)                                     # average 64 captures
+        avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
+
+        col_header = cycle_id
+        avgTable = pd.DataFrame({col_header : avg})
+        avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
+
+        x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
+        plt.plot(x, avg, label='Cycle %s ' % str(cycle_id))
+        plt.title('SoC vs Time for average data |' + ' Me01 S0H = 100 | echo-E')
+        plt.xlim((0, 0.00005))
+        plt.xlabel('time')
+        plt.ylabel('amplitude')
+        tC.append(avg[round(0.0000295 * 7200000)])
+        cycle_id += 1
+
+    avgTable_concat.to_csv(address + 'avgData-bandpass.csv')
+    plt.legend()
+    plt.show()
 
     """
     (4) Plot Temperature vs Amplitude at 30us
@@ -352,63 +349,63 @@ def main ():
     """
     (6) Plot the avg of each battery type
     """
-    global ME
-    global ME_id
-
-    my_file = open(address + 'noise.dat')
-    y_str = my_file.read()
-    y_str = y_str.splitlines()
-    backgrd = []
-
-    for num in y_str:
-        backgrd.append(float(num))
-    my_file.close()
-
-
-    avgTable_concat = pd.DataFrame()
-    while ME_id < ME + 1:
-
-        file_list = display_list_of_file('Me0' + str(ME_id))
-        print (file_list)
-        ME_dataFrame = pd.DataFrame()
-        avg_filter = pd.DataFrame()
-
-        for filename in file_list:
-            with open(address + filename) as outfile:
-                avg_tab = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-            outfile.close()
-
-            ME_dataFrame = pd.concat([ME_dataFrame, avg_tab], axis=1,
-                                     ignore_index=True)
-
-        ME_dataFrame = ME_dataFrame.fillna(0)
-        [row, column] = ME_dataFrame.shape
-        print (ME_dataFrame.shape)
-
-        avg = np.mean(ME_dataFrame, axis=1)
-        # avg = [a_i - b_i for a_i, b_i in zip(avg, backgrd)]
-        # for i in range(512):
-        #     avg[i] = avg[i] - backgrd[i]
-        avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)
-
-
-        col_header = ME_id
-        avgTable = pd.DataFrame({col_header: avg})
-        avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
-
-        x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-        plt.plot(x, avg, label='ME 0%s ' % str(ME_id))
-        ME_id += 1
-
-    avgTable_concat.to_csv(address + 'avgData-ME-SoH100.csv')
-    plt.title('SoC vs Time for average data |' + ' S0H = 100 | echo-E')
-    plt.xlim((0, 0.00005))
-    plt.ylim((-0.6, 0.5))
-    plt.xlabel('time')
-    plt.ylabel('amplitude')
-
-    plt.legend()
-    plt.show()
+    # global ME
+    # global ME_id
+    #
+    # my_file = open(address + 'noise.dat')
+    # y_str = my_file.read()
+    # y_str = y_str.splitlines()
+    # backgrd = []
+    #
+    # for num in y_str:
+    #     backgrd.append(float(num))
+    # my_file.close()
+    #
+    #
+    # avgTable_concat = pd.DataFrame()
+    # while ME_id < ME + 1:
+    #
+    #     file_list = display_list_of_file('Me0' + str(ME_id))
+    #     print (file_list)
+    #     ME_dataFrame = pd.DataFrame()
+    #     avg_filter = pd.DataFrame()
+    #
+    #     for filename in file_list:
+    #         with open(address + filename) as outfile:
+    #             avg_tab = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    #         outfile.close()
+    #
+    #         ME_dataFrame = pd.concat([ME_dataFrame, avg_tab], axis=1,
+    #                                  ignore_index=True)
+    #
+    #     ME_dataFrame = ME_dataFrame.fillna(0)
+    #     [row, column] = ME_dataFrame.shape
+    #     print (ME_dataFrame.shape)
+    #
+    #     avg = np.mean(ME_dataFrame, axis=1)
+    #     # avg = [a_i - b_i for a_i, b_i in zip(avg, backgrd)]
+    #     # for i in range(512):
+    #     #     avg[i] = avg[i] - backgrd[i]
+    #     avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)
+    #
+    #
+    #     col_header = ME_id
+    #     avgTable = pd.DataFrame({col_header: avg})
+    #     avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
+    #
+    #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
+    #     plt.plot(x, avg, label='ME 0%s ' % str(ME_id))
+    #     ME_id += 1
+    #
+    # avgTable_concat.to_csv(address + 'avgData-ME-SoH100.csv')
+    # plt.title('SoC vs Time for average data |' + ' S0H = 100 | echo-E')
+    # plt.xlim((0, 0.00005))
+    # plt.ylim((-0.6, 0.5))
+    # plt.xlabel('time')
+    # plt.ylabel('amplitude')
+    #
+    # plt.legend()
+    # plt.show()
 
 
     return
@@ -417,6 +414,7 @@ def main ():
 address = 'C:/Users/eel/TitanAES/echo-board-data/echo-E/avgdata/'
 bad_data = []
 echoes_index = []
+backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
@@ -425,6 +423,15 @@ cycle_id = 1
 
 ME = 4
 ME_id = 1
+
+my_file = open(address + 'noise.dat')
+y_str = my_file.read()
+y_str = y_str.splitlines()
+backgrd = []
+
+for num in y_str:
+    backgrd.append(float(num))
+my_file.close()
 
 echoes_dsp = echoes_signals( 7200000.0 )
 if __name__ == '__main__':

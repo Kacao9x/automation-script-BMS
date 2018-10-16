@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import os, subprocess
+import subprocess
 import thLib as th
 import pandas as pd
 from lib.echoes_signalprocessing import *
@@ -94,15 +94,11 @@ def concat_custom_data( key ):
 
 
 def concat_all_data(cycle, key):
-    global bad_data, echoes_index
+    global echoes_index
     echoes_index[:] = []
     big_set = pd.DataFrame()
 
-    '''
-    background noise
-    '''
-
-    list_file = display_list_of_file('cycle'+str(cycle)+'-')
+    list_file = display_list_of_file('cycle' + str(cycle) + '-')
     # list_file = display_list_of_file(key + '-')
     print (list_file)
     for captureID, filename in enumerate( list_file ):
@@ -111,30 +107,30 @@ def concat_all_data(cycle, key):
         #         writeout.writelines( filename + '\n')
         #     writeout.close()
 
-        my_file = open(address + filename)
-        y_str = my_file.read()
-        y_str = y_str.splitlines()
-        data = []
-        for i, num in enumerate(y_str):
-            data.append(float(num))
+        with open(address + filename) as my_file:
+            y_str = my_file.read()
+            y_str = y_str.splitlines()
+            data = []
+            for i, num in enumerate(y_str):
+                data.append(float(num))
         my_file.close()
         #===== end-loop to read data ===== #
 
-        # remove background noise from the signal
+        ''' remove background noise from the signal '''
         # data = [a_i - b_i for a_i, b_i in zip(data, backgrd)]
 
         # concat all data set into a singl dataframe
         single_set = pd.DataFrame({captureID: data})
         big_set = pd.concat([big_set, single_set], axis=1, ignore_index=True)
 
-        # detect a a flat steak read
+        ''' detect a long streak in a read '''
         # if find_dup_run( data ):
         #     print ("streak : %s" % str(captureID + 1))
         #     with open(address + 'bad-flat.txt', 'ab') as writeout:
         #         writeout.writelines( filename + '\n')
         #     writeout.close()
         #
-        # # detect a time-shift signal
+        ''' detect a time-shift in signal '''
         # echo_idx = _locate_2ndEcho_index( data )
         # echoes_index. append( echo_idx )
 
@@ -142,14 +138,6 @@ def concat_all_data(cycle, key):
     big_set = big_set.fillna(0)
 
     return big_set, list_file
-
-def _save_avg_data(num, y):
-    fn = "avg/" + 'cycle' + str(num) + "-echoes-d.dat"
-    filehandle = open(fn, "w")
-    for samp in y:
-        filehandle.write(str(samp) + "\n")
-    filehandle.close()
-    return
 
 
 def _find_avg( numbers ):
@@ -198,13 +186,14 @@ def main ():
     """
     (2) plot all 64 raw data in one cycle
     detect a bad read by visual inspection
+    Generate a csv report with all raw captures
     """
     rawRead_concat = pd.DataFrame()
-    col_id = []
     list_file_total = []
     while cycle_id < cycle + 1:
 
         oneRead, list_file = concat_all_data(cycle_id, 'raw')
+        ''' detect a time-shift in signal '''
         # avg = _find_avg( echoes_index )
         # for i, element in enumerate(echoes_index):
         #     if abs( element - avg ) > 2:
@@ -213,11 +202,12 @@ def main ():
         #             writeout.writelines(str(cycle_id) + '-' + str(i) + '\n')
         #         writeout.close()
 
-
-        rawRead_concat = pd.concat([rawRead_concat, oneRead],
-                                    axis=1)  # concat the avg data into dataframe
+        '''  generate all Raw data sets csv report 
+            Comment out the next 2 lines if don't use '''
+        rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
         list_file_total +=  list_file
-        cycle_id += 1
+
+        '''  Plot all captures per read '''
     #
     #     # [row, column] = oneRead.shape
     #     # dt = float(1/7200000)
@@ -240,7 +230,7 @@ def main ():
     #     # plt.legend()
     #     # plt.show()
 
-
+        cycle_id += 1
 
     rawRead_concat = rawRead_concat.T
     rawRead_concat['filename'] = list_file_total
@@ -409,7 +399,6 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 address = '/media/jean/Data/titan-echo-board/echo-E/Me02-H100_180907-echo-e/data/'
-bad_data = []
 echoes_index = []
 backgrd = []
 
@@ -421,12 +410,13 @@ cycle_id = 651
 ME = 4
 ME_id = 1
 
-# my_file = open(address + 'noise.dat')
-# y_str = my_file.read()
-# y_str = y_str.splitlines()
+# with open(address + 'noise.dat') as my_file:
+#     y_str = my_file.read()
+#     y_str = y_str.splitlines()
 #
-# for num in y_str:
-#     backgrd.append(float(num))
+#     for num in y_str:
+#         backgrd.append(float(num))
+#
 # my_file.close()
 
 echoes_dsp = echoes_signals( 7200000.0 )

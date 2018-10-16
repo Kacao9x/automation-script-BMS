@@ -106,6 +106,10 @@ def concat_all_data(cycle, key):
     # list_file = display_list_of_file(key + '-')
     print (list_file)
     for captureID, filename in enumerate( list_file ):
+        # if captureID == 0:
+        #     with open(address + 'bad.txt', 'ab') as writeout:
+        #         writeout.writelines( filename + '\n')
+        #     writeout.close()
 
         my_file = open(address + filename)
         y_str = my_file.read()
@@ -209,41 +213,38 @@ def main ():
         #             writeout.writelines(str(cycle_id) + '-' + str(i) + '\n')
         #         writeout.close()
 
-        # col_header = cycle_id
-        # oneRead = pd.DataFrame({cycle_id : oneRead})
-        [row, col] = oneRead.shape
-        col_id.append( col )
+
         rawRead_concat = pd.concat([rawRead_concat, oneRead],
                                     axis=1)  # concat the avg data into dataframe
         list_file_total +=  list_file
         cycle_id += 1
-
-        # print (oneRead.shape)
-        # [row, column] = oneRead.shape
-        #
-        # dt = float(1/7200000)
-        # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-        #
-        # plt.figure(2)
-        # plt.title('SoC vs Time at SoC = 15 | Bandpass Enabled')
-        # plt.interactive(False)
-        #
-        # avgPos = 0
-        # while avgPos < column:
-        #     y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
-        #                                          300000, 1200000, 51)
-        #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-        #     plt.plot(x, y, label='0%s ' % str(avgPos +1))
-        #     plt.xlim((0, 0.00005))
-        #     plt.xlabel('time')
-        #     plt.ylabel('amplitude')
-        #     avgPos += 1
-        # plt.legend()
-        # plt.show()
-    print (list_file_total)
+    #
+    #     # [row, column] = oneRead.shape
+    #     # dt = float(1/7200000)
+    #     # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+    #     #
+    #     # plt.figure(2)
+    #     # plt.title('SoC vs Time at SoC = 15 | Bandpass Enabled')
+    #     # plt.interactive(False)
+    #     #
+    #     # avgPos = 0
+    #     # while avgPos < column:
+    #     #     y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
+    #     #                                          300000, 1200000, 51)
+    #     #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
+    #     #     plt.plot(x, y, label='0%s ' % str(avgPos +1))
+    #     #     plt.xlim((0, 0.00005))
+    #     #     plt.xlabel('time')
+    #     #     plt.ylabel('amplitude')
+    #     #     avgPos += 1
+    #     # plt.legend()
+    #     # plt.show()
+    #
+    #
+    # print (list_file_total)
     rawRead_concat = rawRead_concat.T
     rawRead_concat['filename'] = list_file_total
-    rawRead_concat.to_csv(address + 'allRawData.csv')
+    rawRead_concat.to_csv(address + 'allRawData_3.csv')
 
 
     """
@@ -258,12 +259,12 @@ def main ():
     #     # if cycle_id == 39:
     #     #     cycle_id +=25
     #
-    #     oneRead = concat_all_data( cycle_id, 'raw')
+    #     oneRead, list_file = concat_all_data( cycle_id, 'raw')
     #     [row, column] = oneRead.shape
     #
     #     # temp = oneRead.iloc[:, 0:(cycle_id * avgNum)]                     #
-    #     avg = np.mean(oneRead, axis=1)                                     # average 64 captures
-    #     avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
+    #     avg = np.mean(oneRead, axis=1)                                          # average 64 captures
+    #     # avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
     #
     #     col_header = cycle_id
     #     avgTable = pd.DataFrame({col_header : avg})
@@ -275,7 +276,6 @@ def main ():
     #     plt.xlim((0, 0.00005))
     #     plt.xlabel('time')
     #     plt.ylabel('amplitude')
-    #     tC.append(avg[round(0.0000295 * 7200000)])
     #     cycle_id += 1
     #
     # avgTable_concat.to_csv(address + 'avgData-bandpass.csv')
@@ -408,15 +408,15 @@ def main ():
     return
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = 'C:/Users/eel/TitanAES/echo-board-data/echo-E/Me02-H100_180910_echoE/data/'
+address = '/media/jean/Data/titan-echo-board/echo-E/Me02-H100_180907-echo-e/data/'
 bad_data = []
 echoes_index = []
 backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
-cycle = 230
-cycle_id = 1
+cycle = 740
+cycle_id = 651
 
 ME = 4
 ME_id = 1

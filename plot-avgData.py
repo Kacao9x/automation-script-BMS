@@ -42,19 +42,20 @@ def main():
 
     avgTable_concat = pd.DataFrame()
     while ME_id < ME + 1:
-        # if ME_id == 2:
-        #     ME_id += 1
+        # if ME_id == 2 or ME_id == 3 or ME_id == 4:
+        #     ME_id = 5
         file_list = display_list_of_file( 'Me0' + str(ME_id) )
         print (file_list)
         ME_dataFrame = pd.DataFrame()
-        avg_filter = pd.DataFrame()
+
 
         for filename in file_list:
             with open( address + filename ) as outfile:
                 avg_tab = pd.read_csv(outfile, sep=',', error_bad_lines=False)
             outfile.close()
 
-            ME_dataFrame = pd.concat([ME_dataFrame, avg_tab], axis=1, ignore_index=True)
+            ME_dataFrame = pd.concat([ME_dataFrame, avg_tab], axis=1,
+                                     ignore_index=True)
 
         ME_dataFrame = ME_dataFrame.fillna( 0 )
         [row, column] = ME_dataFrame.shape
@@ -85,7 +86,7 @@ def main():
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = 'C:/Users/eel/TitanAES/echo-board-data/echo-E/avgdata/'
+address = 'C:/Users/eel/TitanAES/echo-board-data/echo-E/avgdata/bandpass/'
 bad_data = []
 echoes_index = []
 
@@ -94,7 +95,7 @@ avgNum = 64
 cycle = 750
 cycle_id = 1
 
-ME = 4
+ME = 5
 ME_id = 1
 echoes_dsp = echoes_signals( 7200000.0 )
 # cycle number to plot

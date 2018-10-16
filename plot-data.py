@@ -239,9 +239,9 @@ def main ():
     #     #     avgPos += 1
     #     # plt.legend()
     #     # plt.show()
-    #
-    #
-    # print (list_file_total)
+
+
+
     rawRead_concat = rawRead_concat.T
     rawRead_concat['filename'] = list_file_total
     rawRead_concat.to_csv(address + 'allRawData_3.csv')

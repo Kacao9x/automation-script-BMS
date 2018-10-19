@@ -93,53 +93,111 @@ def concat_custom_data( key ):
     return file_name, tC_2, tC_1
 
 
-def concat_all_data(cycle, key):
-    global echoes_index
-    echoes_index[:] = []
+def concat_all_data(tempC = bool, cycle = str):
+    '''
+    :param cycle: keyword number to search and sort out
+    :param tempC: True to read the temperature files, False otherwise
+    :return: a dataframe contains all avg capture in a custom format
+            an array of all data sets
+    '''
     big_set = pd.DataFrame()
 
-    list_file = display_list_of_file('cycle' + str(cycle) + '-')
-    # list_file = display_list_of_file(key + '-')
-    # print (list_file)
-    for captureID, filename in enumerate( list_file ):
-        # if captureID == 0:
-        #     with open(address + 'bad.txt', 'ab') as writeout:
-        #         writeout.writelines( filename + '\n')
-        #     writeout.close()
+    if tempC:
+        ''' Read the temperature files
+        '''
+        tC_1, tC_2 = [], []
+        list_file = display_list_of_file(cycle)
 
-        with open(address + filename) as my_file:
-            y_str = my_file.read()
-            y_str = y_str.splitlines()
-        my_file.close()
+        for filename in list_file:
 
-        data = []
-        for i, num in enumerate(y_str):
-            data.append(float(num))
+            with open(address + filename) as my_file:
+                y_str = my_file.read()
+                y_str = y_str.splitlines()
+            my_file.close()
 
-        #===== end-loop to read data ===== #
+            for i, num in enumerate(y_str):
+                if len(num.split()) > 2:
+                    tC_1.append(num.split()[1])
+                    tC_2.append(num.split()[2])
 
-        ''' remove background noise from the signal '''
-        # data = [a_i - b_i for a_i, b_i in zip(data, backgrd)]
+        return tC_2, tC_1
 
-        # concat all data set into a singl dataframe
-        single_set = pd.DataFrame({captureID: data})
-        big_set = pd.concat([big_set, single_set], axis=1, ignore_index=True)
 
-        ''' detect a long streak in a read '''
-        # if find_dup_run( data ):
-        #     print ("streak : %s" % str(captureID + 1))
-        #     with open(address + 'bad-flat.txt', 'ab') as writeout:
-        #         writeout.writelines( filename + '\n')
-        #     writeout.close()
-        #
-        ''' detect a time-shift in signal '''
-        # echo_idx = _locate_2ndEcho_index( data )
-        # echoes_index. append( echo_idx )
+    else:
+        '''Read data from capture files
+        '''
+        list_file = display_list_of_file('cycle' + str(cycle) + '-')
 
-    # with 0s rather than NaNs
-    big_set = big_set.fillna(0)
+        for captureID, filename in enumerate(list_file):
 
-    return big_set, list_file
+            with open(address + filename) as my_file:
+                y_str = my_file.read()
+                y_str = y_str.splitlines()
+            my_file.close()
+
+            data = []
+            for i, num in enumerate(y_str):
+                data.append(float(num))
+
+            # concat all data set into a singl dataframe
+            single_set = pd.DataFrame({captureID: data})
+            big_set = pd.concat([big_set, single_set], axis=1,
+                                ignore_index=True)
+            del data
+
+        # with 0s rather than NaNs
+        big_set = big_set.fillna(0)
+
+        return big_set, list_file
+
+
+# def concat_all_data(cycle, key):
+#     global echoes_index
+#     echoes_index[:] = []
+#     big_set = pd.DataFrame()
+#
+#     list_file = display_list_of_file('cycle' + str(cycle) + '-')
+#     # list_file = display_list_of_file(key + '-')
+#     # print (list_file)
+#     for captureID, filename in enumerate( list_file ):
+#         # if captureID == 0:
+#         #     with open(address + 'bad.txt', 'ab') as writeout:
+#         #         writeout.writelines( filename + '\n')
+#         #     writeout.close()
+#
+#         with open(address + filename) as my_file:
+#             y_str = my_file.read()
+#             y_str = y_str.splitlines()
+#         my_file.close()
+#
+#         data = []
+#         for i, num in enumerate(y_str):
+#             data.append(float(num))
+#
+#         #===== end-loop to read data ===== #
+#
+#         ''' remove background noise from the signal '''
+#         # data = [a_i - b_i for a_i, b_i in zip(data, backgrd)]
+#
+#         # concat all data set into a singl dataframe
+#         single_set = pd.DataFrame({captureID: data})
+#         big_set = pd.concat([big_set, single_set], axis=1, ignore_index=True)
+#
+#         ''' detect a long streak in a read '''
+#         # if find_dup_run( data ):
+#         #     print ("streak : %s" % str(captureID + 1))
+#         #     with open(address + 'bad-flat.txt', 'ab') as writeout:
+#         #         writeout.writelines( filename + '\n')
+#         #     writeout.close()
+#         #
+#         ''' detect a time-shift in signal '''
+#         # echo_idx = _locate_2ndEcho_index( data )
+#         # echoes_index. append( echo_idx )
+#
+#     # with 0s rather than NaNs
+#     big_set = big_set.fillna(0)
+#
+#     return big_set, list_file
 
 
 def _find_avg( numbers ):
@@ -194,7 +252,8 @@ def main ():
     list_file_total = []
     while cycle_id < cycle + 1:
 
-        oneRead, list_file = concat_all_data(cycle_id, 'raw')
+        oneRead,list_file = concat_all_data(tempC=False,
+                                            cycle='cycle' + str(cycle_id) + '-')
     #     ''' detect a time-shift in signal '''
     #     # avg = _find_avg( echoes_index )
     #     # for i, element in enumerate(echoes_index):

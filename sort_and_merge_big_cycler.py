@@ -61,9 +61,38 @@ def display_list_of_file(key):
     list_cmd = ('ls '+ path +' -1v' + " | grep '" + key + "'")
     print (list_cmd)
     for line in iter(PopenIter(list_cmd), ''):
-        file_name.append(line.rstrip().split('-echoes')[0])
+        file_name.append(line.rstrip())
 
     return file_name
+
+
+def concat_custom_data( key ):
+    tC_1, tC_2 = [], []
+    file_name = pd.DataFrame()
+    list_file = display_list_of_file(key)
+    print (list_file)
+    for filename in list_file:
+
+        with open(path + filename) as my_file:
+            y_str = my_file.read()
+            y_str = y_str.splitlines()
+        my_file.close()
+        data = []
+        for i, num in enumerate(y_str):
+            if i < len(y_str) - 1:
+                data.append(float(num))
+
+            else:
+                # print (len(num.split() ))
+                if len(num.split()) > 2:
+                    tC_1.append( num.split()[1] )
+                    tC_2.append( num.split()[2] )
+                else:
+                    data.append(float(num))
+    # with 0s rather than NaNs
+    file_name = file_name.fillna(0)
+
+    return file_name, tC_2, tC_1
 
 
 # Merge the capacity between stage 1,2 and 4
@@ -400,21 +429,23 @@ def main():
     Add SoC data values into data frame
     '''
 
-    with open(path + 'avgData-primary.csv') as outfile:
+    with open(path + 'avgData-bandpass.csv') as outfile:
         ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
     ampTable_concat = ampTable_concat.T
     ampTable_concat.to_csv(path + 'avg_data_transpose.csv')
 
-    with open(path + 'temp.csv') as outfile:
-        tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    outfile.close()
-    tC_1 = tempTable['Temperature_top']
-    tC_2 = tempTable['Temperature_bottom']
+    # concat temperature
+    tempTable = pd.DataFrame()
+    oneRead, tC_1, tC_2 = concat_custom_data('cycle')
+    tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
+    tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
 
-    table_sorted = pd.concat([table_sorted, tC_1, tC_2],
-                             axis=1)  # add new column (diff index) into exisiing Dataframe
-    del tC_2, tC_1
+
+    table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
+                                            tempTable['Temperature_bottom']],
+                             axis=1)                                            # add new column (diff index) into exisiing Dataframe
+    del tempTable
     # table_sorted = pd.concat([table_sorted, ampTable_concat],
     #                          axis=1)  # add new column (diff index) into exisiing Dataframe
 
@@ -432,7 +463,7 @@ def main():
 
 
 keyword         = 'cycle'
-name            = 'Me04-H100_181005'
+name            = 'Me01-H100_181017'
 # path            = 'C:/Users/eel/TitanAES/echo-board-data/Me04-H100_181005/tempC/'
 path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'

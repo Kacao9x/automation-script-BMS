@@ -100,7 +100,7 @@ def concat_all_data(cycle, key):
 
     list_file = display_list_of_file('cycle' + str(cycle) + '-')
     # list_file = display_list_of_file(key + '-')
-    print (list_file)
+    # print (list_file)
     for captureID, filename in enumerate( list_file ):
         # if captureID == 0:
         #     with open(address + 'bad.txt', 'ab') as writeout:
@@ -110,10 +110,12 @@ def concat_all_data(cycle, key):
         with open(address + filename) as my_file:
             y_str = my_file.read()
             y_str = y_str.splitlines()
-            data = []
-            for i, num in enumerate(y_str):
-                data.append(float(num))
         my_file.close()
+
+        data = []
+        for i, num in enumerate(y_str):
+            data.append(float(num))
+
         #===== end-loop to read data ===== #
 
         ''' remove background noise from the signal '''
@@ -193,48 +195,47 @@ def main ():
     while cycle_id < cycle + 1:
 
         oneRead, list_file = concat_all_data(cycle_id, 'raw')
-        ''' detect a time-shift in signal '''
-        # avg = _find_avg( echoes_index )
-        # for i, element in enumerate(echoes_index):
-        #     if abs( element - avg ) > 2:
-        #         print ("shift %s" % str(i))
-        #         with open(address + 'bad-shift.txt', 'ab') as writeout:
-        #             writeout.writelines(str(cycle_id) + '-' + str(i) + '\n')
-        #         writeout.close()
-
-        '''  generate all Raw data sets csv report 
-            Comment out the next 2 lines if don't use '''
+    #     ''' detect a time-shift in signal '''
+    #     # avg = _find_avg( echoes_index )
+    #     # for i, element in enumerate(echoes_index):
+    #     #     if abs( element - avg ) > 1:
+    #     #         print ("shift %s" % str(i))
+    #     #         with open(address + 'bad-shift.txt', 'ab') as writeout:
+    #     #             writeout.writelines(str(cycle_id) + '-' + str(i) + '\n')
+    #     #         writeout.close()
+    #
+    #     '''  generate all Raw data sets csv report
+    #         Comment out the next 2 lines if don't use '''
         rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
         list_file_total +=  list_file
-
-        '''  Plot all captures per read '''
     #
-    #     # [row, column] = oneRead.shape
-    #     # dt = float(1/7200000)
-    #     # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-    #     #
-    #     # plt.figure(2)
-    #     # plt.title('SoC vs Time at SoC = 15 | Bandpass Enabled')
-    #     # plt.interactive(False)
-    #     #
-    #     # avgPos = 0
-    #     # while avgPos < column:
-    #     #     y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
-    #     #                                          300000, 1200000, 51)
-    #     #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #     #     plt.plot(x, y, label='0%s ' % str(avgPos +1))
-    #     #     plt.xlim((0, 0.00005))
-    #     #     plt.xlabel('time')
-    #     #     plt.ylabel('amplitude')
-    #     #     avgPos += 1
-    #     # plt.legend()
-    #     # plt.show()
+    #     '''  Plot all captures per read '''
+    #
+    #     [row, column] = oneRead.shape
+    #     dt = float(1/7200000)
+    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+    #
+    #     plt.figure(2)
+    #     plt.title('SoC vs Time | Bandpass Enabled')
+    #     plt.interactive(False)
+    #
+    #     avgPos = 0
+    #     while avgPos < column:
+    #         y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
+    #                                              300000, 1200000, 51)
+    #         # change the integers inside this routine as (number of rows, number of columns, plotnumber)
+    #         plt.plot(x, y, label='0%s ' % str(avgPos +1))
+    #         plt.xlim((0, 0.00005))
+    #         plt.xlabel('time')
+    #         plt.ylabel('amplitude')
+    #         avgPos += 1
+    #     plt.legend()
+    #     plt.show()
 
         cycle_id += 1
 
     rawRead_concat = rawRead_concat.T
-    rawRead_concat['filename'] = list_file_total
-    rawRead_concat.to_csv(address + 'allRawData_3.csv')
+    rawRead_concat.to_csv(address + 'allRawData.csv')
 
 
     """
@@ -398,14 +399,14 @@ def main ():
     return
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/echo-E/Me02-H100_180907-echo-e/data/'
+address = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/data/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
-cycle = 740
-cycle_id = 651
+cycle = 217
+cycle_id = 1
 
 ME = 4
 ME_id = 1

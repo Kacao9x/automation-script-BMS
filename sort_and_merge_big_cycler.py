@@ -34,26 +34,6 @@ def _convert_to_time_object_fix(str_obj):
 def _line_to_capture(second):
     return _start_row + int(second/__PERIOD__)
 
-# return the number of row
-def _row_count(filename):
-    # return sum(1 for row in open(filename))
-    sum = 0
-    with open(filename) as readout:
-        for _ in readout:
-            sum +=1
-    readout.close()
-    return sum
-
-
-def is_dummy_data(x):
-    last = 0.8
-    count = 0
-    for i in range(0, len(x)):
-        if last < x[i]:
-            count += 1
-
-    return (count > 10)
-
 
 # display the file with keyword in ascending using BASH
 def display_list_of_file(key):
@@ -93,6 +73,33 @@ def concat_custom_data( key ):
     file_name = file_name.fillna(0)
 
     return file_name, tC_2, tC_1
+
+
+def concat_all_data(cycle = int, tempC = bool):
+
+    big_set = pd.DataFrame()
+
+    list_file = display_list_of_file('cycle' + str(cycle) + '-')
+    # print (list_file)
+    for captureID, filename in enumerate( list_file ):
+
+        with open(path + filename) as my_file:
+            y_str = my_file.read()
+            y_str = y_str.splitlines()
+            data = []
+            for i, num in enumerate(y_str):
+                data.append(float(num))
+        my_file.close()
+        #===== end-loop to read data ===== #
+
+        # concat all data set into a singl dataframe
+        single_set = pd.DataFrame({captureID: data})
+        big_set = pd.concat([big_set, single_set], axis=1, ignore_index=True)
+
+    # with 0s rather than NaNs
+    big_set = big_set.fillna(0)
+
+    return big_set, list_file
 
 
 # Merge the capacity between stage 1,2 and 4
@@ -241,15 +248,6 @@ def find_capacity(begin, end, table):
            table['volt'][line]
 
 
-# add a new header for the column to store echoes amplitude
-def _SOC_header_creator():
-    header = []
-    filelist = display_list_of_file(keyword)
-
-    for i in range(len(filelist)):
-        header.append('SoC_' + str(i+1))
-    return header
-
 
 def _get_timestamp_from_filename( filename ):
 
@@ -378,8 +376,8 @@ def clean_test_data(fix = bool):
 
     ind = []
     # for good cycler data with 5s interval
-    ind = (cycler_data.index[cycler_data['time'].str.contains('Chg')].tolist()) \
-          + (cycler_data.index[cycler_data['time'].str.contains('Rest')].tolist())
+    ind = (cycler_data.index[cycler_data['time'].str.contains('Chg')].tolist())\
+        + (cycler_data.index[cycler_data['time'].str.contains('Rest')].tolist())
 
     print (ind)
 
@@ -414,44 +412,58 @@ def main():
     table = merge_column(table)                                                 # Merge capactity of CC and CV stages
     table.to_csv(cycler_path_new)
 
-
+    '''
+        Determining rows to check the value based on the time differnce
+    '''
     starttime = _read_time(table)                                               # when the test kicked-off
     print ('start-time: ' + str(starttime))
 
-    # display the list of logfile and grasp the endtime
-    filelist = display_list_of_file(keyword)                                    # get the endtime instance in filename
-    print (filelist)
+    filelist = display_list_of_file(keyword)                                    # store the list of filename
+    battery_id_list = [battery_id for _ in range(len( filelist ))]              # fill up the whole list with battery_id
+    SoH_list        = [SoH for _ in range(len( filelist ))]
+
+    # grasp the datetime from the filename
+    datetime_list = []
+    for single_name in filelist:
+        st = _get_timestamp_from_filename( single_name )
+        datetime_list.append( st )
 
     table_sorted = sort_by_name(filelist, starttime, table)                     # grasp the data instance and sort
+    table_sorted['battery_id']      = battery_id_list                           # add battery id list into the report dateframe
+    table_sorted['SoH']             = SoH_list                                  # add SOH list into the report dateframe
+    table_sorted['collection_date'] = datetime_list                             # add collection date list into report dateframe
+
+
     table_sorted.to_csv(final_log_path)
 
     '''
-    Add SoC data values into data frame
+        For enerating average data + tempC report
     '''
-
-    with open(path + 'avgData-bandpass.csv') as outfile:
-        ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    outfile.close()
-    ampTable_concat = ampTable_concat.T
-    ampTable_concat.to_csv(path + 'avg_data_transpose.csv')
-
-    # concat temperature
-    tempTable = pd.DataFrame()
-    oneRead, tC_1, tC_2 = concat_custom_data('cycle')
-    tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
-    tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
-
-
-    table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
-                                            tempTable['Temperature_bottom']],
-                             axis=1)                                            # add new column (diff index) into exisiing Dataframe
-    del tempTable
-    # table_sorted = pd.concat([table_sorted, ampTable_concat],
+    # concat average sorted data sets
+    # with open(path + 'avgData-bandpass.csv') as outfile:
+    #     ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    # outfile.close()
+    # ampTable_concat = ampTable_concat.T
+    # ampTable_concat.to_csv(path + 'avg_data_transpose.csv')
+    #
+    # # concat temperature
+    # tempTable = pd.DataFrame()
+    # oneRead, tC_1, tC_2 = concat_custom_data('cycle')
+    # tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
+    # tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
+    #
+    # table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
+    #                           tempTable['Temperature_bottom']],
     #                          axis=1)  # add new column (diff index) into exisiing Dataframe
+    # del tempTable
+    # del ampTable_concat
 
-    table_sorted.to_csv(final_log_path)
 
-    del ampTable_concat
+    ''' 
+        For generating raw data report 
+        Select data/primary folder that contain the raw files
+    '''
+
 
     return
 
@@ -463,12 +475,14 @@ def main():
 
 
 keyword         = 'cycle'
-name            = 'Me01-H100_181017'
-# path            = 'C:/Users/eel/TitanAES/echo-board-data/Me04-H100_181005/tempC/'
-path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
+battery_id      = 'Me01'
+SoH             = '100'
+name            = battery_id + '-H' + SoH + '_181017'
+path            = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/data/primary/'
+# path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
-final_log_path  = path + name + '_sorted.csv'
+final_log_path  = path + name + '_rawData_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index

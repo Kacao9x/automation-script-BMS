@@ -46,36 +46,7 @@ def display_list_of_file(key):
     return file_name
 
 
-def concat_custom_data( key ):
-    tC_1, tC_2 = [], []
-    file_name = pd.DataFrame()
-    list_file = display_list_of_file(key)
-    print (list_file)
-    for filename in list_file:
-
-        with open(path + filename) as my_file:
-            y_str = my_file.read()
-            y_str = y_str.splitlines()
-        my_file.close()
-        data = []
-        for i, num in enumerate(y_str):
-            if i < len(y_str) - 1:
-                data.append(float(num))
-
-            else:
-                # print (len(num.split() ))
-                if len(num.split()) > 2:
-                    tC_1.append( num.split()[1] )
-                    tC_2.append( num.split()[2] )
-                else:
-                    data.append(float(num))
-    # with 0s rather than NaNs
-    file_name = file_name.fillna(0)
-
-    return file_name, tC_2, tC_1
-
-
-def concat_all_data(tempC = bool, cycle = str):
+def concat_all_data(tempC = bool, search_key = str):
     '''
     :param cycle: keyword number to search and sort out
     :param tempC: True to read the temperature files, False otherwise
@@ -88,7 +59,7 @@ def concat_all_data(tempC = bool, cycle = str):
         ''' Read the temperature files
         '''
         tC_1, tC_2 = [], []
-        list_file = display_list_of_file( cycle )
+        list_file = display_list_of_file( search_key )
 
         for filename in list_file:
 
@@ -108,7 +79,7 @@ def concat_all_data(tempC = bool, cycle = str):
     else:
         '''Read data from capture files
         '''
-        list_file = display_list_of_file('cycle' + str(cycle) + '-')
+        list_file = display_list_of_file( search_key )
 
         for captureID, filename in enumerate( list_file ):
 
@@ -117,9 +88,10 @@ def concat_all_data(tempC = bool, cycle = str):
                 y_str = y_str.splitlines()
             my_file.close()
 
-            data = []
-            for i, num in enumerate(y_str):
-                data.append(float(num))
+            data = [float(num) for num in y_str]                                # convert string to float
+            # data = []
+            # for i, num in enumerate(y_str):
+            #     data.append(float(num))
 
             # concat all data set into a singl dataframe
             single_set = pd.DataFrame({captureID: data})
@@ -478,7 +450,7 @@ def main():
     #
     # # concat temperature
     # tempTable = pd.DataFrame()
-    # tC_1, tC_2 = concat_all_data(tempC = True, cycle = 'cycle')
+    # tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
     # tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
     # tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
     #

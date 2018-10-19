@@ -64,36 +64,8 @@ def find_timeshift_signal( ):
 
     return
 
-def concat_custom_data( key ):
-    tC_1, tC_2 = [], []
-    file_name = pd.DataFrame()
-    list_file = display_list_of_file(key)
-    print (list_file)
-    for filename in list_file:
 
-        my_file = open(address + filename)
-        y_str = my_file.read()
-        y_str = y_str.splitlines()
-
-        data = []
-        for i, num in enumerate(y_str):
-            if i < len(y_str) - 1:
-                data.append(float(num))
-
-            else:
-                # print (len(num.split() ))
-                if len(num.split()) > 2:
-                    tC_1.append( num.split()[1] )
-                    tC_2.append( num.split()[2] )
-                else:
-                    data.append(float(num))
-    # with 0s rather than NaNs
-    file_name = file_name.fillna(0)
-
-    return file_name, tC_2, tC_1
-
-
-def concat_all_data(tempC = bool, cycle = str):
+def concat_all_data(tempC = bool, search_key = str):
     '''
     :param cycle: keyword number to search and sort out
     :param tempC: True to read the temperature files, False otherwise
@@ -106,8 +78,8 @@ def concat_all_data(tempC = bool, cycle = str):
         ''' Read the temperature files
         '''
         tC_1, tC_2 = [], []
-        list_file = display_list_of_file(cycle)
-
+        list_file = display_list_of_file(search_key)
+        print (list_file)
         for filename in list_file:
 
             with open(address + filename) as my_file:
@@ -126,7 +98,7 @@ def concat_all_data(tempC = bool, cycle = str):
     else:
         '''Read data from capture files
         '''
-        list_file = display_list_of_file('cycle' + str(cycle) + '-')
+        list_file = display_list_of_file(search_key)
 
         for captureID, filename in enumerate(list_file):
 
@@ -135,9 +107,10 @@ def concat_all_data(tempC = bool, cycle = str):
                 y_str = y_str.splitlines()
             my_file.close()
 
-            data = []
-            for i, num in enumerate(y_str):
-                data.append(float(num))
+            data = [float(num) for num in y_str]                                # convert string to float
+            # data = []
+            # for i, num in enumerate(y_str):
+            #     data.append(float(num))
 
             # concat all data set into a singl dataframe
             single_set = pd.DataFrame({captureID: data})
@@ -248,12 +221,12 @@ def main ():
     detect a bad read by visual inspection
     Generate a csv report with all raw captures
     """
-    rawRead_concat = pd.DataFrame()
-    list_file_total = []
-    while cycle_id < cycle + 1:
-
-        oneRead,list_file = concat_all_data(tempC=False,
-                                            cycle='cycle' + str(cycle_id) + '-')
+    # rawRead_concat = pd.DataFrame()
+    # list_file_total = []
+    # while cycle_id < cycle + 1:
+    #
+    #     oneRead,list_file = concat_all_data(tempC=False,
+    #                                         key='cycle' + str(cycle_id) + '-')
     #     ''' detect a time-shift in signal '''
     #     # avg = _find_avg( echoes_index )
     #     # for i, element in enumerate(echoes_index):
@@ -265,8 +238,8 @@ def main ():
     #
     #     '''  generate all Raw data sets csv report
     #         Comment out the next 2 lines if don't use '''
-        rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
-        list_file_total +=  list_file
+    #     rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
+    #     list_file_total +=  list_file
     #
     #     '''  Plot all captures per read '''
     #
@@ -291,10 +264,10 @@ def main ():
     #     plt.legend()
     #     plt.show()
 
-        cycle_id += 1
+        # cycle_id += 1
 
-    rawRead_concat = rawRead_concat.T
-    rawRead_concat.to_csv(address + 'allRawData.csv')
+    # rawRead_concat = rawRead_concat.T
+    # rawRead_concat.to_csv(address + 'allRawData.csv')
 
 
     """
@@ -309,7 +282,8 @@ def main ():
     #     # if cycle_id == 39:
     #     #     cycle_id +=25
     #
-    #     oneRead, list_file = concat_all_data( cycle_id, 'raw')
+    #     oneRead, list_file = concat_all_data(tempC=False,
+    #                                          key='cycle' + str(cycle_id) + '-')
     #     [row, column] = oneRead.shape
     #
     #     # temp = oneRead.iloc[:, 0:(cycle_id * avgNum)]                     #
@@ -336,11 +310,11 @@ def main ():
     (4) Plot Temperature vs Amplitude at 30us
     """
     # concat temperature
-    # tempTable = pd.DataFrame()
-    # oneRead, tC_1, tC_2 = concat_custom_data('cycle')
-    # tempTable['Temperature_bottom'] = tC_1
-    # tempTable['Temperature_top'] = tC_2
-    # tempTable.to_csv(address + 'temp.csv')
+    tempTable = pd.DataFrame()
+    tC_1, tC_2 = concat_all_data(tempC=True, search_key='cycle')
+    tempTable['Temperature_bottom'] = tC_1
+    tempTable['Temperature_top'] = tC_2
+    tempTable.to_csv(address + 'temp.csv')
     #
     # with open(address + 'avgData.csv') as outfile:
     #     avgTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
@@ -458,7 +432,7 @@ def main ():
     return
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/data/primary/'
+address = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/tempC/'
 echoes_index = []
 backgrd = []
 

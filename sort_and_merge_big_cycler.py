@@ -423,6 +423,7 @@ def main():
     filelist = display_list_of_file(keyword)                                    # store the list of filename
     battery_id_list = [battery_id for _ in range(len( filelist ))]              # fill up the whole list with battery_id
     SoH_list        = [SoH for _ in range(len( filelist ))]
+    trans_list      = [transducer_id for _ in range(len( filelist ))]
 
     # grasp the datetime from the filename
     datetime_list = []
@@ -434,12 +435,12 @@ def main():
     table_sorted['battery_id']      = battery_id_list                           # add battery id list into the report dateframe
     table_sorted['SoH']             = SoH_list                                  # add SOH list into the report dateframe
     table_sorted['collection_date'] = datetime_list                             # add collection date list into report dateframe
+    table_sorted['transducer_id']   = trans_list
 
 
-    table_sorted.to_csv(final_log_path)
 
     '''
-        For enerating average data + tempC report
+        For generating average data + tempC report
     '''
     # concat average sorted data sets
     # with open(path + 'avgData-bandpass.csv') as outfile:
@@ -453,12 +454,13 @@ def main():
     # tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
     # tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
     # tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
-    #
+    # #
     # table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
     #                           tempTable['Temperature_bottom']],
     #                          axis=1)  # add new column (diff index) into exisiing Dataframe
     # del tempTable
     # del ampTable_concat
+    table_sorted.to_csv(final_log_path)
 
 
     ''' 
@@ -479,12 +481,13 @@ def main():
 keyword         = 'cycle'
 battery_id      = 'Me01'
 SoH             = '100'
+transducer_id   = '067143'
 name            = battery_id + '-H' + SoH + '_181017'
 path            = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/data/primary/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
-final_log_path  = path + name + '_rawData_sorted.csv'
+final_log_path  = path + name + '_raw_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index

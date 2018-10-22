@@ -221,12 +221,12 @@ def main ():
     detect a bad read by visual inspection
     Generate a csv report with all raw captures
     """
-    # rawRead_concat = pd.DataFrame()
-    # list_file_total = []
-    # while cycle_id < cycle + 1:
-    #
-    #     oneRead,list_file = concat_all_data(tempC=False,
-    #                                         key='cycle' + str(cycle_id) + '-')
+    rawRead_concat = pd.DataFrame()
+    list_file_total = []
+    while cycle_id < cycle + 1:
+
+        oneRead,list_file = concat_all_data(tempC=False,
+                                            search_key='cycle' + str(cycle_id) + '-')
     #     ''' detect a time-shift in signal '''
     #     # avg = _find_avg( echoes_index )
     #     # for i, element in enumerate(echoes_index):
@@ -236,11 +236,10 @@ def main ():
     #     #             writeout.writelines(str(cycle_id) + '-' + str(i) + '\n')
     #     #         writeout.close()
     #
-    #     '''  generate all Raw data sets csv report
-    #         Comment out the next 2 lines if don't use '''
-    #     rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
-    #     list_file_total +=  list_file
-    #
+        '''  generate all Raw data sets csv report
+            Comment out the next 2 lines if don't use '''
+        rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
+
     #     '''  Plot all captures per read '''
     #
     #     [row, column] = oneRead.shape
@@ -264,10 +263,10 @@ def main ():
     #     plt.legend()
     #     plt.show()
 
-        # cycle_id += 1
+        cycle_id += 1
 
-    # rawRead_concat = rawRead_concat.T
-    # rawRead_concat.to_csv(address + 'allRawData.csv')
+    rawRead_concat = rawRead_concat.T
+    rawRead_concat.to_csv(address + 'allRawData.csv')
 
 
     """
@@ -310,11 +309,11 @@ def main ():
     (4) Plot Temperature vs Amplitude at 30us
     """
     # concat temperature
-    tempTable = pd.DataFrame()
-    tC_1, tC_2 = concat_all_data(tempC=True, search_key='cycle')
-    tempTable['Temperature_bottom'] = tC_1
-    tempTable['Temperature_top'] = tC_2
-    tempTable.to_csv(address + 'temp.csv')
+    # tempTable = pd.DataFrame()
+    # tC_1, tC_2 = concat_all_data(tempC=True, search_key='cycle')
+    # tempTable['Temperature_bottom'] = tC_1
+    # tempTable['Temperature_top'] = tC_2
+    # tempTable.to_csv(address + 'temp.csv')
     #
     # with open(address + 'avgData.csv') as outfile:
     #     avgTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
@@ -432,13 +431,13 @@ def main ():
     return
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/tempC/'
+address = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181015-echo-e/data/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
-cycle = 217
+cycle = 99
 cycle_id = 1
 
 ME = 4

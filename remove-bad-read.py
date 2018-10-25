@@ -19,7 +19,7 @@ def PopenIter(cmd):
 #==============================================================================#
 
 def main():
-    with open(address + 'bad1.txt', 'rb') as readout:
+    with open(address + 'bad.txt', 'rb') as readout:
         for cnt, line in enumerate( readout ):
             print (str(cnt))
             print (line)
@@ -30,7 +30,7 @@ def main():
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/data/'
+address = '/media/jean/Data/titan-echo-board/echo-C/181022-echoC/data/'
 bad_data = []
 
 if __name__ == '__main__':

@@ -448,7 +448,7 @@ def main():
     # outfile.close()
     # ampTable_concat = ampTable_concat.T
     # ampTable_concat.to_csv(path + 'avg_data_transpose.csv')
-    #
+    # #
     # # concat temperature
     # tempTable = pd.DataFrame()
     # tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
@@ -479,15 +479,15 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'Me01'
+battery_id      = 'Me02'
 SoH             = '100'
 transducer_id   = '067143'
-name            = battery_id + '-H' + SoH + '_181017'
-path            = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181017-echo-e/data/primary/'
+name            = battery_id + '-H' + SoH + '_181023'
+path            = '/media/jean/Data/titan-echo-board/echo-E/Me02-H100_181023-echo-e/data/primary/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_new = path + name + '_new.csv'
-final_log_path  = path + name + '_raw_sorted.csv'
+final_log_path  = path + name + '_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index

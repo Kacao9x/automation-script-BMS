@@ -73,7 +73,8 @@ def concat_all_data(tempC = bool, search_key = str):
             an array of all data sets
     '''
     big_set = pd.DataFrame()
-
+    global echoes_index
+    echoes_index = []
     if tempC:
         ''' Read the temperature files
         '''
@@ -101,6 +102,10 @@ def concat_all_data(tempC = bool, search_key = str):
         list_file = display_list_of_file(search_key)
 
         for captureID, filename in enumerate(list_file):
+            # if captureID == 0:
+            #     with open(address + 'bad.txt', 'ab') as writeout:
+            #         writeout.writelines( filename + '\n')
+            #     writeout.close()
 
             with open(address + filename) as my_file:
                 y_str = my_file.read()
@@ -108,15 +113,24 @@ def concat_all_data(tempC = bool, search_key = str):
             my_file.close()
 
             data = [float(num) for num in y_str]                                # convert string to float
-            # data = []
-            # for i, num in enumerate(y_str):
-            #     data.append(float(num))
+
+            ''' remove background noise from the signal '''
 
             # concat all data set into a singl dataframe
             single_set = pd.DataFrame({captureID: data})
             big_set = pd.concat([big_set, single_set], axis=1,
                                 ignore_index=True)
-            del data
+
+            ''' detect a long streak in a read '''
+            # if find_dup_run(data):
+            #     print ("streak : %s" % str(captureID + 1))
+            #     with open(address + 'bad-flat.txt', 'ab') as writeout:
+            #         writeout.writelines(filename + '\n')
+            #     writeout.close()
+            #
+            # ''' detect a time-shift in signal '''
+            # echo_idx = _locate_2ndEcho_index(data)
+            # echoes_index.append(echo_idx)
 
         # with 0s rather than NaNs
         big_set = big_set.fillna(0)
@@ -222,47 +236,46 @@ def main ():
     Generate a csv report with all raw captures
     """
     rawRead_concat = pd.DataFrame()
-    list_file_total = []
     while cycle_id < cycle + 1:
 
         oneRead,list_file = concat_all_data(tempC=False,
                                             search_key='cycle' + str(cycle_id) + '-')
     #     ''' detect a time-shift in signal '''
-    #     # avg = _find_avg( echoes_index )
-    #     # for i, element in enumerate(echoes_index):
-    #     #     if abs( element - avg ) > 1:
-    #     #         print ("shift %s" % str(i))
-    #     #         with open(address + 'bad-shift.txt', 'ab') as writeout:
-    #     #             writeout.writelines(str(cycle_id) + '-' + str(i) + '\n')
-    #     #         writeout.close()
-    #
+        # avg = _find_avg( echoes_index )
+        # for i, element in enumerate(echoes_index):
+        #     if abs( element - avg ) > 2:
+        #         print ("shift %s" % str(i + 1))
+        #         with open(address + 'bad-shift.txt', 'ab') as writeout:
+        #             writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
+        #         writeout.close()
+
         '''  generate all Raw data sets csv report
             Comment out the next 2 lines if don't use '''
         rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
 
-    #     '''  Plot all captures per read '''
-    #
-    #     [row, column] = oneRead.shape
-    #     dt = float(1/7200000)
-    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-    #
-    #     plt.figure(2)
-    #     plt.title('SoC vs Time | Bandpass Enabled')
-    #     plt.interactive(False)
-    #
-    #     avgPos = 0
-    #     while avgPos < column:
-    #         y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
-    #                                              300000, 1200000, 51)
-    #         # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #         plt.plot(x, y, label='0%s ' % str(avgPos +1))
-    #         plt.xlim((0, 0.00005))
-    #         plt.xlabel('time')
-    #         plt.ylabel('amplitude')
-    #         avgPos += 1
-    #     plt.legend()
-    #     plt.show()
+        # '''  Plot all captures per read '''
 
+        # [row, column] = oneRead.shape
+        # dt = float(1/7200000)
+        # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+        #
+        # plt.figure(2)
+        # plt.title('SoC vs Time | Bandpass Enabled')
+        # plt.interactive(False)
+        #
+        # avgPos = 0
+        # while avgPos < column:
+        #     y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
+        #                                          300000, 1200000, 51)
+        #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
+        #     plt.plot(x, y, label='0%s ' % str(avgPos +1))
+        #     plt.xlim((0, 0.00005))
+        #     plt.xlabel('time')
+        #     plt.ylabel('amplitude')
+        #     avgPos += 1
+        # plt.legend()
+        # plt.show()
+        #
         cycle_id += 1
 
     rawRead_concat = rawRead_concat.T
@@ -282,12 +295,13 @@ def main ():
     #     #     cycle_id +=25
     #
     #     oneRead, list_file = concat_all_data(tempC=False,
-    #                                          key='cycle' + str(cycle_id) + '-')
+    #                                          search_key='cycle' + str(cycle_id) + '-')
     #     [row, column] = oneRead.shape
     #
     #     # temp = oneRead.iloc[:, 0:(cycle_id * avgNum)]                     #
     #     avg = np.mean(oneRead, axis=1)                                          # average 64 captures
-    #     # avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
+    #     avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
+    #     # avg = [a_i - b_i for a_i, b_i in zip( avg, backgrd )]
     #
     #     col_header = cycle_id
     #     avgTable = pd.DataFrame({col_header : avg})
@@ -295,7 +309,7 @@ def main ():
     #
     #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
     #     plt.plot(x, avg, label='Cycle %s ' % str(cycle_id))
-    #     plt.title('SoC vs Time for average data |' + ' Me01 S0H = 100 | echo-E')
+    #     plt.title('SoC vs Time for average data |' + ' Nis | echo-C')
     #     plt.xlim((0, 0.00005))
     #     plt.xlabel('time')
     #     plt.ylabel('amplitude')
@@ -431,13 +445,13 @@ def main ():
     return
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/echo-E/Me01-H100_181015-echo-e/data/primary/'
+address = '/media/jean/Data/titan-echo-board/echo-C/181022-echoC/data/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
-cycle = 99
+cycle = 417
 cycle_id = 1
 
 ME = 4
@@ -449,7 +463,6 @@ ME_id = 1
 #
 #     for num in y_str:
 #         backgrd.append(float(num))
-#
 # my_file.close()
 
 echoes_dsp = echoes_signals( 7200000.0 )

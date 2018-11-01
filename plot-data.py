@@ -55,14 +55,11 @@ def find_dup_run( x ):
     # return max(x) == min(x)   # for echo C + D
     return (max( x ) - min( x )) < 0.015 # for echo E
 
+
 def _locate_2ndEcho_index( data ):
     data = data[ 170 : 260 ]
     return data.index( max(data) )
 
-
-def find_timeshift_signal( ):
-
-    return
 
 
 def concat_all_data(tempC = bool, search_key = str):
@@ -102,10 +99,6 @@ def concat_all_data(tempC = bool, search_key = str):
         list_file = display_list_of_file(search_key)
 
         for captureID, filename in enumerate(list_file):
-            if captureID == 0:
-                with open(address + 'bad-1.txt', 'ab') as writeout:
-                    writeout.writelines( filename + '\n')
-                writeout.close()
 
             with open(address + filename) as my_file:
                 y_str = my_file.read()
@@ -114,77 +107,13 @@ def concat_all_data(tempC = bool, search_key = str):
 
             data = [float(num) for num in y_str]                                # convert string to float
 
-            ''' remove background noise from the signal '''
-
-            # concat all data set into a singl dataframe
-            single_set = pd.DataFrame({captureID: data})
+            single_set = pd.DataFrame({captureID: data})                        # concat all data set into a singl dataframe
             big_set = pd.concat([big_set, single_set], axis=1,
                                 ignore_index=True)
 
-            ''' detect a long streak in a read '''
-            # if find_dup_run(data):
-            #     print ("streak : %s" % str(captureID + 1))
-            #     with open(address + 'bad-flat.txt', 'ab') as writeout:
-            #         writeout.writelines(filename + '\n')
-            #     writeout.close()
-            
-            # ''' detect a time-shift in signal '''
-            # echo_idx = _locate_2ndEcho_index(data)
-            # echoes_index.append(echo_idx)
-
-        # with 0s rather than NaNs
-        big_set = big_set.fillna(0)
+        big_set = big_set.fillna(0)                                             # with 0s rather than NaNs
 
         return big_set, list_file
-
-
-# def concat_all_data(cycle, key):
-#     global echoes_index
-#     echoes_index[:] = []
-#     big_set = pd.DataFrame()
-#
-#     list_file = display_list_of_file('cycle' + str(cycle) + '-')
-#     # list_file = display_list_of_file(key + '-')
-#     # print (list_file)
-#     for captureID, filename in enumerate( list_file ):
-#         # if captureID == 0:
-#         #     with open(address + 'bad.txt', 'ab') as writeout:
-#         #         writeout.writelines( filename + '\n')
-#         #     writeout.close()
-#
-#         with open(address + filename) as my_file:
-#             y_str = my_file.read()
-#             y_str = y_str.splitlines()
-#         my_file.close()
-#
-#         data = []
-#         for i, num in enumerate(y_str):
-#             data.append(float(num))
-#
-#         #===== end-loop to read data ===== #
-#
-#         ''' remove background noise from the signal '''
-#         # data = [a_i - b_i for a_i, b_i in zip(data, backgrd)]
-#
-#         # concat all data set into a singl dataframe
-#         single_set = pd.DataFrame({captureID: data})
-#         big_set = pd.concat([big_set, single_set], axis=1, ignore_index=True)
-#
-#         ''' detect a long streak in a read '''
-#         # if find_dup_run( data ):
-#         #     print ("streak : %s" % str(captureID + 1))
-#         #     with open(address + 'bad-flat.txt', 'ab') as writeout:
-#         #         writeout.writelines( filename + '\n')
-#         #     writeout.close()
-#         #
-#         ''' detect a time-shift in signal '''
-#         # echo_idx = _locate_2ndEcho_index( data )
-#         # echoes_index. append( echo_idx )
-#
-#     # with 0s rather than NaNs
-#     big_set = big_set.fillna(0)
-#
-#     return big_set, list_file
 
 
 def _find_avg( numbers ):
@@ -203,32 +132,44 @@ def main ():
     global backgrd
 
     """
-    (1) plot a single data RAW data set
+        (1) Check data quality: detect flat curve, missing echo
     """
-    # while avgPos < avgNum + 1:
-    #     oneRead = concat_all_data(cycle_id, 'raw-' + str(avgPos))
-    #     [row, column] = oneRead.shape
-    #     avgPos += 1
-    #     dt = float(1 / 7200000)
-    #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-    #
-    #     plt.figure(1)
-    #     plt.title('SoC vs Time')
-    #     plt.interactive(False)
-    #
-    #     i = 1
-    #     while (i < column+1):
-    #     # plt.subplot(column/2, 2, i)
-    #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #         plt.plot(x, oneRead.loc[:, i - 1])
-    #         plt.xlim((0, 0.00010))
-    #         plt.xlabel('time')
-    #         plt.ylabel('amplitude')
-    #         i += 10
-    #
-    #     plt.legend()
-    #     plt.show()
-    #     del tC, oneRead
+    while cycle_id < cycle + 1:
+
+        list_file = display_list_of_file('cycle' + str(cycle_id) + '-')
+        print (list_file)
+
+        ''' Loop through every sample data in a read/capture '''
+        for filename in list_file:
+            with open(address + filename) as my_file:
+                y_str = my_file.read()
+                y_str = y_str.splitlines()
+            my_file.close()
+
+            data = [float(num) for num in y_str]                                # convert string to float
+            ''' DETECT a long streak in a sample '''
+            if find_dup_run(data):
+                print ("streak : %s" % str( cycle_id + 1 ))
+                with open(address + 'bad-flat.txt', 'ab') as writeout:
+                    writeout.writelines(filename + '\n')
+                writeout.close()
+
+            ''' detect a time-shift in signal
+                by checking differnce of 2nd echo position against average'''
+            echo_idx = _locate_2ndEcho_index(data)
+            echoes_index.append(echo_idx)
+
+        ''' DETECT a time-shift in signal '''
+        avg = _find_avg( echoes_index )
+        for i, element in enumerate(echoes_index):
+            if abs( element - avg ) > 2:
+                print ("shift %s" % str(i + 1))
+                with open(address + 'bad-shift.txt', 'ab') as writeout:
+                    writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
+                writeout.close()
+
+        cycle_id += 1
+
 
     """
     (2) plot all 64 raw data in one cycle
@@ -240,41 +181,33 @@ def main ():
     
         oneRead,list_file = concat_all_data(tempC=False,
                                             search_key='cycle' + str(cycle_id) + '-')
-    #     ''' detect a time-shift in signal '''
-    #     # avg = _find_avg( echoes_index )
-    #     # for i, element in enumerate(echoes_index):
-    #     #     if abs( element - avg ) > 2:
-    #     #         print ("shift %s" % str(i + 1))
-    #     #         with open(address + 'bad-shift.txt', 'ab') as writeout:
-    #     #             writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
-    #     #         writeout.close()
-    
-        # '''  generate all Raw data sets csv report
-        #     Comment out the next 2 lines if don't use '''
+
+        '''  generate all Raw data sets csv report
+            Comment out the next 2 lines if don't use '''
         rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
     
-    #     '''  Plot all captures per read '''
+        '''  Plot all captures per read '''
         
-    #     # [row, column] = oneRead.shape
-    #     # dt = float(1/7200000)
-    #     # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+        # [row, column] = oneRead.shape
+        # dt = float(1/7200000)
+        # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
         
-    #     # plt.figure(2)
-    #     # plt.title('SoC vs Time | Bandpass Enabled')
-    #     # plt.interactive(False)
+        # plt.figure(2)
+        # plt.title('SoC vs Time | Bandpass Enabled')
+        # plt.interactive(False)
         
-    #     # avgPos = 0
-    #     # while avgPos < column:
-    #     #     y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
-    #     #                                          300000, 1200000, 51)
-    #     #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #     #     plt.plot(x, y, label='0%s ' % str(avgPos +1))
-    #     #     plt.xlim((0, 0.00005))
-    #     #     plt.xlabel('time')
-    #     #     plt.ylabel('amplitude')
-    #     #     avgPos += 1
-    #     # plt.legend()
-    #     # plt.show()
+        # avgPos = 0
+        # while avgPos < column:
+        #     y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
+        #                                          300000, 1200000, 51)
+        #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
+        #     plt.plot(x, y, label='0%s ' % str(avgPos +1))
+        #     plt.xlim((0, 0.00005))
+        #     plt.xlabel('time')
+        #     plt.ylabel('amplitude')
+        #     avgPos += 1
+        # plt.legend()
+        # plt.show()
     
         cycle_id += 1
     

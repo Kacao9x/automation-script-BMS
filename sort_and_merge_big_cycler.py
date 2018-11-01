@@ -448,15 +448,8 @@ def main():
 
 
     '''
-        For generating average data + tempC report
+        For generating AVERAGE + tempC report
     '''
-    # concat average sorted data sets
-    # with open(path + 'avgData-bandpass.csv') as outfile:
-    #     ampTable_concat = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    # outfile.close()
-    # ampTable_concat = ampTable_concat.T
-    # ampTable_concat.to_csv(path + 'avg_data_transpose.csv')
-    # #
     # concat temperature
     # tempTable = pd.DataFrame()
     # tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
@@ -467,14 +460,8 @@ def main():
     #                           tempTable['Temperature_top']],
     #                          axis=1)  # add new column (diff index) into exisiing Dataframe
     # del tempTable
-    # del ampTable_concat
     table_sorted.to_csv(final_log_path)
 
-
-    ''' 
-        For generating raw data report 
-        Select data/primary folder that contain the raw files
-    '''
 
 
     return

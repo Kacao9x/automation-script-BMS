@@ -1,4 +1,8 @@
 import subprocess
+import numpy as np
+import pandas as pd
+import os
+
 
 #==============================================================================#
 
@@ -30,6 +34,7 @@ def display_list_of_file(key):
 
 
 def main():
+
     # with open(address + 'bad-flat.txt', 'rb') as readout:
     #     for cnt, line in enumerate( readout ):
     #         # print (str(cnt))
@@ -49,6 +54,21 @@ def main():
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 address = '/media/jean/Data/titan-echo-board/echo-E/Me05-H100_181008-echo-e/data/primary/'
 bad_data = []
+
+adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]
+backgrd = [2,2,2,2]
+
+for adc_capture in adc_captures_float:
+    noise_removal = True
+    if noise_removal:
+        print("Removing noise background")
+        adc_capture = [a_i - b_i for a_i, b_i in zip(adc_capture, backgrd)]
+
+adc_captures_readout = np.mean( adc_captures_float, axis = 0)
+print (adc_captures_readout)
+# adc_captures_readout = [a_i - b_i for a_i, b_i in zip(adc_captures_readout, backgrd)]
+adc_captures_readout = np.subtract( adc_captures_readout, backgrd )
+print (adc_captures_readout)
 
 if __name__ == '__main__':
     main()

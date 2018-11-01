@@ -30,6 +30,14 @@ def _convert_to_time_object(str_obj):
 def _convert_to_time_object_fix(str_obj):
     return dt.datetime.strptime(str_obj, '%m/%d/%Y %H:%M:%S')
 
+def _validate_strptime_format( date_text ):
+    try:
+        if date_text != _convert_to_time_object( date_text ).strfttime('%m/%d/%Y %H:%M:%S'):
+            raise ValueError
+        return True
+    except ValueError:
+        return False
+
 
 def _line_to_capture(second):
     return _start_row + int(second/__PERIOD__)
@@ -412,7 +420,7 @@ def main():
     outfile.close()
 
     table = merge_column(table)                                                 # Merge capactity of CC and CV stages
-    table.to_csv(cycler_path_new)
+    table.to_csv(cycler_path_merged)
 
     '''
         Determining rows to check the value based on the time differnce
@@ -449,14 +457,14 @@ def main():
     # ampTable_concat = ampTable_concat.T
     # ampTable_concat.to_csv(path + 'avg_data_transpose.csv')
     # #
-    # # concat temperature
+    # concat temperature
     # tempTable = pd.DataFrame()
     # tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
     # tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
     # tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
-    # #
+    
     # table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
-    #                           tempTable['Temperature_bottom']],
+    #                           tempTable['Temperature_top']],
     #                          axis=1)  # add new column (diff index) into exisiing Dataframe
     # del tempTable
     # del ampTable_concat
@@ -479,15 +487,15 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'Me02'
+battery_id      = 'Me05'
 SoH             = '100'
-transducer_id   = '067143'
-name            = battery_id + '-H' + SoH + '_181023'
-path            = '/media/jean/Data/titan-echo-board/echo-E/Me02-H100_181023-echo-e/data/primary/'
+transducer_id   = '067143' #'09807' #'067143'
+name            = battery_id + '-H' + SoH + '_181008'
+path            = '/media/jean/Data/titan-echo-board/echo-E/Me05-H100_181008-echo-e/data/primary/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
-cycler_path_new = path + name + '_new.csv'
-final_log_path  = path + name + '_sorted.csv'
+cycler_path_merged = path + name + '_merged.csv'
+final_log_path  = path + name + '_raw-sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index

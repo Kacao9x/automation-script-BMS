@@ -6,8 +6,8 @@ TITAN Command Line Interface
 See Github repo for documentation
 @author: kacao
 '''
-# python titan_cmd.py --start-fresh -d 25 -rate 2400000 -g 0.55 -v 85 --input 1
-# --impulse 1 --half-pw 600 --adc-config 0 --num-seq 1 --repeat 750 --minute 5
+# python titan_cmd.py --start-fresh -d 25 -rate 2400000 -g 0.75 -v 85 --input 1
+# --impulse 2 --half-pw 600 --adc-config 0 --num-seq 1 --repeat 750 --minute 5
 import numpy as np
 import argparse, socket
 from lib.echoes_protocol import *
@@ -54,10 +54,10 @@ def ParseHelpers():
                              '1.adc-primary  2.adc-secondary')
 
     parser.add_argument('--impulse', default=1, nargs='*',
-                        choices=[-2, -1, 1, 2], dest='type', metavar='[1 or 2]',
+                        choices=[-2, -1, 1, 2],dest='type', metavar='[1 or 2]',
                         type=int, help='select type of impulse\n' +
-                                       '1.unipolar  2.bipolar -1.unipolar-neg '
-                                       '-2.bipolar-neg')
+                             '1.unipolar  2.bipolar -1.unipolar-neg '
+                             '-2.bipolar-neg')
 
     parser.add_argument('--period', type=int, default=1, help='periods',
                         dest='period', choices=[1, 2, 3], metavar='[1,2,3]')
@@ -79,7 +79,7 @@ def ParseHelpers():
                         help='how many sequence to average together',
                         metavar='[1,2,4,8,16]')
 
-    # ============================ Add-on feature ==============================#
+    #============================ Add-on feature ==============================#
     parser.add_argument('--repeat', default=1, type=int, choices=range(1, 1001),
                         dest='repeat', metavar='[1,100]',
                         help='the number of repetition')
@@ -108,8 +108,8 @@ def ParseHelpers():
         print ("Resume the test")
 
 
-# ==============================================================================#
-# ================= create a test log file and set the name ====================#
+#==============================================================================#
+#================= create a test log file and set the name ====================#
 def _get_filename():
     return "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
 
@@ -141,8 +141,8 @@ def _write_test_logs(name='', offset=float):
     return
 
 
-# ==============================================================================#
-# ======================== System Config =======================================#
+#==============================================================================#
+#======================== System Config =======================================#
 def _voltage_init():
     print str(__VOLTAGE__)
     if __VOLTAGE__ == 85:
@@ -258,9 +258,8 @@ def _VGA_gain_init():
     print __GAIN__
     return echoes_1.set_vga_gain(__GAIN__)
 
-
 def _set_delay_capture():
-    print (str(__DELAY__))
+    print __DELAY__
     return echoes_1.set_delay_between_captures(__DELAY__)
 
 
@@ -307,14 +306,16 @@ def system_config():
     time.sleep(2)
 
     # 9 delay btw capture
-    print ("\n(9) set delay btw capture: ")
-    print(str(_set_delay_capture()))
+    if _set_delay_capture():
+        print "Successfully delay_us"
+    else:
+        print "Failed delay_us"
 
 
-# ==============================================================================#
-# ======================== MAIN FUNCTION =======================================#
-def _save_capture_data(cycleID=int, key=str, data=[],
-                       temper=bool, file=bool, mongo=bool):
+#==============================================================================#
+#======================== MAIN FUNCTION =======================================#
+def _save_capture_data(cycleID = int, key = str, data = [],
+                       temper = bool,file = bool, mongo = bool):
     # Write file
     ts = time.time()
     st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
@@ -325,22 +326,22 @@ def _save_capture_data(cycleID=int, key=str, data=[],
         tempC_2 = temp_sense_primary.get_average_temperature_celcius(16)
 
         if file:
-            fn = "tempC/" + st + "-" + __HOST__ + ".dat"
-            with open(fn, "w") as filehandle:
+            fn = "tempC/" + st + "-" +__HOST__+".dat"
+            with open (fn, "w") as filehandle:
                 filehandle.write('TempC_1_and_2: %s  %s oC' % (str(tempC_1),
                                                                str(tempC_2)))
             filehandle.close()
         if mongo:
             pass
 
-    if (len(data) > 0 and __INPUT__ == 1):
-        fn = "data/primary/" + st + "-" + __HOST__ + ".dat"
-    elif (len(data) > 0 and __INPUT__ == 2):
-        fn = "data/secondary/" + st + "-" + __HOST__ + ".dat"
+    if (data and __INPUT__ == 1):
+        fn = "data/primary/" + st + "-" +__HOST__+".dat"
+    elif (data and __INPUT__ == 2):
+        fn = "data/secondary/" + st + "-" +__HOST__+".dat"
     else:
         return
-
-    with open(fn, "w") as filehandle:
+    
+    with open (fn, "w") as filehandle:
         for samp in data:
             filehandle.write(str(samp) + "\n")
     filehandle.close()
@@ -384,6 +385,18 @@ def _save_capture_data(cycleID=int, key=str, data=[],
 #     return
 
 
+def filter_raw_data(output=[]):
+    y = output[0: totalpages * 2048]
+    print("Total samples: " + str(len(y)))
+    if True:
+        print("enable Bandpass in raw data")
+        bandpass_upper = float(3500000)
+        bandpass_lower = float(300000)
+        y = echoes_dsp.apply_bandpass_filter(y, bandpass_lower, bandpass_upper,
+                                             51)
+    return y
+
+
 def capture_filtered_data(output=[]):
     # fsOriginal = echoes_dsp.getFs()
 
@@ -414,7 +427,8 @@ def capture_raw_output():
     return adc_captures_float
 
 
-def capture_and_average_output(adc_captures_float):
+def capture_and_average_output( adc_captures_float ):
+
     y_avg = np.array(adc_captures_float).mean(0)
 
     #### detect a bad read for transmission echo ######
@@ -445,6 +459,7 @@ def capture_and_average_output(adc_captures_float):
     print ('good echo: count %s  std_value: %s'
            % (str(count), str(std_value)))
 
+
     return adc_captures_float
 
 
@@ -453,7 +468,7 @@ def count_good_value(x):
     count = 0
     for num in x:
         if abs(num) > boundary:
-            count += 1
+            count +=1
     return count
 
 
@@ -463,23 +478,33 @@ def find_data_std(x):
     return np.std(x_arr[50:-1], ddof=1)
 
 
-# ==============================================================================#
-# ======================== MAIN ACTIVITY =======================================#
+#==============================================================================#
+#======================== MAIN ACTIVITY =======================================#
 def main():
     global __INPUT__
-    global backgrd_noise
     __NAME__ = _get_filename()
+
+    # ======= Create folder to save logs and data =======#
+    if not os.path.exists(os.getcwd() + '/logs/'):
+        os.makedirs( os.getcwd() + '/logs/')
+    if not os.path.exists(os.getcwd() + '/data/primary/'):
+        os.makedirs( os.getcwd() +'/data/primary/')
+    if not os.path.exists(os.getcwd() + '/data/secondary/'):
+        os.makedirs( os.getcwd() + '/data/secondary/')
+    if not os.path.exists(os.getcwd() + '/tempC/'):
+        os.makedirs( os.getcwd() + '/tempC/')
+
 
     # ======= SET UP TEST PARAMETERs =======#
     system_config()
     echoes_1.measure_dc_offset()
     offSet = echoes_1.dc_offset
     echoes_1.set_total_adc_captures(total_capture)
-
+    
     _write_test_logs(__NAME__, offSet)
 
     for cycleID in range(__REPEAT__):
-        print ('\nCycle: ' + str(cycleID + 1))
+        print ('\nCycle: ' + str( cycleID + 1 ))
 
         # ======= TRANSMISSION ECHO =======#
         # key         = 'raw_trans'
@@ -498,9 +523,11 @@ def main():
 
         # time.sleep(60)
 
+
+
         # ======= PRIMARY ECHO =======#
         # Set the ADC channel
-        key = 'raw_echo'
+        key         = 'raw_echo'
         # __INPUT__   = 1
         # print ("\n(2) Set input type: %s" %str(__INPUT__))
         # print str( _input_capture_init())
@@ -510,46 +537,47 @@ def main():
         adc_captures_float = capture_and_average_output(adc_captures_float)
 
         for captureID, output in enumerate(adc_captures_float):
-            # output = [a_i - b_i for a_i, b_i in zip(output, backgrd_noise)]     # subtract the noise from raw capture
-            # output = echoes_dsp.apply_bandpass_filter(output, 300000, 1200000, 51)  # enable bandpass for captured signal
-            _save_capture_data(cycleID, key + '-' + str(captureID + 1), output, False, True, False)  # don't save temperature
+            _save_capture_data(cycleID, key + '-' + str(captureID + 1), output,
+                               False, True, False)                              # don't save temperature
         print ("Successfully capture raw data")
 
-        # ======= Save Temperature =======#
+        #======= Save Temperature =======#
         _save_capture_data(cycleID, 'temp', [], True, True, False)
 
-        print ('End cycle %s \n \n' % str(cycleID + 1))
+
+        print ('End cycle \n \n')
         time.sleep(__MINUTE__ * 60)
 
+        
     # echoes_db.close()
     echoes_1.close()
 
     # ======= END TEST =======#
 
 
-# ==============================================================================#
+#==============================================================================#
 
 ParseHelpers()
-__DELAY__ = args.delay_us
-__GAIN__ = args.gain
-__SAMPLING__ = args.rate
+__DELAY__   = args.delay_us
+__GAIN__    = args.gain
+__SAMPLING__= args.rate
 __VOLTAGE__ = args.voltage
-__INPUT__ = args.input
-__TYPE__ = args.type[0]
-__PERIOD__ = args.period
-__HALF__ = args.half
+__INPUT__   = args.input
+__TYPE__    = args.type[0]
+__PERIOD__  = args.period
+__HALF__    = args.half
 __ADCconfig__ = args.adcConfig
-__numSEQ__ = args.numSeq
+__numSEQ__  = args.numSeq
 
-__REPEAT__ = args.repeat
-__MINUTE__ = args.minute
+__REPEAT__  = args.repeat
+__MINUTE__  = args.minute
 
-__HOST__ = str(socket.gethostname())
+__HOST__    = str(socket.gethostname())
 total_capture = 64
 totalpages = 1
 
 print("Initializing EchOES 1 and 2")
-echoes_1 = echoes()  # set Impulse=True for 2nd transducer
+echoes_1 = echoes() # set Impulse=True for 2nd transducer
 echoes_1.reset_micro()
 echoes_1.start_new_session()
 
@@ -558,19 +586,21 @@ echoes_1.start_new_session()
 # echoes_db.mongo_db = 'echoes-captures'
 
 print("Initializing signal processing")
-echoes_dsp = echoes_signals(7200000.0)
+echoes_dsp = echoes_signals(2400000.0)
 
 print("Initializing temp sensor")
-temp_sense_primary = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
-temp_sense_secondary = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
+temp_sense_primary      = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
+temp_sense_secondary    = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
+
 
 # read the background noise
 backgrd_noise = []
 with open('data/noise.dat') as noisefile:
     noise = noisefile.read().splitlines()
     for num in noise:
-        backgrd_noise.append(float(num))
+        backgrd_noise.append( float(num) )
 noisefile.close()
+
 
 if args.fresh:
     print ("Start a new test")

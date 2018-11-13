@@ -44,31 +44,31 @@ def main():
     #         # print (cmd)
     #         Call( cmd )
     # readout.close()
-    for i in range(506, 750):
-        Call( 'rm ' + address + 'cycle' + str(i) +'-raw_echo-*')
+    for i in range(1, 21):
+        Call( 'rm ' + address + 'cycle' + str(i) +'-raw_echo-1-*')
 
     return
 
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/echo-E/Me05-H100_181008-echo-e/data/primary/'
-bad_data = []
+address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-B/test-echoE/pos-bipolar/data/primary/'
+# bad_data = []
 
-adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]
-backgrd = [2,2,2,2]
+# adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]
+# backgrd = [2,2,2,2]
 
-for adc_capture in adc_captures_float:
-    noise_removal = True
-    if noise_removal:
-        print("Removing noise background")
-        adc_capture = [a_i - b_i for a_i, b_i in zip(adc_capture, backgrd)]
+# for adc_capture in adc_captures_float:
+#     noise_removal = True
+#     if noise_removal:
+#         print("Removing noise background")
+#         adc_capture = [a_i - b_i for a_i, b_i in zip(adc_capture, backgrd)]
 
-adc_captures_readout = np.mean( adc_captures_float, axis = 0)
-print (adc_captures_readout)
-# adc_captures_readout = [a_i - b_i for a_i, b_i in zip(adc_captures_readout, backgrd)]
-adc_captures_readout = np.subtract( adc_captures_readout, backgrd )
-print (adc_captures_readout)
+# adc_captures_readout = np.mean( adc_captures_float, axis = 0)
+# print (adc_captures_readout)
+# # adc_captures_readout = [a_i - b_i for a_i, b_i in zip(adc_captures_readout, backgrd)]
+# adc_captures_readout = np.subtract( adc_captures_readout, backgrd )
+# print (adc_captures_readout)
 
 if __name__ == '__main__':
     main()

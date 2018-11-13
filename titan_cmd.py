@@ -6,15 +6,22 @@ TITAN Command Line Interface
 See Github repo for documentation
 @author: kacao
 '''
-# python titan_cmd.py --start-fresh -d 25 -rate 2400000 -g 0.75 -v 85 --input 1
+
+#==============================================================================#
+#                                                                              #
+#                       Tutorial                                               #
+#                                                                              #
+#==============================================================================#
+# python titan_cmd.py --start-fresh -d 25 -rate 7200000 -g 0.55 -v 85 --input 1
 # --impulse 2 --half-pw 600 --adc-config 0 --num-seq 1 --repeat 750 --minute 5
+
 import numpy as np
 import argparse, socket
 from lib.echoes_protocol import *
 from lib.echoes_spi import *
 from lib.echoes_temp_sensor import *
 from lib.echoes_signalprocessing import *
-from lib.echoes_database import *
+# from lib.echoes_database import *
 
 
 # Command line arguments
@@ -35,16 +42,16 @@ def ParseHelpers():
                         dest='delay_us', help='set the time delay',
                         choices=range(1, 101), metavar="[1,100]")
 
-    parser.add_argument('-b', '--rate', default='2400000', type=int,
+    parser.add_argument('-b', '--rate', default=7200000, type=int,
                         dest='rate', help='set sampling rate',
-                        choices=range(10000, 2500001),
-                        metavar="[10000-2500000]")
+                        choices=range(2200000, 7500000),
+                        metavar="[2.2M-7.5M]")
 
-    parser.add_argument('-g', '--gain', default='0.0', type=str,
+    parser.add_argument('-g', '--gain', default='0.55', type=str,
                         dest='gain', help='set the VGA gain',
                         metavar="[0.0, 1.0]")
 
-    parser.add_argument('-v', '--voltage', default='10', type=int,
+    parser.add_argument('-v', '--voltage', default=85, type=int,
                         dest='voltage', help='set transducer voltage',
                         choices=range(10, 90, 5), metavar="[0,85, 5]")
 
@@ -306,6 +313,7 @@ def system_config():
     time.sleep(2)
 
     # 9 delay btw capture
+    print ("\n(9) set delay ms: ")
     if _set_delay_capture():
         print "Successfully delay_us"
     else:
@@ -385,39 +393,6 @@ def _save_capture_data(cycleID = int, key = str, data = [],
 #     return
 
 
-def filter_raw_data(output=[]):
-    y = output[0: totalpages * 2048]
-    print("Total samples: " + str(len(y)))
-    if True:
-        print("enable Bandpass in raw data")
-        bandpass_upper = float(3500000)
-        bandpass_lower = float(300000)
-        y = echoes_dsp.apply_bandpass_filter(y, bandpass_lower, bandpass_upper,
-                                             51)
-    return y
-
-
-def capture_filtered_data(output=[]):
-    # fsOriginal = echoes_dsp.getFs()
-
-    y = output[0: totalpages * 2048]
-    print("Total samples: " + str(len(y)))
-
-    if True:
-        print("Removing DC offset")
-        y = echoes_dsp.remove_dc_offset(y)
-
-    if True:
-        print("Upsampling")
-        y = echoes_dsp.upsample(y, 4)
-
-    if False:
-        print("Normalizing")
-        y = echoes_dsp.normalize(y)
-
-    # fs = echoes_dsp.getFs()
-    return y
-
 
 def capture_raw_output():
     adc_captures = echoes_1.capture_and_read(send_impulse=True)
@@ -431,7 +406,7 @@ def capture_and_average_output( adc_captures_float ):
 
     y_avg = np.array(adc_captures_float).mean(0)
 
-    #### detect a bad read for transmission echo ######
+    ''' detect a bad read in echo signal'''
     count = count_good_value(y_avg)
     std_value = find_data_std(y_avg)
     goodRead = (count > 15 and std_value > 0.0020)
@@ -586,7 +561,7 @@ echoes_1.start_new_session()
 # echoes_db.mongo_db = 'echoes-captures'
 
 print("Initializing signal processing")
-echoes_dsp = echoes_signals(2400000.0)
+echoes_dsp = echoes_signals(__SAMPLING__)
 
 print("Initializing temp sensor")
 temp_sense_primary      = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
@@ -594,12 +569,12 @@ temp_sense_secondary    = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
 
 
 # read the background noise
-backgrd_noise = []
-with open('data/noise.dat') as noisefile:
-    noise = noisefile.read().splitlines()
-    for num in noise:
-        backgrd_noise.append( float(num) )
-noisefile.close()
+# backgrd_noise = []
+# with open('data/noise.dat') as noisefile:
+#     noise = noisefile.read().splitlines()
+#     for num in noise:
+#         backgrd_noise.append( float(num) )
+# noisefile.close()
 
 
 if args.fresh:

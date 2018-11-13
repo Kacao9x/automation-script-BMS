@@ -3,8 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../Data-preprocessing/.idea/Data-preprocessing.iml" filepath="$PROJECT_DIR$/../Data-preprocessing/.idea/Data-preprocessing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../dynamo-DB-basic/.idea/Dynamo.iml" filepath="$PROJECT_DIR$/../dynamo-DB-basic/.idea/Dynamo.iml" />
       <module fileurl="file://$PROJECT_DIR$/../ML-basics/.idea/ML-basics.iml" filepath="$PROJECT_DIR$/../ML-basics/.idea/ML-basics.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Python-script.iml" filepath="$PROJECT_DIR$/.idea/Python-script.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Titan_Repo/titan-pi-app/.idea/titan-pi-app.iml" filepath="$PROJECT_DIR$/../Titan_Repo/titan-pi-app/.idea/titan-pi-app.iml" />
     </modules>
   </component>
 </project>

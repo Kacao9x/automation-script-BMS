@@ -6,6 +6,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="ML-basics" />
     <orderEntry type="module" module-name="Data-preprocessing" />
+    <orderEntry type="module" module-name="titan-pi-app" />
+    <orderEntry type="module" module-name="Dynamo" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="Unittests" />

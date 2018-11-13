@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
-# import thLib as th
+import thLib as th
 import pandas as pd
 from lib.echoes_signalprocessing import *
 
@@ -134,41 +134,41 @@ def main ():
     """
         (1) Check data quality: detect flat curve, missing echo
     """
-    while cycle_id < cycle + 1:
+    # while cycle_id < cycle + 1:
 
-        list_file = display_list_of_file('cycle' + str(cycle_id) + '-')
-        print (list_file)
+    #     list_file = display_list_of_file('cycle' + str(cycle_id) + '-')
+    #     print (list_file)
 
-        ''' Loop through every sample data in a read/capture '''
-        for filename in list_file:
-            with open(address + filename) as my_file:
-                y_str = my_file.read()
-                y_str = y_str.splitlines()
-            my_file.close()
+    #     ''' Loop through every sample data in a read/capture '''
+    #     for filename in list_file:
+    #         with open(address + filename) as my_file:
+    #             y_str = my_file.read()
+    #             y_str = y_str.splitlines()
+    #         my_file.close()
 
-            data = [float(num) for num in y_str]                                # convert string to float
-            ''' DETECT a long streak in a sample '''
-            if find_dup_run(data):
-                print ("streak : %s" % str( cycle_id + 1 ))
-                with open(address + 'bad-flat.txt', 'ab') as writeout:
-                    writeout.writelines(filename + '\n')
-                writeout.close()
+    #         data = [float(num) for num in y_str]                                # convert string to float
+    #         ''' DETECT a long streak in a sample '''
+    #         if find_dup_run(data):
+    #             print ("streak : %s" % str( cycle_id + 1 ))
+    #             with open(address + 'bad-flat.txt', 'ab') as writeout:
+    #                 writeout.writelines(filename + '\n')
+    #             writeout.close()
 
-            ''' detect a time-shift in signal
-                by checking differnce of 2nd echo position against average'''
-            echo_idx = _locate_2ndEcho_index(data)
-            echoes_index.append(echo_idx)
+    #         ''' detect a time-shift in signal
+    #             by checking differnce of 2nd echo position against average'''
+    #         echo_idx = _locate_2ndEcho_index(data)
+    #         echoes_index.append(echo_idx)
 
-        ''' DETECT a time-shift in signal '''
-        avg = _find_avg( echoes_index )
-        for i, element in enumerate(echoes_index):
-            if abs( element - avg ) > 2:
-                print ("shift %s" % str(i + 1))
-                with open(address + 'bad-shift.txt', 'ab') as writeout:
-                    writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
-                writeout.close()
+    #     ''' DETECT a time-shift in signal '''
+    #     avg = _find_avg( echoes_index )
+    #     for i, element in enumerate(echoes_index):
+    #         if abs( element - avg ) > 2:
+    #             print ("shift %s" % str(i + 1))
+    #             with open(address + 'bad-shift.txt', 'ab') as writeout:
+    #                 writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
+    #             writeout.close()
 
-        cycle_id += 1
+    #     cycle_id += 1
 
 
     """
@@ -176,81 +176,82 @@ def main ():
     detect a bad read by visual inspection
     Generate a csv report with all raw captures
     """
-    rawRead_concat = pd.DataFrame()
-    while cycle_id < cycle + 1:
+    # rawRead_concat = pd.DataFrame()
+    # while cycle_id < cycle + 1:
     
-        oneRead,list_file = concat_all_data(tempC=False,
-                                            search_key='cycle' + str(cycle_id) + '-')
+    #     oneRead,list_file = concat_all_data(tempC=False,
+    #                                         search_key='cycle' + str(cycle_id) + '-')
 
-        '''  generate all Raw data sets csv report
-            Comment out the next 2 lines if don't use '''
-        rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
+    #     '''  generate all Raw data sets csv report
+    #         Comment out the next 2 lines if don't use '''
+    #     rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
     
-        '''  Plot all captures per read '''
+    #     '''  Plot all captures per read '''
         
-        # [row, column] = oneRead.shape
-        # dt = float(1/7200000)
-        # x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+    #     [row, column] = oneRead.shape
+    #     dt = float(1/7200000)
+    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
         
-        # plt.figure(2)
-        # plt.title('SoC vs Time | Bandpass Enabled')
-        # plt.interactive(False)
+    #     plt.figure(2)
+    #     plt.title('SoC vs Time | Bandpass Enabled')
+    #     plt.interactive(False)
         
-        # avgPos = 0
-        # while avgPos < column:
-        #     y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
-        #                                          300000, 1200000, 51)
-        #     # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-        #     plt.plot(x, y, label='0%s ' % str(avgPos +1))
-        #     plt.xlim((0, 0.00005))
-        #     plt.xlabel('time')
-        #     plt.ylabel('amplitude')
-        #     avgPos += 1
-        # plt.legend()
-        # plt.show()
+    #     avgPos = 0
+    #     while avgPos < column:
+    #         y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
+    #                                              300000, 1200000, 51)
+    #         # change the integers inside this routine as (number of rows, number of columns, plotnumber)
+    #         plt.plot(x, y, label='0%s ' % str(avgPos +1))
+    #         plt.xlim((0, 0.00005))
+    #         plt.xlabel('time')
+    #         plt.ylabel('amplitude')
+    #         avgPos += 1
+    #     plt.legend()
+    #     plt.show()
     
-        cycle_id += 1
+    #     cycle_id += 1
     
-    rawRead_concat = rawRead_concat.T
-    rawRead_concat.to_csv(address + 'allRawData.csv')
+    # rawRead_concat = rawRead_concat.T
+    # rawRead_concat.to_csv(address + 'allRawData.csv')
 
 
     """
     (3) plot avg of each cycle. Save avg (mean) to csv file
     # """
-    # avgTable_concat = pd.DataFrame()
+    avgTable_concat = pd.DataFrame()
 
-    # plt.figure(3)
-    # plt.interactive(False)
+    plt.figure(3)
+    plt.interactive(False)
 
-    # while cycle_id < cycle + 1:
-    #     # if cycle_id == 39:
-    #     #     cycle_id +=25
+    while cycle_id < cycle + 1:
+        # if cycle_id == 14:
+        #     cycle_id +=1
 
-    #     oneRead, list_file = concat_all_data(tempC=False,
-    #                                          search_key='cycle' + str(cycle_id) + '-')
-    #     [row, column] = oneRead.shape
-    #              #
-    #     avg = np.mean(oneRead, axis=1)                                          # average 64 captures
-    #     # avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
-    #     avg = [a_i + b_i for a_i, b_i in zip( avg, backgrd )]
+        oneRead, list_file = concat_all_data(tempC=False,
+                                             search_key='cycle' + str(cycle_id) + '-')
+        [row, column] = oneRead.shape
+                 
+        avg = np.mean(oneRead, axis=1)                                          # average 64 captures
+        avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
+        # avg = [a_i - b_i for a_i, b_i in zip( avg, backgrd )]                 # subtract background
 
-    #     col_header = cycle_id
-    #     avgTable = pd.DataFrame({col_header : avg})
-    #     avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
+        col_header = cycle_id
+        avgTable = pd.DataFrame({col_header : avg})
+        avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
 
-    #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-    #     plt.plot(x, avg, label='Cycle %s ' % str(cycle_id))
-    #     plt.title('NIS02 |' + ' Bandpass Enabled | No Noise removed| echo-C')
-    #     plt.xlim((0, 0.00005))
-    #     plt.xlabel('time')
-    #     plt.ylabel('amplitude')
-    #     cycle_id += 1
+        x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
+        plt.plot(x, avg, label='Cycle %s ' % str(cycle_id))
+        plt.title('Me02 |' + ' Bandpass Enabled | No Noise removed| echo-C')
+        plt.xlim((0, 0.00005))
+        plt.xlabel('time')
+        plt.ylabel('amplitude')
+        cycle_id += 1
 
-    # avgTable_concat = avgTable_concat.T
-    # avgTable_concat.to_csv(address + 'avgData-transpose-addbackground.csv')
-    # plt.legend()
-    # plt.show()
+    avgTable_concat = np.mean(avgTable_concat, axis = 1)
+    avgTable_concat = avgTable_concat.T
+    avgTable_concat.to_csv(address + 'avgData-neg.csv')
+    plt.legend()
+    plt.show()
 
     """
     (4) Plot Temperature vs Amplitude at 30us
@@ -377,26 +378,26 @@ def main ():
 
     return
 #==============================================================================#
-# address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/jean/Data/titan-echo-board/echo-C/NIS2-H8187_181022/data/primary/'
+address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
+# address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/A-and-B/B/data/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
-cycle = 308
+cycle = 5
 cycle_id = 1
 
 ME = 4
 ME_id = 1
 
-with open(address + 'background.dat') as my_file:
-    y_str = my_file.read()
-    y_str = y_str.splitlines()
+# with open(address + 'background.dat') as my_file:
+#     y_str = my_file.read()
+#     y_str = y_str.splitlines()
 
-    for num in y_str:
-        backgrd.append(float(num))
-my_file.close()
+#     for num in y_str:
+#         backgrd.append(float(num))
+# my_file.close()
 
 echoes_dsp = echoes_signals( 7200000.0 )
 if __name__ == '__main__':

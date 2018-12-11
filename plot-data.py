@@ -7,7 +7,6 @@ import pandas as pd
 from lib.echoes_signalprocessing import *
 
 
-
 #==============================================================================#
 
 #Subprocess's call command with piped output and active shell
@@ -58,7 +57,7 @@ def find_dup_run( x ):
 
 def _locate_2ndEcho_index( data ):
     data = data[ 170 : 260 ]
-    return data.index( max(data) )
+    return 170 + data.index( max(data) )
 
 
 
@@ -97,7 +96,7 @@ def concat_all_data(tempC = bool, search_key = str):
         '''Read data from capture files
         '''
         list_file = display_list_of_file(search_key)
-
+        print (list_file)
         for captureID, filename in enumerate(list_file):
 
             with open(address + filename) as my_file:
@@ -135,17 +134,17 @@ def main ():
         (1) Check data quality: detect flat curve, missing echo
     """
     # while cycle_id < cycle + 1:
-
+    #     echoes_index = []
     #     list_file = display_list_of_file('cycle' + str(cycle_id) + '-')
     #     print (list_file)
-
+    #
     #     ''' Loop through every sample data in a read/capture '''
     #     for filename in list_file:
     #         with open(address + filename) as my_file:
     #             y_str = my_file.read()
     #             y_str = y_str.splitlines()
     #         my_file.close()
-
+    #
     #         data = [float(num) for num in y_str]                                # convert string to float
     #         ''' DETECT a long streak in a sample '''
     #         if find_dup_run(data):
@@ -153,21 +152,22 @@ def main ():
     #             with open(address + 'bad-flat.txt', 'ab') as writeout:
     #                 writeout.writelines(filename + '\n')
     #             writeout.close()
-
+    #
     #         ''' detect a time-shift in signal
     #             by checking differnce of 2nd echo position against average'''
     #         echo_idx = _locate_2ndEcho_index(data)
     #         echoes_index.append(echo_idx)
-
+    #
     #     ''' DETECT a time-shift in signal '''
     #     avg = _find_avg( echoes_index )
+    #     print ('avg is: %s' % str(avg))
     #     for i, element in enumerate(echoes_index):
     #         if abs( element - avg ) > 2:
     #             print ("shift %s" % str(i + 1))
     #             with open(address + 'bad-shift.txt', 'ab') as writeout:
     #                 writeout.writelines(str(cycle_id) + '-' + str(i+1) + '\n')
     #             writeout.close()
-
+    #
     #     cycle_id += 1
 
 
@@ -178,24 +178,24 @@ def main ():
     """
     # rawRead_concat = pd.DataFrame()
     # while cycle_id < cycle + 1:
-    
+    #
     #     oneRead,list_file = concat_all_data(tempC=False,
     #                                         search_key='cycle' + str(cycle_id) + '-')
-
+    #
     #     '''  generate all Raw data sets csv report
     #         Comment out the next 2 lines if don't use '''
     #     rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
-    
+    #
     #     '''  Plot all captures per read '''
-        
+    #
     #     [row, column] = oneRead.shape
     #     dt = float(1/7200000)
     #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-        
+    #
     #     plt.figure(2)
     #     plt.title('SoC vs Time | Bandpass Enabled')
     #     plt.interactive(False)
-        
+    #
     #     avgPos = 0
     #     while avgPos < column:
     #         y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
@@ -208,7 +208,7 @@ def main ():
     #         avgPos += 1
     #     plt.legend()
     #     plt.show()
-    
+    #
     #     cycle_id += 1
     
     # rawRead_concat = rawRead_concat.T
@@ -220,17 +220,17 @@ def main ():
     # """
     avgTable_concat = pd.DataFrame()
 
-    plt.figure(3)
+    plt.figure(1)
     plt.interactive(False)
-
+    ped = 1.38888889e-7
     while cycle_id < cycle + 1:
-        # if cycle_id == 14:
-        #     cycle_id +=1
 
+        # if cycle_id == 1:
+        #     cycle_id = 2
         oneRead, list_file = concat_all_data(tempC=False,
                                              search_key='cycle' + str(cycle_id) + '-')
         [row, column] = oneRead.shape
-                 
+
         avg = np.mean(oneRead, axis=1)                                          # average 64 captures
         avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
         # avg = [a_i - b_i for a_i, b_i in zip( avg, backgrd )]                 # subtract background
@@ -239,19 +239,43 @@ def main ():
         avgTable = pd.DataFrame({col_header : avg})
         avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
 
-        x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-        plt.plot(x, avg, label='Cycle %s ' % str(cycle_id))
-        plt.title('Me02 |' + ' Bandpass Enabled | No Noise removed| echo-C')
-        plt.xlim((0, 0.00005))
+        x_1 = np.arange(0, ped * row, ped)
+        ax1 = plt.subplot(212)
+        ax1.margins(0.05)
+        ax1.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
+        plt.xlim((0, 0.00004))
         plt.xlabel('time')
         plt.ylabel('amplitude')
+
+        x_2 =np.arange( 79*ped, 104*ped, 1.38888889e-7)
+        avg_2 = avg[79 : 104]
+        ax2 = plt.subplot(221)
+        ax2.margins()
+        ax2.plot(x_2, avg_2)
+        ax2.set_title('Echo 1')
+
+        x_3 = np.arange(123*ped, 151*ped, 1.38888889e-7)
+        avg_3 = avg[123 : 151]
+        ax3 = plt.subplot(222)
+        # ax3.margins(x=0, y=-0.25)  # Values in (-0.5, 0.0) zooms in to center
+        ax3.plot(x_3, avg_3)
+        ax3.set_title('Echo 2')
+
+        # plt.plot(x, avg, label='Cycle %s ' % str(cycle_id))
+        # plt.title(' TC10 |' + ' SoH = 73 | Bandpass Enabled | No Noise removed | primary')
+        # plt.xlim((0, 0.00005))
+        # plt.xlabel('time')
+        # plt.ylabel('amplitude')
         cycle_id += 1
 
-    avgTable_concat = np.mean(avgTable_concat, axis = 1)
+    # avgTable_concat = avgTable_concat.mean( axis =1 )                         # avg all cycle
     avgTable_concat = avgTable_concat.T
-    avgTable_concat.to_csv(address + 'avgData-neg.csv')
-    plt.legend()
+    avgTable_concat.to_csv(address + 'TC10-primary.csv')
+
+
+    # plt.legend()
     plt.show()
+
 
     """
     (4) Plot Temperature vs Amplitude at 30us
@@ -375,17 +399,43 @@ def main ():
     # plt.legend()
     # plt.show()
 
+    """
+     (7) plot signals from different board
+    """
+    # while cycle_id < cycle + 1:
+    #     with open(address + 'cycle' + str(cycle_id) + '-pos.csv') as outfile:
+    #         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    #     outfile.close()
+    #
+    #     print (table.head().to_string())
+    #     [row, column] = table.shape
+    #
+    #     # avg = np.mean(table['data'], axis=1)  # average 64 captures
+    #     avg = echoes_dsp.apply_bandpass_filter(table['data'], 300000, 1200000,
+    #                                            51)  # apply bandpass
+    #
+    #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
+    #     plt.plot(x, avg, label='Board %s ' % str(cycle_id))
+    #     # plt.title(' Me02 |' + ' Bandpass Enabled | No Noise removed')
+    #     plt.title('ME02 | Positive-bipolar | Gain 0.6 | Bandpass Enabled')
+    #     plt.xlim((0, 0.00005))
+    #     plt.xlabel('time')
+    #     plt.ylabel('amplitude')
+    #     cycle_id += 1
+    #
+    # plt.legend()
+    # plt.show()
 
     return
 #==============================================================================#
-address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-# address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/A-and-B/B/data/primary/'
+# address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
+address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC10-H73_181208/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
-cycle = 5
+cycle = 300
 cycle_id = 1
 
 ME = 4

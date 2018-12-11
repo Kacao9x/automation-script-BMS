@@ -40,19 +40,20 @@ def main():
     #         # print (str(cnt))
     #         # print (line)
     #         line = line.rstrip()
-    #         cmd = 'mv ' + address + 'primary/' + line + ' ' + address + 'primary/bad/'
+    #         cmd = 'rm ' + address + line #+ ' ' + address + 'primary/'
     #         # print (cmd)
     #         Call( cmd )
     # readout.close()
-    for i in range(1, 21):
-        Call( 'rm ' + address + 'cycle' + str(i) +'-raw_echo-1-*')
+    for i in range(1, 301):
+        # Call( 'mv ' + address + 'cycle' + str(i) +'-raw_trans-*' + ' ' + address + 'bad/')
+        Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-1-*')
 
     return
 
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-B/test-echoE/pos-bipolar/data/primary/'
+address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC10-H73_181208/secondary/'
 # bad_data = []
 
 # adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]

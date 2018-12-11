@@ -411,7 +411,7 @@ def main():
 
     ''' select data in 5s interval.
     Fix=True if the general report captured data every 0.1s '''
-    # table = clean_test_data(fix = False)
+    table = clean_test_data(fix = False)
     # return
 
 
@@ -451,15 +451,15 @@ def main():
         For generating AVERAGE + tempC report
     '''
     # concat temperature
-    # tempTable = pd.DataFrame()
-    # tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
-    # tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
-    # tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
+    tempTable = pd.DataFrame()
+    tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
+    tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
+    tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
     
-    # table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
-    #                           tempTable['Temperature_top']],
-    #                          axis=1)  # add new column (diff index) into exisiing Dataframe
-    # del tempTable
+    table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
+                              tempTable['Temperature_top']],
+                             axis=1)  # add new column (diff index) into exisiing Dataframe
+    del tempTable
     table_sorted.to_csv(final_log_path)
 
 
@@ -474,15 +474,15 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'Me05'
-SoH             = '100'
+battery_id      = 'TC09'
+SoH             = '76'
 transducer_id   = '067143' #'09807' #'067143'
-name            = battery_id + '-H' + SoH + '_181008'
-path            = '/media/jean/Data/titan-echo-board/echo-E/Me05-H100_181008-echo-e/data/primary/'
+name            = battery_id + '-H' + SoH + '_181207'
+path            ='/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC9-H76_181207/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'
-final_log_path  = path + name + '_raw-sorted.csv'
+final_log_path  = path + name + '_sorted.csv'
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index

@@ -61,38 +61,42 @@ def _get_timestamp_from_filename( filename ):
 
 def main():
 
-    packet = {}
-    packet['test_results'] = {}
-    packet['test_setting'] = {}
-    packet['test_apparatus'] = {}
-
-    packet['test_apparatus']['SoH']         = '75'
-    packet['test_apparatus']['battery_id']      = 'TC05'
-    packet['test_apparatus']['transducer_id']   = '67143'
-    packet['test_apparatus']['echo_id']         = 'TC05'
 
 
     with open('data/' + filename) as outfile:
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 
-    # print (table.head().to_string())
     print (len(table.index))
 
+    for col in range(1,10):
+        print ('col %s' % str(col))
+        packet = {}
+        packet['test_results'] = {}
+        packet['test_setting'] = {}
+        packet['test_apparatus'] = {}
 
-    data, data_2 = [], []
-    for col in range(1,2):
-        # data = ( table.iloc[col, 12:20].values.item() )                                     # retrieve test value from the report
+        packet['source'] = 'echoes-a'
+        packet['test_apparatus']['SoH'] = '75'
+        packet['test_apparatus']['battery_id'] = 'TC05'
+        packet['test_apparatus']['transducer_id'] = '67143'
+        packet['test_apparatus']['echo_id'] = 'TC05'
+
+        packet['test_setting']['impulse-volt'] = '85'
+        packet['test_setting']['vga_gain'] = '0.55'
+        packet['test_setting']['delay_ms'] = '25'
+        packet['test_setting']['sampling-rate'] = '7200000'
+        packet['test_setting']['impulse-type'] = 'neg-bipolar'
+        packet['test_setting']['input-channel'] = 'primary'
+
+        data = list( table.iloc[col, 12:].values )                                     # retrieve test value from the report
         # print (data)
-        for x in range (10):
-            data_2.append( table.loc[str(x)][col] )
-        print data_2
 
         timest = _get_timestamp_from_filename( table['FileName'][col] )
         print (timest.split(' ')[0].split('-')[0] + '-' + timest.split(' ')[0].split('-')[1])
-        packet['test_results']['timestamp'] = timest
-        packet['test_results']['timestamp-day'] = timest.split(' ')[0].split('-')[2]
-        packet['test_results']['timestamp-month'] = timest.split(' ')[0].split('-')[0] \
+        packet['timestamp'] = timest
+        packet['timestamp-day'] = timest.split(' ')[0].split('-')[2]
+        packet['timestamp-month'] = timest.split(' ')[0].split('-')[0] \
                                                     + '-' + timest.split(' ')[0].split('-')[1]
 
         packet['test_results']['temperature_top']   = table['Temperature_top'][col]
@@ -102,10 +106,9 @@ def main():
         packet['test_results']['volt']             	= table['volt'][col]
         packet['test_results']['charging']          = table['charging'][col]
 
-        packet['test_results']['value']             = data_2
-        print (packet['test_results']['value'])
+        packet['test_results']['value']             = data
 
-    # echoes_db.insert_capture(record=packet, collection='captures')
+        echoes_db.insert_capture(record=packet, collection='captures')
     print('completed uploading')
 
     echoes_db.close()

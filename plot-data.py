@@ -176,40 +176,40 @@ def main ():
     detect a bad read by visual inspection
     Generate a csv report with all raw captures
     """
-    # rawRead_concat = pd.DataFrame()
-    # while cycle_id < cycle + 1:
-    #
-    #     oneRead,list_file = concat_all_data(tempC=False,
-    #                                         search_key='cycle' + str(cycle_id) + '-')
-    #
-    #     '''  generate all Raw data sets csv report
-    #         Comment out the next 2 lines if don't use '''
-    #     rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
-    #
-    #     '''  Plot all captures per read '''
-    #
-    #     [row, column] = oneRead.shape
-    #     dt = float(1/7200000)
-    #     x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
-    #
-    #     plt.figure(2)
-    #     plt.title('SoC vs Time | Bandpass Enabled')
-    #     plt.interactive(False)
-    #
-    #     avgPos = 0
-    #     while avgPos < column:
-    #         y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
-    #                                              300000, 1200000, 51)
-    #         # change the integers inside this routine as (number of rows, number of columns, plotnumber)
-    #         plt.plot(x, y, label='0%s ' % str(avgPos +1))
-    #         plt.xlim((0, 0.00005))
-    #         plt.xlabel('time')
-    #         plt.ylabel('amplitude')
-    #         avgPos += 1
-    #     plt.legend()
-    #     plt.show()
-    #
-    #     cycle_id += 1
+    rawRead_concat = pd.DataFrame()
+    while cycle_id < cycle + 1:
+
+        oneRead,list_file = concat_all_data(tempC=False,
+                                            search_key='cycle' + str(cycle_id) + '-')
+
+        '''  generate all Raw data sets csv report
+            Comment out the next 2 lines if don't use '''
+        rawRead_concat = pd.concat([rawRead_concat, oneRead], axis=1)           # concat the avg data into dataframe
+
+        '''  Plot all captures per read '''
+
+        [row, column] = oneRead.shape
+        dt = float(1/7200000)
+        x = np.arange(0, 1.38888889e-7*row, 1.38888889e-7)
+
+        plt.figure(2)
+        plt.title('SoC vs Time | Bandpass Enabled')
+        plt.interactive(False)
+
+        avgPos = 0
+        while avgPos < column:
+            y = echoes_dsp.apply_bandpass_filter(oneRead.loc[:, avgPos],
+                                                 300000, 1200000, 51)
+            # change the integers inside this routine as (number of rows, number of columns, plotnumber)
+            plt.plot(x, y, label='0%s ' % str(avgPos +1))
+            plt.xlim((0, 0.00005))
+            plt.xlabel('time')
+            plt.ylabel('amplitude')
+            avgPos += 1
+        plt.legend()
+        plt.show()
+
+        cycle_id += 1
     
     # rawRead_concat = rawRead_concat.T
     # rawRead_concat.to_csv(address + 'allRawData.csv')
@@ -218,74 +218,74 @@ def main ():
     """
     (3) plot avg of each cycle. Save avg (mean) to csv file
     # """
-    avgTable_concat = pd.DataFrame()
-
-    plt.figure(1)
-    plt.interactive(False)
-    ped = 1.38888889e-7
-    while cycle_id < cycle + 1:
-
-        # if cycle_id == 251:
-        #     cycle_id = 252
-        oneRead, list_file = concat_all_data(tempC=False,
-                                             search_key='cycle' + str(cycle_id) + '-')
-        [row, column] = oneRead.shape
-
-        avg = np.mean(oneRead, axis=1)                                          # average 64 captures
-        avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
-        # avg = [a_i - b_i for a_i, b_i in zip( avg, backgrd )]                 # subtract background
-
-        col_header = cycle_id
-        avgTable = pd.DataFrame({col_header : avg})
-        avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
-
-        x_1 = np.arange(0, ped * row, ped)
-        ax1 = plt.subplot(212)
-        ax1.margins(0.05)
-        ax1.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
-        plt.xlim((0, 0.00004))
-        plt.xlabel('time')
-        plt.ylabel('amplitude')
-
-        # x_2 =np.arange( 79*ped, 104*ped, 1.38888889e-7)
-        # avg_2 = avg[79 : 104]
-        # ax2 = plt.subplot(221)
-        # ax2.margins()
-        # ax2.plot(x_2, avg_2)
-        # ax2.set_title('Echo 1')
-        #
-        # x_3 = np.arange(123*ped, 151*ped, 1.38888889e-7)
-        # avg_3 = avg[123 : 151]
-        # ax3 = plt.subplot(222)
-        # # ax3.margins(x=0, y=-0.25)  # Values in (-0.5, 0.0) zooms in to center
-        # ax3.plot(x_3, avg_3)
-        # ax3.set_title('Echo 2')
-
-        x_4 = np.arange(144*ped, 187*ped, ped)
-        avg_4 = avg[144 : 188]
-        ax4 = plt.subplot(221)
-        ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
-        ax4.set_title('Echo')
-        plt.title(' TC15 |' + ' SoH = 75 | Bandpass Enabled | No Noise removed | secondary')
-
-        ''' -------   plot the avg for checking clean data    ---- '''
-        # x_1 = np.arange(0, ped * row, ped)
-        # plt.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
-        # plt.title(' TC10 |' + ' SoH = 73 | Bandpass Enabled | No Noise removed | secondary')
-        # plt.xlim((0, 0.00005))
-        # plt.xlabel('time')
-        # plt.ylabel('amplitude')
-
-
-        cycle_id += 1
-
-    # avgTable_concat = avgTable_concat.mean( axis =1 )                         # avg all cycle
-    avgTable_concat = avgTable_concat.T
-    avgTable_concat.to_csv(address + 'TC15-secondary.csv')
-
-
-    plt.legend()
-    plt.show()
+    # avgTable_concat = pd.DataFrame()
+    #
+    # plt.figure(1)
+    # plt.interactive(False)
+    # ped = 1.38888889e-7
+    # while cycle_id < cycle + 1:
+    #
+    #     # if cycle_id == 251:
+    #     #     cycle_id = 252
+    #     oneRead, list_file = concat_all_data(tempC=False,
+    #                                          search_key='cycle' + str(cycle_id) + '-')
+    #     [row, column] = oneRead.shape
+    #
+    #     avg = np.mean(oneRead, axis=1)                                          # average 64 captures
+    #     avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
+    #     # avg = [a_i - b_i for a_i, b_i in zip( avg, backgrd )]                 # subtract background
+    #
+    #     col_header = cycle_id
+    #     avgTable = pd.DataFrame({col_header : avg})
+    #     avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
+    #
+    #     x_1 = np.arange(0, ped * row, ped)
+    #     ax1 = plt.subplot(212)
+    #     ax1.margins(0.05)
+    #     ax1.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
+    #     plt.xlim((0, 0.00004))
+    #     plt.xlabel('time')
+    #     plt.ylabel('amplitude')
+    #
+    #     # x_2 =np.arange( 79*ped, 104*ped, 1.38888889e-7)
+    #     # avg_2 = avg[79 : 104]
+    #     # ax2 = plt.subplot(221)
+    #     # ax2.margins()
+    #     # ax2.plot(x_2, avg_2)
+    #     # ax2.set_title('Echo 1')
+    #     #
+    #     # x_3 = np.arange(123*ped, 151*ped, 1.38888889e-7)
+    #     # avg_3 = avg[123 : 151]
+    #     # ax3 = plt.subplot(222)
+    #     # # ax3.margins(x=0, y=-0.25)  # Values in (-0.5, 0.0) zooms in to center
+    #     # ax3.plot(x_3, avg_3)
+    #     # ax3.set_title('Echo 2')
+    #
+    #     x_4 = np.arange(144*ped, 187*ped, ped)
+    #     avg_4 = avg[144 : 188]
+    #     ax4 = plt.subplot(221)
+    #     ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
+    #     ax4.set_title('Echo')
+    #     plt.title(' TC15 |' + ' SoH = 75 | Bandpass Enabled | No Noise removed | secondary')
+    #
+    #     ''' -------   plot the avg for checking clean data    ---- '''
+    #     # x_1 = np.arange(0, ped * row, ped)
+    #     # plt.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
+    #     # plt.title(' TC10 |' + ' SoH = 73 | Bandpass Enabled | No Noise removed | secondary')
+    #     # plt.xlim((0, 0.00005))
+    #     # plt.xlabel('time')
+    #     # plt.ylabel('amplitude')
+    #
+    #
+    #     cycle_id += 1
+    #
+    # # avgTable_concat = avgTable_concat.mean( axis =1 )                         # avg all cycle
+    # avgTable_concat = avgTable_concat.T
+    # avgTable_concat.to_csv(address + 'TC15-secondary.csv')
+    #
+    #
+    # plt.legend()
+    # plt.show()
 
 
     """
@@ -331,11 +331,11 @@ def main ():
     """
     (5) Temperature Plot
     """
-    # with open(address + 'temp.csv') as outfile:
+    # with open(address + 'Me03-H100_181214_sorted.csv') as outfile:
     #     tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     # outfile.close()
-
-    # calculate the value at 30ns
+    #
+    # # calculate the value at 30ns
     # cyc, temp_value = [], []
     # while cycle_id < cycle + 1:
     #     cyc.append(cycle_id)
@@ -343,9 +343,10 @@ def main ():
     #     cycle_id += 1
     #
     # plt.figure(5)
-    # plt.scatter(cyc, temp_value)
-    # plt.title('Temperature vs Cycle | SOC = 0%')
+    # plt.plot(cyc, temp_value, '-*')
+    # plt.title('Temperature vs Cycle | SOH = 100')
     # plt.xlabel('Cycle')
+    # plt.ylabel('TempC oC')
     # plt.interactive(False)
     # plt.show()
 
@@ -440,14 +441,14 @@ def main ():
     return
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC15-H75_181217/secondary/'
+address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-D/ME03-H100_181214/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos = 0  # number of capture in each cycle
 avgNum = 64
-cycle = 300
-cycle_id = 1
+cycle = 1285
+cycle_id = 2
 
 ME = 4
 ME_id = 1

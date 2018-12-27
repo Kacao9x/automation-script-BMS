@@ -247,40 +247,46 @@ def post_raw_data():
                                                         str(cycle_id) + '-')
 
         [row, column] = oneRead.shape
+        column = 3
 
-        # res = echoes_db.search(query={'test_results.capture-number': 1},
-        #                        collection='captures')
-        # for post in res:
-        #     pprint(post['_id'])
-        #     post['test_results']['raw_data'] = []
-        #
-        #     avgPos = 1
-        #     while avgPos < column + 1:
-        #         print (oneRead.loc[:, avgPos-1])
-        #         post['test_results']['raw_data'].append(
-        #             {'run': avgPos, 'result': oneRead.loc[ : , avgPos-1 ]}
-        #         )
-        #         avgPos += 1 #go to next column
-        #
-        #     echoes_db.upsert(post, {'_id': post['_id']},
-        #                      collection='captures')
-
-        # res = echoes_db.search(query={'timestamp-day':'14'}, collection='captures')
-        res = echoes_db.search(query={'test_results.capture-number':1},
+        res = echoes_db.search(query={'test_results.capture-number': 1},
                                collection='captures')
-        pprint (res)
+
 
         for post in res:
             pprint(post['_id'])
+            post['test_results']['raw_data'] = []
 
-            post['test_results']['raw_data'] = \
-            [
-                    {'run': 1, 'result': [2, 4, 6, 8]},
-                    {'run': 2, 'result': [1, 3, 5, 7]}
-            ]
+            avgPos = 1
+            while avgPos < column + 1:
 
-            pprint (post)
-            echoes_db.update(post, {'_id': post['_id']}, collection='captures')
+                value = list(oneRead.loc[:, avgPos].values)
+                # print (value)
+
+                post['test_results']['raw_data'].append(
+                    {'run': avgPos, 'result': value}
+                )
+                avgPos += 1 #go to next column
+                pprint(post['test_results'])
+            echoes_db.update(post, {'_id': post['_id']},
+                             collection='captures')
+
+        # res = echoes_db.search(query={'timestamp-day':'14'}, collection='captures')
+        # res = echoes_db.search(query={'test_results.capture-number':1},
+        #                        collection='captures')
+        # pprint (res)
+        #
+        # for post in res:
+        #     pprint(post['_id'])
+        #
+        #     post['test_results']['raw_data'] = \
+        #     [
+        #             {'run': 1, 'result': [2, 4, 6, 8]},
+        #             {'run': 2, 'result': [1, 3, 5, 7]}
+        #     ]
+        #
+        #     pprint (post)
+        #     echoes_db.update(post, {'_id': post['_id']}, collection='captures')
 
 
         # find cycle number and upsert

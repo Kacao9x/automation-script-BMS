@@ -1,7 +1,8 @@
 from datetime import time
 import pandas as pd
 import subprocess
-
+from pprint import pprint
+from bson import ObjectId
 
 
 from lib.echoes_database import *
@@ -110,15 +111,8 @@ def _get_timestamp_from_filename( filename ):
 
 
 def post_csv_report():
-    # this format captures objects instead of attributes
-    # bucket= {"cars":[
-    #     {"mercedes":["c","e","s"]},
-    #     {"bmw":["5601", "5301"]},
-    #     {"64":["suv","cabriolet"]}
-    #             ]
-    #
-    #        }
 
+    global bucket
     with open('data/' + filename) as outfile:
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
@@ -155,6 +149,7 @@ def post_csv_report():
                                                     + '-' + timest.split(' ')[0].split('-')[1]
 
         bucket['test_results'] = {
+            'capture-number'    :   col,
             'temperature'       :   {
                 'top'       :float(table['Temperature_top'][col]),
                 'bottom'    :float(table['Temperature_bottom'][col])
@@ -166,7 +161,7 @@ def post_csv_report():
         }
 
         data = list(table.iloc[col, 12:].values)                                # retrieve test value from the report
-        bucket['test_results']['value']    = data
+        bucket['test_results']['average']    = data
 
         echoes_db.insert_capture(record=bucket, collection='captures')
 
@@ -178,14 +173,122 @@ def post_csv_report():
 
 
 def post_raw_data():
-    cycle = 3
+    global bucket
+    cycle = 1
     cycle_id = 1
 
+    with open('data/' + filename) as outfile:
+        table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
+
     while cycle_id < cycle + 1:
+        bucket = {}
+
+        # this format captures objects instead of attributes
+        # bucket = {
+        #     "cars": [
+        #         {"mercedes": ["c", "e", "s"]},
+        #         {"bmw": ["5601", "5301"]},
+        #         {"64": ["suv", "cabriolet"]}
+        #     ]
+        # }
+
+        timest = _get_timestamp_from_filename(table['FileName'][ cycle_id ])
+        print (timest.split(' ')[0].split('-')[0] + '-' +
+               timest.split(' ')[0].split('-')[1])
+        bucket['timestamp'] = timest
+        bucket['timestamp-day'] = timest.split(' ')[0].split('-')[2]
+        bucket['timestamp-month'] = timest.split(' ')[0].split('-')[0] \
+                                    + '-' + timest.split(' ')[0].split('-')[1]
+
+
+
+        bucket['test_apparatus'] = {
+            'battery_id': 'TC05-H75',
+            'transducer_id': 67143,
+            'echoes_id': 'echoes-b'
+        }
+
+        bucket['test_setting'] = {
+            'impulse-volt': 85,
+            'vga_gain': 0.55,
+            'delay_ms': 25,
+            'sampling_rate': 7200000,
+            'impulse_type': 'neg-bipolar',
+            'input-channel': 'primary'
+        }
+
+        bucket['test_results'] = {
+            'capture-number': cycle_id,
+            'temperature': {
+                'top': float(table['Temperature_top'][cycle_id]),
+                'bottom': float(table['Temperature_bottom'][cycle_id])
+            },
+            'cap(mAh)': float(table['cap(mAh)'][cycle_id]),
+            'current': float(table['current'][cycle_id]),
+            'volt': float(table['volt'][cycle_id]),
+            'charging': int(table['charging'][cycle_id])
+        }
+
+        res = echoes_db.insert_capture(record=bucket, collection='captures')
+        print (res)
+        print ('completed inserting')
+
+        #------- upsert every run each capture into 'test-results' --------#
+        # dat = [
+        #     {"id": 110, "data": {"Country": "ES", "Count": 64}},
+        #     {"id": 112, "data": {"Country": "ES", "Count": 5}},
+        #     {"id": 114, "data": {"Country": "UK", "Count": 3}}
+        # ]
+        # db.test_collection.find({"data.Country": "ES"})
+        # db.test_collection.find({"data.Count": {"$lt": 6}})
+
         oneRead, list_file = concat_all_data(tempC=False, search_key='cycle' +
                                                         str(cycle_id) + '-')
-        print (list_file)
 
+        [row, column] = oneRead.shape
+
+        # res = echoes_db.search(query={'test_results.capture-number': 1},
+        #                        collection='captures')
+        # for post in res:
+        #     pprint(post['_id'])
+        #     post['test_results']['raw_data'] = []
+        #
+        #     avgPos = 1
+        #     while avgPos < column + 1:
+        #         print (oneRead.loc[:, avgPos-1])
+        #         post['test_results']['raw_data'].append(
+        #             {'run': avgPos, 'result': oneRead.loc[ : , avgPos-1 ]}
+        #         )
+        #         avgPos += 1 #go to next column
+        #
+        #     echoes_db.upsert(post, {'_id': post['_id']},
+        #                      collection='captures')
+
+        # res = echoes_db.search(query={'timestamp-day':'14'}, collection='captures')
+        res = echoes_db.search(query={'test_results.capture-number':1},
+                               collection='captures')
+        pprint (res)
+
+        for post in res:
+            pprint(post['_id'])
+
+            post['test_results']['raw_data'] = \
+            [
+                    {'run': 1, 'result': [2, 4, 6, 8]},
+                    {'run': 2, 'result': [1, 3, 5, 7]}
+            ]
+
+            pprint (post)
+            echoes_db.update(post, {'_id': post['_id']}, collection='captures')
+
+
+        # find cycle number and upsert
+
+        cycle_id += 1
+
+
+    echoes_db.close()
     return
 
 
@@ -194,11 +297,12 @@ print("Initializing database")
 echoes_db       = database(database='echoes-testing')
 echoes_db.mongo_db = 'captures'
 
+
 filename = 'TC05-H75_181114_primary-sorted.csv'
+bucket = {}
 
 
-
-address = '/media/'
+address = 'data/primary/'
 if __name__ == '__main__':
     post_raw_data()
 

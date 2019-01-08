@@ -124,10 +124,9 @@ def main(packet=None):
 print("Initializing EchOES")
 
 echoes_1 = echoes()
-echoes_1.startNewSession()
-echoes_1.setImpulseType(Impulse_Type.half)
-echoes_1.setImpulseVoltage(Impulse_Voltage.impulse_70v)
-echoes_1.setVgaGain(0.55)
+echoes_1.set_impulse_type(Impulse_Type.half)
+echoes_1.set_impulse_type(Impulse_Voltage.impulse_85v)
+echoes_1.set_vga_gain(0.55)
 
 print("Initializing database")
 echoes_db = database()

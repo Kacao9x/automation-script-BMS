@@ -264,12 +264,12 @@ def _get_timestamp_from_filename( filename ):
     i = filename.split('-')
 
     if i[1] == 'temp':
-        endtime = '2018' + '-' + i[3] + '-' + i[4] + ' ' \
+        endtime = i[2] + '-' + i[3] + '-' + i[4] + ' ' \
                   + i[5] + ':' + i[6] + ':' + i[7]
         print ('endtime raw: ' + endtime)
 
     else:
-        endtime = '2018' + '-' + i[4] + '-' + i[5] + ' ' \
+        endtime = i[3] + '-' + i[4] + '-' + i[5] + ' ' \
                   + i[6] + ':' + i[7] + ':' + i[8]
         print ('endtime filtered: ' + endtime)
 
@@ -474,11 +474,11 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'TC09'
-SoH             = '76'
+battery_id      = 'Me03'
+SoH             = '100'
 transducer_id   = '067143' #'09807' #'067143'
-name            = battery_id + '-H' + SoH + '_181207'
-path            ='/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC9-H76_181207/tempC/'
+name            = battery_id + '-H' + SoH + '_181226'
+path            ='/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-D/ME03-H100_181226_tape_cont/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'

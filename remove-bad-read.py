@@ -35,6 +35,15 @@ def display_list_of_file(key):
 
 def main():
 
+    for i in range(1, 300):
+
+        Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-64-*')
+
+        # Call( 'mv ' + address + 'cycle' + str(i) +'-raw_trans-*' + ' ' + address + 'bad/')
+        # if primary_channel:
+        #     Call('rm ' + address + 'cycle' + str(i) + '-raw_echo-1-*')
+        # else:
+        #     Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-1-*')
     # with open(address + 'bad-flat.txt', 'rb') as readout:
     #     for cnt, line in enumerate( readout ):
     #         # print (str(cnt))
@@ -44,16 +53,19 @@ def main():
     #         # print (cmd)
     #         Call( cmd )
     # readout.close()
-    for i in range(1, 301):
-        # Call( 'mv ' + address + 'cycle' + str(i) +'-raw_trans-*' + ' ' + address + 'bad/')
-        Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-1-*')
+
 
     return
 
 
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
-address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC10-H73_181208/secondary/'
+
+input_channel = 'secondary'
+primary_channel = (input_channel == 'primary')
+print (str(primary_channel))
+
+address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-C/tuna-can/TC05-H745_190122/tempC/'# + input_channel + '/'
 # bad_data = []
 
 # adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]

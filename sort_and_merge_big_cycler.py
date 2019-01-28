@@ -97,9 +97,6 @@ def concat_all_data(tempC = bool, search_key = str):
             my_file.close()
 
             data = [float(num) for num in y_str]                                # convert string to float
-            # data = []
-            # for i, num in enumerate(y_str):
-            #     data.append(float(num))
 
             # concat all data set into a singl dataframe
             single_set = pd.DataFrame({captureID: data})
@@ -126,12 +123,16 @@ def merge_column(table):
             ind = np.append(ind, i)
 
     print (ind)
-    id_num = table.columns.get_loc("id_num")
-    capmAh = table.columns.get_loc("cap(mAh)")
+    id_num      = table.columns.get_loc("id_num")
+    cap_mAh     = table.columns.get_loc("cap(mAh)")
+    energy_mWh  = table.columns.get_loc("en(mWh)")
 
     #add 21.00 for real capacity
     # for i in range(0, int(ind[1])):
-    #     table.iat[i, capmAh] = 38 + table.iat[i, capmAh]
+    #     table.iat[i, cap_mAh] = 38 + table.iat[i, cap_mAh]
+
+    # for i in range(int(ind[3]), int(ind[4])):
+    #     table.iat[i, cap_mAh] = 31.0163 - table.iat[i, cap_mAh]
 
     for i in range(len(ind) -1 ):
 
@@ -139,19 +140,20 @@ def merge_column(table):
         if (table.iat[int(ind[i]), id_num] == 'CV_Chg' and
             table.iat[int(ind[i - 1]), id_num]) == 'CC_Chg':
 
-            tot = table.iat[int(ind[i]) - 1, capmAh]                                 # store the capacity
+            tot = table.iat[int(ind[i]) - 1, cap_mAh]                           # store the capacity
             diff = int(ind[i + 1]) - int(ind[i])                                # find the length of the stage
 
             for j in range(diff):
-                table.iat[int(ind[i]) + j, capmAh] += tot
+                table.iat[int(ind[i]) + j, cap_mAh] += tot
         # step 3 and 2
         elif (table.iat[int(ind[i]), id_num] == 'CC_Chg' and
               table.iat[int(ind[i - 1]), id_num] == 'CV_Chg'):
 
-            tot = table.iat[int(ind[i]) - 1, capmAh]
+            tot = table.iat[int(ind[i]) - 1, cap_mAh]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, capmAh] += tot
+                table.iat[int(ind[i]) + j, cap_mAh] += tot
+                table.iat[int(ind[i]) + j, cap_mAh] += tot
 
 
         # Keep the same capacity of CV_charge for rest cycle
@@ -159,36 +161,41 @@ def merge_column(table):
               table.iat[int(ind[i - 1]), id_num] == 'CC_Chg' and
               table.iat[int(ind[i + 1]), id_num] == 'CC_DChg'):
 
-            tot = table.iat[int(ind[i]) - 1, capmAh]
+            tot = table.iat[int(ind[i]) - 1, cap_mAh]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, capmAh] += tot
+                table.iat[int(ind[i]) + j, cap_mAh] += tot
 
         elif (table.iat[int(ind[i]), id_num] == 'Rest' and
               table.iat[int(ind[i - 1]), id_num] == 'CCCV_Chg'):
 
-            tot = table.iat[int(ind[i]) - 1, capmAh]
+            tot     = table.iat[int(ind[i]) - 1, cap_mAh]
+            tot_mwh = table.iat[int(ind[i]) - 1, energy_mWh]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, capmAh] += tot
+                table.iat[int(ind[i]) + j, cap_mAh] += tot
+                table.iat[int(ind[i]) + j, energy_mWh] += tot_mwh
 
 
         # Subtraction the capacity for dischage cycle
         elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
               table.iat[int(ind[i]), id_num] == 'CC_DChg'):
 
-            tot = table.iat[int(ind[i + 1]) - 1, capmAh]
+            tot     = table.iat[int(ind[i + 1]) - 1, cap_mAh]
+            tot_mwh = table.iat[int(ind[i + 1]) - 1, energy_mWh]
             diff = int(ind[i + 1]) - int(ind[i])
             for j in range(diff):
-                table.iat[int(ind[i]) + j, capmAh] = tot - \
-                                                     table.iat[int(ind[i]) + j, capmAh]
+                table.iat[int(ind[i]) + j, cap_mAh] = tot - \
+                                                     table.iat[int(ind[i]) + j, cap_mAh]
+                table.iat[int(ind[i]) + j, energy_mWh] = tot_mwh - \
+                                                     table.iat[int(ind[i]) + j, energy_mWh]
 
         # else:
-        #     tot = table.iat[len(table.index) - 1, capmAh]
+        #     tot = table.iat[len(table.index) - 1, cap_mAh]
         #     diff = int(len(table.index) - int(ind[i + 1]))
         #     for j in range(diff):
-        #         table.iat[int(ind[i + 1]) + j, capmAh] = tot - table.iat[
-        #             int(ind[i + 1]) + j, capmAh]
+        #         table.iat[int(ind[i + 1]) + j, cap_mAh] = tot - table.iat[
+        #             int(ind[i + 1]) + j, cap_mAh]
 
     return table
 
@@ -254,8 +261,8 @@ def find_capacity(begin, end, table):
     line += int(diff / 5)
     print ('end_temp: ' + str(end_temp))
     print ("diff: %s" % str(line))
-    return line, table['cap(mAh)'][line], table['current'][line], \
-           table['volt'][line]
+    return line, table['cap(mAh)'][line], table['en(mWh)'][line],\
+        table['current'][line], table['volt'][line]
 
 
 
@@ -279,21 +286,23 @@ def _get_timestamp_from_filename( filename ):
 # return a sorted table with capacity, filename, index
 def sort_by_name(filelist, starttime, table):
     cap     = []
+    power   = []
     filename= []
     index   = []
-    volt = []
+    volt    = []
     current = []
-    charging = []
+    charging= []
 
     for i, element in enumerate( filelist ):
 
         endtime = _get_timestamp_from_filename( element )
-        row, c, curr, voltage  = find_capacity(starttime, endtime, table)
+        row, c, p, curr, voltage  = find_capacity(starttime, endtime, table)
 
-        cap.append(c)
-        current.append(curr)
-        volt.append(voltage)
         index.append(row)
+        cap.append(c)
+        power.append(p)
+        volt.append(voltage)
+        current.append(curr)
         filename.append(element)
 
         if curr < 0:
@@ -302,14 +311,16 @@ def sort_by_name(filelist, starttime, table):
             charging.append( 1 )
 
     print ("start sorting")
-    column = ['index', 'charging', 'volt', 'current', 'cap(mAh)', 'FileName']
+    column = ['index', 'charging', 'volt', 'current', 'cap(mAh)', 
+            'power(mWh)', 'FileName']
 
-    table_sorted = pd.DataFrame({'index': index,
-                                 'charging': charging,
-                                 'volt': volt,
-                                 'current': current,
-                                 'cap(mAh)': cap,
-                                 'FileName': filename},
+    table_sorted = pd.DataFrame({'index'    : index,
+                                 'charging' : charging,
+                                 'volt'     : volt,
+                                 'current'  : current,
+                                 'cap(mAh)' : cap,
+                                 'power(mWh)':power,
+                                 'FileName' : filename},
                                 columns=column)                                 # columns=[] used to set order of columns
 
     del table_sorted['index']
@@ -369,13 +380,13 @@ def clean_test_data(fix = bool):
                    'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
                    'en(microWh)', 'Date/Time']
     cycler_data.columns = header_list
-    del cycler_data['del2'], cycler_data['en(mWh)'], \
+    del cycler_data['del2'], \
         cycler_data['en(microWh)'], cycler_data['cap(microAh)']
 
 
     # added extra 'id' columns to shift the first rows
     header_list = ['id', 'id_num', 'time', 'volt','current',
-                   'cap(mAh)', 'Date/Time']
+                   'cap(mAh)', 'en(mWh)','Date/Time']
     cycler_data = cycler_data.reindex(columns=header_list)
     print (cycler_data.head())
     cycler_data.to_csv(cycler_path)
@@ -454,11 +465,11 @@ def main():
     tempTable = pd.DataFrame()
     tC_1, tC_2 = concat_all_data(tempC = True, search_key = 'cycle')
     tempTable['Temperature_bottom'] = tC_1                                      # construct a dataframe format for tempC
-    tempTable['Temperature_top'] = tC_2                                         # construct a dataframe format for tempC
+    tempTable['Temperature_top']    = tC_2                                      # construct a dataframe format for tempC
     
     table_sorted = pd.concat([table_sorted, tempTable['Temperature_bottom'],
-                              tempTable['Temperature_top']],
-                             axis=1)  # add new column (diff index) into exisiing Dataframe
+                              tempTable['Temperature_top']], axis=1)            # add new column (diff index) into exisiing Dataframe
+    
     del tempTable
     table_sorted.to_csv(final_log_path)
 
@@ -474,15 +485,18 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'Me03'
-SoH             = '100'
+battery_id      = 'TC05'
+SoH             = '745'
 transducer_id   = '067143' #'09807' #'067143'
-name            = battery_id + '-H' + SoH + '_181226'
-path            ='/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-D/ME03-H100_181226_tape_cont/tempC/'
+name            = battery_id + '-H' + SoH + '_190122'
+
+path            ='/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-C/tuna-can/TC05-H745_190122/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'
 final_log_path  = path + name + '_sorted.csv'
+
+
 __PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index

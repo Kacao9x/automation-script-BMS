@@ -7,11 +7,11 @@ See Github repo for documentation
 @author: kacao
 '''
 
-#==============================================================================#
+# =============================================================================#
 #                                                                              #
 #                       HOW - TO - RUN - CMD LINE TOOL                         #
 #                                                                              #
-#==============================================================================#
+# =============================================================================#
 # python titan_cmd.py --start-fresh --test merc -d 25 -rate 7200000 -g 0.55 -v 85 
 # --input 1 --impulse 2 --half-pw 600 --adc-config 0 --repeat 750 --minute 5
 
@@ -21,11 +21,12 @@ from lib.echoes_protocol import *
 from lib.echoes_spi import *
 from lib.echoes_temp_sensor import *
 from lib.echoes_signalprocessing import *
-# from lib.echoes_database import *
+from lib.echoes_database import *
 
-#==============================================================================#
+
+# =============================================================================#
 #                                MAIN ACTIVITY                                 #
-#==============================================================================#
+# =============================================================================#
 def main():
     global __INPUT__
     create_data_folder()
@@ -33,69 +34,79 @@ def main():
     save_logs()
     system_config()
 
-    for cycleID in range( startCycle, __REPEAT__ ):
+    for cycleID in range(startCycle, __REPEAT__):
         try:
-            with open("logs/status.txt", 'w') as sf:                                #Overwrite previous file
+            with open("logs/status.txt", 'w') as sf:  # Overwrite previous file
                 sf.write(str(cycleID) + "\n")
             sf.close()
-        except:                                                                     # Do nothing on error
+        except:  # Do nothing on error
             sys.exit("Problem with writing status.txt")
 
-        print ('\nCycle: ' + str( cycleID + 1 ))
+        print ('\nCycle: ' + str(cycleID + 1))
 
         # ============== PRIMARY ECHO ===============#
-        __INPUT__ = 1                                                               # Set the ADC channel
-        key         = 'raw_echo'
-        print str( _input_capture_init())
-        capture_signal( key, cycleID )
+        __INPUT__ = 1  # Set the ADC channel
+        _input_capture_init()  # Reset Input channel
+        capture_signal(cycleID)
         print ('Completed capturing PRIMARY signal \n')
 
         # ============= TRANSMISSION ECHO ============#
         if __TEST__ == 'tuna':
-            
-            __INPUT__ = 2
-            key         = 'raw_trans'
-            print str( _input_capture_init())
-            time.sleep(30)
 
-            capture_signal( key, cycleID )
+            __INPUT__ = 2
+            _input_capture_init()
+            time.sleep(15)
+
+            capture_signal(cycleID)
             print ('Completed capturing TRANSMISSION signal \n')
             __INPUT__ = 1
 
         elif __TEST__ == 'merc':
-            pass                                                                    # Do nothing on secondary
-
+            pass  # Do nothing on secondary
 
         # ============== Save Temperature ==============#
-        _save_capture_data(cycleID, 'temp', [], True, True, False)
-
+        # _save_capture_data(cycleID, 'temp', [], True, True, False)
 
         print ('End cycle \n \n')
         time.sleep(__MINUTE__ * 60)
 
-        
-    # echoes_db.close()
+    echoes_db.close()
     echoes_1.close()
     return
 
-#=================  MAIN FUNCTION ENDS  ===============#
 
-#==============================================================================#
+# =================  MAIN FUNCTION ENDS  ===============#
+
+# =============================================================================#
 #                               System Initializing                            #
-#==============================================================================#
+# =============================================================================#
 
 def create_data_folder():
     # ======= Create folder to save logs and data =======#
-    if not os.path.exists(os.getcwd() + '/logs/'):
-        os.makedirs( os.getcwd() + '/logs/')
-    if not os.path.exists(os.getcwd() + '/data/primary/'):
-        os.makedirs( os.getcwd() +'/data/primary/')
-    if not os.path.exists(os.getcwd() + '/data/secondary/'):
-        os.makedirs( os.getcwd() + '/data/secondary/')
-    if not os.path.exists(os.getcwd() + '/tempC/'):
-        os.makedirs( os.getcwd() + '/tempC/')
+    ts = time.time()
+    ts_print = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+    try:
+        if not os.path.exists(os.getcwd() + '/logs/'):
+            os.makedirs(os.getcwd() + '/logs/')
 
-    return
+        dirName = ['/data/primary', '/data/secondary', '/tempC']
+
+        for addr in dirName:
+            print (addr)
+            if not os.path.exists(os.getcwd() + addr):
+                os.makedirs(os.getcwd() + addr)
+            else:
+                if not os.listdir(os.getcwd() + addr):
+                    pass
+                else:
+                    print ('not empty data folder, creating new ones')
+                    os.rename(os.getcwd() + addr, os.getcwd() + addr
+                              + '_' + ts_print)
+                    os.makedirs(os.getcwd() + addr)
+
+
+    except OSError:
+        sys.exit("Problem with creating data folder")
 
 
 def fresh_or_resume():
@@ -107,14 +118,14 @@ def fresh_or_resume():
         print ("Resume test from file")
         try:
             with open('logs/status.txt') as sf:
-                startCycle = int( sf.readline().rstrip()) + 1
+                startCycle = int(sf.readline().rstrip()) + 1
             sf.close()
-        except:                                                                     #Do nothing on error
+        except:  # Do nothing on error
             sys.exit("Problem with status.txt")
     return
 
 
-def _write_test_logs( offset=float ):
+def _write_test_logs(offset=float):
     name = "logs/" + "file-" + str(time.strftime("%Y%m%d_%H%M%S")) + ".txt"
 
     try:
@@ -144,9 +155,9 @@ def _write_test_logs( offset=float ):
     return
 
 
-#==============================================================================#
+# =============================================================================#
 #                               System Config                                  #
-#==============================================================================#
+# =============================================================================#
 def _voltage_init():
     print str(__VOLTAGE__)
     if __VOLTAGE__ == 85:
@@ -186,17 +197,22 @@ def _voltage_init():
 
 
 def _impulse_type_init():
+    global impulse_type
     if __TYPE__ == 1:
         print ("unipolar: ")
+        impulse_type = 'pos-unipolar'
         return echoes_1.set_impulse_type(Impulse_Type.half)
     elif __TYPE__ == 2:
         print ("bipolar: ")
+        impulse_type = 'pos-bipolar'
         return echoes_1.set_impulse_type(Impulse_Type.full)
     elif __TYPE__ == -1:
         print ("unipolar-negative: ")
+        impulse_type = 'neg-unipolar'
         return echoes_1.set_impulse_type(Impulse_Type.half_negative)
     elif __TYPE__ == -2:
         print ("bipolar-negative: ")
+        impulse_type = 'neg-bipolar'
         return echoes_1.set_impulse_type(Impulse_Type.full_negative)
     return False
 
@@ -218,11 +234,15 @@ def _period_impulse_init():
 
 
 def _input_capture_init():
+    global input_channel
+
     if __INPUT__ == 1:
-        print ("primary: ")
+        input_channel = 'primary'
+        print (input_channel + ' ')
         return echoes_1.set_capture_adc(Capture_Adc.adc_primary)
     elif __INPUT__ == 2:
-        print ("secondary: ")
+        input_channel = 'secondary'
+        print (input_channel + ' ')
         return echoes_1.set_capture_adc(Capture_Adc.adc_secondary)
     else:
         return False
@@ -269,7 +289,6 @@ def _set_delay_capture():
 
 
 def system_config():
-
     # 1. set voltage limit for transducer
     print ("(1) Voltage setup: %s " % str(_voltage_init()))
     time.sleep(2)
@@ -323,83 +342,97 @@ def save_logs():
     echoes_1.measure_dc_offset()
     offSet = echoes_1.dc_offset
     echoes_1.set_total_adc_captures(total_capture)
-    _write_test_logs( offSet )
+    _write_test_logs(offSet)
     return
 
-#==============================================================================#
+
+# =============================================================================#
 #                       Signal Acquisition Supporting Method                   #
-#==============================================================================#
+# =============================================================================#
 
-def _save_capture_data(cycleID = int, key = str, data = [],
-                       temper = bool,file = bool, mongo = bool):
-    # Write file
-    ts = time.time()
-    st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
-         + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+def _save_capture_to_file(cycleID=int, data_arr=[], tempC=[]):
+    ''' Save signal data readout'''
+    for runID, output in enumerate(data_arr):
 
-    if temper:
-        tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
-        tempC_2 = temp_sense_secondary.get_average_temperature_celcius(16)
+        ts = time.time()
 
-        if file:
-            fn = "tempC/" + st + "-" +__HOST__+".dat"
-            with open (fn, "w") as filehandle:
-                filehandle.write('TempC_1_and_2: %s  %s oC' % (str(tempC_1),
-                                                               str(tempC_2)))
-            filehandle.close()
-        if mongo:
-            pass
+        if (output and __INPUT__ == 1):
+            st = 'cycle' + str(cycleID + 1) + \
+                 '-raw_echo-' + str(runID + 1) + \
+                 '-' + datetime.datetime.fromtimestamp(ts).strftime(
+                '%Y-%m-%d-%H-%M-%S')
+            fn = "data/primary/" + st + "-" + __HOST__ + ".dat"
 
-    if (data and __INPUT__ == 1):
-        fn = "data/primary/" + st + "-" +__HOST__+".dat"
-    elif (data and __INPUT__ == 2):
-        fn = "data/secondary/" + st + "-" +__HOST__+".dat"
-    else:
-        return
-    
-    with open (fn, "w") as filehandle:
-        for samp in data:
-            filehandle.write(str(samp) + "\n")
-    filehandle.close()
+        elif (output and __INPUT__ == 2):
+            st = 'cycle' + str(cycleID + 1) + \
+                 '-raw_trans-' + str(runID + 1) + \
+                 '-' + datetime.datetime.fromtimestamp(ts).strftime(
+                '%Y-%m-%d-%H-%M-%S')
+            fn = "data/secondary/" + st + "-" + __HOST__ + ".dat"
+
+        else:
+            return
+
+        with open(fn, "w") as filehandle:
+            for samp in output:
+                filehandle.write(str(samp) + "\n")
+        filehandle.close()
+
+    ''' Saving temperature readout '''
+    if tempC:
+        fn = "tempC/" + st + "-" + __HOST__ + ".dat"
+        with open(fn, "w") as filehandle:
+            filehandle.write('TempC_1_and_2: %s  %s oC' % (str(tempC[0]),
+                                                           str(tempC[1])))
+        filehandle.close()
     return
 
 
-# def _save_capture_to_Mongodb( cycleID=int, key=str, data=[], temper=bool,
-#                               record = {} ):
-#     ts = time.time()
-#     st = 'cycle' + str(cycleID + 1) + '-' + key + '-' \
-#          + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-#
-#     packet = {}
-#     packet['test_results'] = {}
-#     packet['test_setting'] = {}
-#     packet['test_apparatus'] = {}
-#
-#     record = echoes_1.get_session_data()
-#     packet['test_results']['data'] = data
-#     packet['test_results']['cycle_number'] = cycleID + 1
-#     packet['test_results']['avg_number'] = key.split('-')[1]
-#     packet['test_results']['timestamp'] = st
-#
-#
-#     packet['test_setting']['impulseVoltage']= record['impulseVoltage']
-#     packet['test_setting']['impulseType']  = record['impulseType']
-#     packet['test_setting']['vgaGain']      = record['vgaGain']
-#
-#     packet['test_apparatus']['session'] = 'Me02-H100'
-#
-#
-#     if temper:
-#         # tempC_1 = temp_sense_primary.get_average_temperature_celcius(16)
-#         # tempC_2 = temp_sense_secondary.get_average_temperature_celcius(16)
-#         packet['test_results']['temperature_1'] = \
-#             temp_sense_primary.get_average_temperature_celcius(16)
-#         packet['test_results']['temperature_2'] = \
-#             temp_sense_secondary.get_average_temperature_celcius(16)
-#
-#     echoes_db.insert_capture(packet)
-#     return
+def _save_capture_to_Mongodb(cycleID=int, data_arr=[], tempC=[]):
+    global impulse_type, input_channel, examiner, project, battery_id
 
+    bucket = {}
+    bucket['test_examiner'] = examiner
+    bucket['project_name']  = project
+    bucket['timestamp']     = datetime.datetime.utcnow()
+
+    bucket['test_apparatus'] = {
+        'battery_id'    : battery_id,
+        'transducer_id' : 67143,
+        'echoes_id'     : __HOST__
+    }
+
+    bucket['test_setting'] = {
+        'impulse_volt'  : __VOLTAGE__,
+        'vga_gain'      : float(__GAIN__),
+        'delay_ms'      : __DELAY__,
+        'sampling_rate' : __SAMPLING__,
+        'impulse_type'  : impulse_type,
+        'input_channel' : input_channel
+    }
+
+    bucket['test_results'] = {
+        'capture_number': cycleID + 1,
+        'raw_data'      : [],
+        'temperature'   : {
+            'top'   : tempC[0],
+            'bottom': tempC[1]
+        }
+    }
+
+    for runID, output in enumerate(data_arr):
+        if runID == 0:
+            continue
+
+        bucket['test_results']['raw_data'].append({
+            'run': runID + 1,
+            'result': output
+        })
+
+    echoes_db.insert_capture(record=bucket, collection=cabinet)
+    print ("Successfully insert raw data")
+
+    return
 
 
 def capture_raw_output():
@@ -410,8 +443,7 @@ def capture_raw_output():
     return adc_captures_float
 
 
-def capture_and_average_output( adc_captures_float ):
-
+def capture_and_average_output(adc_captures_float):
     y_avg = np.array(adc_captures_float).mean(0)
 
     ''' detect a bad read in echo signal'''
@@ -420,7 +452,7 @@ def capture_and_average_output( adc_captures_float ):
     goodRead = (count > 15 and std_value > 0.0020)
 
     # Keep firing until it collects a clean signal (PRIMARY SIGNAL ONLY)
-    while (not goodRead) and ( __INPUT__ == 1 ):
+    while (not goodRead) and (__INPUT__ == 1):
         print ('bad: cnt %s std_value: %s' % (str(count), str(std_value)))
 
         echoes_1.reset_micro()
@@ -428,7 +460,7 @@ def capture_and_average_output( adc_captures_float ):
         system_config()
 
         echoes_1.measure_dc_offset()
-        offSet = echoes_1.dc_offset
+        # offSet = echoes_1.dc_offset
 
         adc_captures_float = capture_raw_output()
         y_avg = np.array(adc_captures_float).mean(0)
@@ -441,7 +473,6 @@ def capture_and_average_output( adc_captures_float ):
 
     print ('good echo: count %s  std_value: %s'
            % (str(count), str(std_value)))
-
 
     return adc_captures_float
 
@@ -461,14 +492,19 @@ def find_data_std(x):
     return np.std(x_arr[50:-1], ddof=1)
 
 
-def capture_signal( key=str, cycleID=int ):
+def capture_signal(cycleID=int):
     adc_captures_float = capture_raw_output()
     adc_captures_float = capture_and_average_output(adc_captures_float)
 
-    for captureID, output in enumerate(adc_captures_float):
-        _save_capture_data(cycleID, key + '-' + str(captureID + 1), 
-                            output, False, True, False)                         # don't save temperature
-        # _save_capture_to_Mongodb( cycleID, key+'-'+ str(i + 1), output, False )
+    # Reading temperature sensor
+    tempC_bottom = temp_sense_secondary.get_average_temperature_celcius(16)
+    tempC_top = temp_sense_secondary.get_average_temperature_celcius(16)
+    tempC = [tempC_top, tempC_bottom]
+
+    # Capture signal and saving
+    _save_capture_to_Mongodb(cycleID, adc_captures_float, tempC)
+    _save_capture_to_file(cycleID, adc_captures_float, tempC)
+
     print ("Successfully capture raw data")
     return
 
@@ -513,10 +549,10 @@ def ParseHelpers():
                              '1.adc-primary  2.adc-secondary')
 
     parser.add_argument('--impulse', default=1, nargs='*',
-                        choices=[-2, -1, 1, 2],dest='type', metavar='[1 or 2]',
+                        choices=[-2, -1, 1, 2], dest='type', metavar='[1 or 2]',
                         type=int, help='select type of impulse\n' +
-                             '1.unipolar  2.bipolar -1.unipolar-neg '
-                             '-2.bipolar-neg')
+                                       '1.unipolar  2.bipolar -1.unipolar-neg '
+                                       '-2.bipolar-neg')
 
     parser.add_argument('--period', type=int, default=1, help='periods',
                         dest='period', choices=[1, 2, 3], metavar='[1,2,3]')
@@ -538,7 +574,7 @@ def ParseHelpers():
                         help='how many sequence to average together',
                         metavar='[1,2,4,8,16]')
 
-    #============================ Add-on feature ==============================#
+    # ============================ Add-on feature ==============================#
     parser.add_argument('--repeat', default=1, type=int, choices=range(1, 1001),
                         dest='repeat', metavar='[1,100]',
                         help='the number of repetition')
@@ -553,57 +589,60 @@ def ParseHelpers():
     args = parser.parse_args()
 
 
-#==============================================================================#
+# ==============================================================================#
 #                               GLOBAL VARIABLES                               #
-#==============================================================================#
+# ==============================================================================#
 
 ParseHelpers()
-__TEST__    = args.test
-__DELAY__   = args.delay_us
-__GAIN__    = args.gain
-__SAMPLING__= args.rate
+__TEST__ = args.test
+__DELAY__ = args.delay_us
+__GAIN__ = args.gain
+__SAMPLING__ = args.rate
 __VOLTAGE__ = args.voltage
-__INPUT__   = args.input
-__TYPE__    = args.type[0]
-__PERIOD__  = args.period
-__HALF__    = args.half
+__INPUT__ = args.input
+__TYPE__ = args.type[0]
+__PERIOD__ = args.period
+__HALF__ = args.half
 __ADCconfig__ = args.adcConfig
-__numSEQ__  = args.numSeq
+__numSEQ__ = args.numSeq
 
-__REPEAT__  = args.repeat
-__MINUTE__  = args.minute
+__REPEAT__ = args.repeat
+__MINUTE__ = args.minute
 
-__HOST__    = str(socket.gethostname())
+__HOST__ = str(socket.gethostname())
 
-isNewRun    = args.fresh
-total_capture = 64
+isNewRun = args.fresh
+total_capture   = 64
+battery_id      = 'TC02-H75'
+examiner        = 'Khoi'
+project         = 'TUNA002-Phase1-Build_ML_Model'
+cabinet         = 'tuna-can'
 
 print("Initializing EchOES 1 and 2")
-echoes_1 = echoes() # set Impulse=True for 2nd transducer
+echoes_1 = echoes()  # set Impulse=True for 2nd transducer
 echoes_1.reset_micro()
 echoes_1.start_new_session()
 
-# print("Initializing database")
-# echoes_db       = database()
-# echoes_db.mongo_db = 'echoes-captures'
+print("Initializing database")
+echoes_db = database(database='echoes-captures')
+echoes_db.mongo_db = cabinet
 
 print("Initializing signal processing")
 echoes_dsp = echoes_signals(__SAMPLING__)
 
 print("Initializing temp sensor")
-temp_sense_primary      = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
-temp_sense_secondary    = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
+temp_sense_primary = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
+temp_sense_secondary = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
 
 
+
+if __TEST__ is None:
+    __TEST__ = ' '
+    print ('Battery type not selected \n')
+else:
+    print ('Test selected: ' + args.test)
 
 if args.fresh or args.resume:
     main()
 else:
-    print ("Test stppped! Please select start-fresh or resume-test")
-
-if __TEST__ is None:
-        __TEST__ = ' '
-        print ('Battery type not selected \n')
-else:
-    print ('Test selected: ' + args.test)
-
+    print ("Test stopped! Please select start-fresh or resume-test")

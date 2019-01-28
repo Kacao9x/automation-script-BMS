@@ -26,8 +26,6 @@ def PopenIter(cmd):
                             shell=True).stdout.readline
 #==============================================================================#
 
-
-
 # display the file with keyword in ascending using BASH
 def display_list_of_file(key):
     list_name = []
@@ -103,6 +101,7 @@ def _get_timestamp( filename ):
 
     return timest
 
+
 def post_csv_report():
 
     global bucket
@@ -112,8 +111,8 @@ def post_csv_report():
 
     print (len(table.index))
 
-    cycle = 70  #len(table.index)
-    cycle_id = 70
+    cycle = 71  #len(table.index)
+    cycle_id = 71
 
     while cycle_id < cycle + 1:
 
@@ -197,20 +196,32 @@ def post_raw_data():
         }
 
         bucket['test_results']  = {
-            'capture_number': cycle_id
-            # 'temperature'   : {
-            #     'top'   : float(table['Temperature_top'][cycle_id -1]),
-            #     'bottom': float(table['Temperature_bottom'][cycle_id -1])
-            # },
-            # 'cap(mAh)'      : float(table['cap(mAh)'][cycle_id -1]),
-            # 'current'       : float(table['current'][cycle_id -1]),
-            # 'volt'          : float(table['volt'][cycle_id -1]),
-            # 'charging'      : int(table['charging'][cycle_id -1])
+            'capture_number': cycle_id,
+            'raw_data'      : []
         }
+
+        oneRead, list_file = concat_all_data(tempC=False, search_key='cycle' +
+                                            str(cycle_id) + '-')
+
+        [row, column] = oneRead.shape
+        print (column)
+
+        avgPos = 1
+        while avgPos < column + 1:
+            value = list(oneRead.loc[:, avgPos - 1].values)
+            # print (value)
+
+            bucket['test_results']['raw_data'].append(
+                {'run': avgPos, 'result': value}
+            )
+            avgPos += 1  # go to next column
+
 
         res = echoes_db.insert_capture(record=bucket, collection=cabinet)
         print (res)
-        print ('completed inserting')
+        print ("completed uploading cycle %s" % str(cycle_id))
+        cycle_id += 1
+
 
         #------- upsert every run each capture into 'test-results' --------#
         # bucket = {
@@ -223,47 +234,15 @@ def post_raw_data():
         # db.test_collection.find({"data.Country": "ES"})
         # db.test_collection.find({"data.Count": {"$lt": 6}})
 
-        oneRead, list_file = concat_all_data(tempC=False, search_key='cycle' +
-                                                        str(cycle_id) + '-')
-
-        [row, column] = oneRead.shape
-        print (column)
-
-        res = echoes_db.search(query={'test_apparatus.battery_id':battery_id,
-                                      'test_results.capture_number': cycle_id,
-                                      'test_setting.input_channel':input_channel},
-                               collection=cabinet)
-
-
-        for post in res:
-            pprint(post['_id'])
-            post['test_results']['raw_data'] = []
-
-            avgPos = 1
-            while avgPos < column + 1:
-
-                value = list(oneRead.loc[:, avgPos -1].values)
-                # print (value)
-
-                post['test_results']['raw_data'].append(
-                    {'run': avgPos, 'result': value}
-                )
-                avgPos += 1 #go to next column
-                # pprint(post['test_results'])
-            echoes_db.update(post, {'_id': post['_id']},
-                             collection=cabinet)
-
-
-        print ("completed uploading cycle %s" % str(cycle_id))
-        cycle_id += 1
 
     return
 
 
+#==============================================================================#
 
-battery_id      = 'TC16-H73'
+battery_id      = 'TC02-H75'
 input_channel   = 'secondary'
-cabinet         = 'tuna-sample'
+cabinet         = 'tuna-can'
 examiner        = 'Khoi'
 project         = 'TUNA016-Phase1-Build_ML_Model'
 
@@ -279,23 +258,35 @@ address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC16-H73_181219
 
 if __name__ == '__main__':
 
-    post_raw_data()
-    post_csv_report()
+    # post_raw_data()
+    # post_csv_report()
 
-    res = echoes_db.search(query={'test_apparatus.battery_id': battery_id,
-                                  'test_results.capture_number': 71,
-                                  'test_setting.input_channel': input_channel},
-                           collection=cabinet)
+    # echoes_db.createIndex( [( 'test_apparatus.battery_id', pymongo.ASCENDING )],
+    #                         unique=True, collection=cabinet)
 
-    res_2 = echoes_db.find_one(query={'test_apparatus.battery_id': battery_id,
-                                      'test_results.capture_number': 71,
-                                      'test_setting.input_channel': input_channel},
+    # res = echoes_db.search(query={'test_apparatus.battery_id': battery_id,
+    #                               'test_results.capture_number': 71,
+    #                               'test_setting.input_channel': input_channel},
+    #                        collection=cabinet)
+
+    # res_2 = echoes_db.find_one(query={'test_apparatus.battery_id': battery_id,
+    #                                   'test_results.capture_number': 71,
+    #                                   'test_setting.input_channel': input_channel},
+    #                            collection=cabinet)
+
+
+
+
+    # pprint(res_2['test_results']['raw_data'][0]['result'])
+
+    # echoes_db.delete( query={'test_apparatus.battery_id': battery_id},
+    #                            collection=cabinet)
+
+    for num in range(0, 200):
+        echoes_db.delete( query={'test_apparatus.battery_id': battery_id,
+                                      'test_results.capture_number': num},
                                collection=cabinet)
 
-
-
-
-    pprint(res_2['test_results']['raw_data'][0]['result'])
 
     # pprint(res_2)
     # pprint(res)

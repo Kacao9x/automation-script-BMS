@@ -3,7 +3,7 @@ import pandas as pd
 
 import subprocess
 import datetime as dt
-import thLib as th
+# import thLib as th
 
 
 #==============================================================================#
@@ -485,12 +485,12 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'TC05'
-SoH             = '745'
+battery_id      = 'TC29'
+SoH             = '72.75'
 transducer_id   = '067143' #'09807' #'067143'
-name            = battery_id + '-H' + SoH + '_190122'
+name            = battery_id + '-H' + SoH + '_190204'
 
-path            ='/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-C/tuna-can/TC05-H745_190122/tempC/'
+path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC29-H7275_190204/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'

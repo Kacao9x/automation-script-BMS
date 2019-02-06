@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
@@ -137,6 +136,7 @@ def main ():
     global cycle
     global cycle_id
     global backgrd
+    global exclude_num
 
     """
         (1) Check data quality: detect flat curve, missing echo
@@ -225,6 +225,7 @@ def main ():
     """
     (3) plot avg of each cycle. Save avg (mean) to csv file
     """
+
     avgTable_concat = pd.DataFrame()
 
     plt.figure(1)
@@ -232,11 +233,18 @@ def main ():
     ped = 1.38888889e-7
     while cycle_id < cycle + 1:
 
-        if cycle_id == 108:
-            cycle_id = 109
+        # if cycle_id == exclude_num:
+        #     cycle_id += 1
+
+        cycle_id += 1
         oneRead, list_file = concat_all_data(tempC=False,
                                              search_key='cycle' + str(cycle_id) + '-')
+
+        if not list_file:
+            continue
+            # oneRead = np.zeros(64)
         [row, column] = oneRead.shape
+        print ("row %s col %s" % (str(row), str(column)))
 
         avg = np.mean(oneRead, axis=1)                                          # average 64 captures
         avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)        # apply bandpass
@@ -283,18 +291,19 @@ def main ():
             ax4 = plt.subplot(221)
             ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
             ax4.set_title('Echo')
-            plt.title(' TC05 |' + ' SoH = 74.5 | Bandpass Enabled | No Noise removed | secondary')
+            # plt.title(' TC06 |' + ' SoH = 72 | Bandpass Enabled | No Noise removed | secondary')
 
         ''' -------   plot the avg for checking clean data    ---- '''
         # x_1 = np.arange(0, ped * row, ped)
-        # plt.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
-        # plt.title(' Me03 |' + ' SoH = 100 | Bandpass Enabled | No Noise removed | primary')
+        # plt.plot(x_1, avg, '-*', label='Cycle %s ' % str(cycle_id))
+        # # plt.title(' Me03 |' + ' SoH = 100 | Bandpass Enabled | No Noise removed | primary')
+        # plt.title(' Echo-D | Bandpass Enabled | No Noise removed | secondary')
         # plt.xlim((0, 0.00005))
         # plt.xlabel('time')
         # plt.ylabel('amplitude')
 
 
-        cycle_id += 1
+        # cycle_id += 1
 
     # avgTable_concat = avgTable_concat.mean( axis =1 )                         # avg all cycle
     avgTable_concat = avgTable_concat.T
@@ -435,47 +444,52 @@ def main ():
     #     with open(address + 'cycle' + str(cycle_id) + '-neg-secondary.csv') as outfile:
     #         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     #     outfile.close()
-    #
+    
     #     print (table.head().to_string())
     #     [row, column] = table.shape
-    #
+    
     #     # avg = np.mean(table['data'], axis=1)  # average 64 captures
     #     avg = echoes_dsp.apply_bandpass_filter(table['data'], 300000, 1200000,
     #                                            51)  # apply bandpass
-    #
+    
     #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
     #     plt.plot(x, avg, '-*', label='Board %s ' % str(cycle_id))
     #     # plt.title(' Me02 |' + ' Bandpass Enabled | No Noise removed')
-    #     plt.title('Tuna Can | Positive-bipolar | Gain 0.55 | Bandpass Enabled')
+    #     plt.title('Tuna Can | Negative-bipolar | Gain 0.55 | Bandpass Enabled')
     #     plt.xlim((0, 0.00005))
     #     plt.xlabel('time')
     #     plt.ylabel('amplitude')
     #     cycle_id += 1
-    #
+    
     # plt.legend()
     # plt.show()
 
     return
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
+
 input_channel = 'primary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
-address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-C/tuna-can/TC05-H745_190122/' + input_channel + '/'
+
+exclude_num = 0
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC28-H75.42_190128/' + input_channel + '/'
+
+
 echoes_index = []
 backgrd = []
 
 avgPos  = 0  # number of capture in each cycle
 avgNum  = 64
 cycle   = 300
-cycle_id = 1
+cycle_id = 0
 
 ME = 4
 ME_id = 1
 
 # with open(address + 'background.dat') as my_file:
 #     y_str = my_file.read()
-#     y_str = y_str.splitlines()
+#    y_str = y_str.splitlines()
 
 #     for num in y_str:
 #         backgrd.append(float(num))

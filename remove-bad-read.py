@@ -35,25 +35,38 @@ def display_list_of_file(key):
 
 def main():
 
-    for i in range(1, 300):
+    for i in range(1, 301):
 
-        Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-64-*')
+        ## Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-64-*')
 
-        # Call( 'mv ' + address + 'cycle' + str(i) +'-raw_trans-*' + ' ' + address + 'bad/')
-        # if primary_channel:
-        #     Call('rm ' + address + 'cycle' + str(i) + '-raw_echo-1-*')
-        # else:
-        #     Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-1-*')
-    # with open(address + 'bad-flat.txt', 'rb') as readout:
-    #     for cnt, line in enumerate( readout ):
-    #         # print (str(cnt))
-    #         # print (line)
-    #         line = line.rstrip()
-    #         cmd = 'rm ' + address + line #+ ' ' + address + 'primary/'
-    #         # print (cmd)
-    #         Call( cmd )
-    # readout.close()
+        ##Call( 'mv ' + address + 'cycle' + str(i) +'-raw_trans-*' + ' ' + address + 'bad/')
+        if primary_channel:
+            Call('rm ' + address + 'cycle' + str(i) + '-raw_echo-1-*')
+        else:
+            Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-1-*')
+    
+    with open(address + 'bad-flat.txt', 'rb') as readout:
+        for cnt, line in enumerate( readout ):
+            # print (str(cnt))
+            # print (line)
+            line = line.rstrip()
+            cmd = 'rm ' + address + line #+ ' ' + address + 'primary/'
+            # print (cmd)
+            Call( cmd )
+    readout.close()
 
+
+    # list_file = display_list_of_file('cycle')
+    # print (list_file)
+
+    # for idx, aFile in enumerate(list_file):
+    #     ele  = aFile.split('echoes')
+    #     Call('mv ' + address + aFile + ' ' + address + ele[0] + ele[1])
+
+    # for idx, item in enumerate(list_file):
+    #     if idx % 2 == 1:
+    #         print (item)
+    #         Call('mv ' + address + item + ' ' + address + 'remove/')
 
     return
 
@@ -61,11 +74,11 @@ def main():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel = 'secondary'
+input_channel = 'primary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
-address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/Echo-C/tuna-can/TC05-H745_190122/tempC/'# + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC28-H75.42_190128/' + input_channel + '/'
 # bad_data = []
 
 # adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]

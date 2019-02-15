@@ -74,11 +74,11 @@ def main():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel = 'primary'
+input_channel = 'secondary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC28-H75.42_190128/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC23-H722_190206/' + input_channel + '/'
 # bad_data = []
 
 # adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]

@@ -485,12 +485,12 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'TC29'
-SoH             = '72.75'
+battery_id      = 'TC23'
+SoH             = '72.2'
 transducer_id   = '067143' #'09807' #'067143'
-name            = battery_id + '-H' + SoH + '_190204'
+name            = battery_id + '-H' + SoH + '_190206'
 
-path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC29-H7275_190204/tempC/'
+path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC23-H722_190206/tempC/backup/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'

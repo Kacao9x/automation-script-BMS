@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
-import thLib as th
+# import thLib as th
 import pandas as pd
 from lib.echoes_signalprocessing import *
 
@@ -156,7 +156,7 @@ def main ():
     #         data = [float(num) for num in y_str]                                # convert string to float
     #         ''' DETECT a long streak in a sample '''
     #         if find_dup_run(data, primary_channel):
-    #             print ("streak : %s" % str( cycle_id + 1 ))
+    #             print ("cycle : %s" % str( cycle_id + 1 ))
     #             with open(address + 'bad-flat.txt', 'ab') as writeout:
     #                 writeout.writelines(filename + '\n')
     #             writeout.close()
@@ -291,11 +291,11 @@ def main ():
             ax4 = plt.subplot(221)
             ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
             ax4.set_title('Echo')
-            # plt.title(' TC06 |' + ' SoH = 72 | Bandpass Enabled | No Noise removed | secondary')
+            ## plt.title(' TC06 |' + ' SoH = 72 | Bandpass Enabled | No Noise removed | secondary')
 
         ''' -------   plot the avg for checking clean data    ---- '''
         # x_1 = np.arange(0, ped * row, ped)
-        # plt.plot(x_1, avg, '-*', label='Cycle %s ' % str(cycle_id))
+        # plt.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
         # # plt.title(' Me03 |' + ' SoH = 100 | Bandpass Enabled | No Noise removed | primary')
         # plt.title(' Echo-D | Bandpass Enabled | No Noise removed | secondary')
         # plt.xlim((0, 0.00005))
@@ -440,8 +440,9 @@ def main ():
     """
      (7) plot signals from different board
     """
+    # txt = 'Board 1-2-3-4 denotes for Echoes-A, B, C, D respectively'
     # while cycle_id < cycle + 1:
-    #     with open(address + 'cycle' + str(cycle_id) + '-neg-secondary.csv') as outfile:
+    #     with open(address + 'cycle' + str(cycle_id) + '.csv') as outfile:
     #         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     #     outfile.close()
     
@@ -453,9 +454,10 @@ def main ():
     #                                            51)  # apply bandpass
     
     #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-    #     plt.plot(x, avg, '-*', label='Board %s ' % str(cycle_id))
+    #     plt.plot(x, avg, marker='-*', label='Board %s ' % str(cycle_id))
     #     # plt.title(' Me02 |' + ' Bandpass Enabled | No Noise removed')
-    #     plt.title('Tuna Can | Negative-bipolar | Gain 0.55 | Bandpass Enabled')
+    #     plt.title('Tuna Can | Negative-bipolar | Gain 0.55 | External Oscillator')
+    #     plt.text(1, 1, txt)
     #     plt.xlim((0, 0.00005))
     #     plt.xlabel('time')
     #     plt.ylabel('amplitude')
@@ -468,12 +470,12 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel = 'primary'
+input_channel = 'secondary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
 exclude_num = 0
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC28-H75.42_190128/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC23-H722_190206/' + input_channel + '/'
 
 
 echoes_index = []
@@ -481,7 +483,7 @@ backgrd = []
 
 avgPos  = 0  # number of capture in each cycle
 avgNum  = 64
-cycle   = 300
+cycle   = 240
 cycle_id = 0
 
 ME = 4

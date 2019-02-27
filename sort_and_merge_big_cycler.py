@@ -7,7 +7,6 @@ import datetime as dt
 
 
 #==============================================================================#
-
 #Subprocess's call command with piped output and active shell
 def Call(cmd):
     return subprocess.call(cmd, stdout=subprocess.PIPE,
@@ -24,15 +23,17 @@ def PopenIter(cmd):
                             shell=True).stdout.readline
 
 #==============================================================================#
-def _convert_to_time_object(str_obj):
-    return dt.datetime.strptime(str_obj, '%Y-%m-%d %H:%M:%S')
+def _convert_to_time_object(str_obj, Neware_fix=False):
 
-def _convert_to_time_object_fix(str_obj):
-    return dt.datetime.strptime(str_obj, '%m/%d/%Y %H:%M:%S')
+    if Neware_fix:
+        return dt.datetime.strptime(str_obj, '%m/%d/%Y %H:%M:%S')
+    else:
+        return dt.datetime.strptime(str_obj, '%Y-%m-%d %H:%M:%S')
+
 
 def _validate_strptime_format( date_text ):
     try:
-        if date_text != _convert_to_time_object( date_text ).strfttime('%m/%d/%Y %H:%M:%S'):
+        if date_text != _convert_to_time_object( date_text, False ).strfttime('%m/%d/%Y %H:%M:%S'):
             raise ValueError
         return True
     except ValueError:
@@ -131,8 +132,6 @@ def merge_column(table):
     # for i in range(0, int(ind[1])):
     #     table.iat[i, cap_mAh] = 38 + table.iat[i, cap_mAh]
 
-    # for i in range(int(ind[3]), int(ind[4])):
-    #     table.iat[i, cap_mAh] = 31.0163 - table.iat[i, cap_mAh]
 
     for i in range(len(ind) -1 ):
 
@@ -201,19 +200,19 @@ def merge_column(table):
 
 
 def _read_time(table):
-    # time_begin = int(table.index[ table['id'].str.contains(1) ].tolist())
     start_time = table['Date/Time'][_start_row]
     return start_time
 
 
 # calculate the time difference in seconds. Return int
 def calculate_time(begin, end, unit):
-    end_dt      = _convert_to_time_object(end)
+    end_dt      = _convert_to_time_object(end, False)
 
     if unit == 'sec':
-        start_dt = _convert_to_time_object_fix(begin)
+        # start_dt = _convert_to_time_object_fix(begin)
+        start_dt = _convert_to_time_object(begin, True)
     elif unit == 'min':
-        start_dt = _convert_to_time_object(begin)
+        start_dt = _convert_to_time_object(begin, False)
 
 
     sec = 0
@@ -366,13 +365,20 @@ def _filter_data_by_timeInterval(table, sec):
     return tb
 
 
-def clean_test_data(fix = bool):
+def clean_test_data(Neware_report = True, fix = False):
+    ''' select data in 5s interval.
+    Fix=True if the general report captured data every 0.1s '''
 
     with open(path + name + '.txt', 'r') as my_file:
-        lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
-                            error_bad_lines=False, engine='python')
+        if Neware_report:
+            lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
+                                error_bad_lines=False, engine='python')
+        else:    
+            lines = pd.read_csv(my_file, header=3, sep=r'\t',
+                                error_bad_lines=False, engine='python')
         my_file.close()
 
+    print (lines.head())
     cycler_data = lines.iloc[:, 0:10]
     # cycler_data = lines.iloc[::50, 0:10]
     print (cycler_data.shape)
@@ -422,8 +428,7 @@ def main():
 
     ''' select data in 5s interval.
     Fix=True if the general report captured data every 0.1s '''
-    table = clean_test_data(fix = False)
-    # return
+    table = clean_test_data(Neware_report = True, fix = False)
 
 
     with open(cycler_path) as outfile:
@@ -485,12 +490,13 @@ def main():
 
 
 keyword         = 'cycle'
-battery_id      = 'TC23'
-SoH             = '72.2'
-transducer_id   = '067143' #'09807' #'067143'
-name            = battery_id + '-H' + SoH + '_190206'
+battery_id      = input('Input Battery ID: \n')
+SoH             = input('Input SoH value: \n')
+date            = input('Testing date: \n')
+transducer_id   = '067143' #'09807'
+name            = battery_id + '-H' + str(SoH) + '_' + str(date)
 
-path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC23-H722_190206/tempC/backup/'
+path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC31-H75_190211-echo-C/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'

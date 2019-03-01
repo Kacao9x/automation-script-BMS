@@ -242,7 +242,9 @@ def main ():
 
         if not list_file:
             continue
-            # oneRead = np.zeros(64)
+            
+
+
         [row, column] = oneRead.shape
         print ("row %s col %s" % (str(row), str(column)))
 
@@ -254,60 +256,58 @@ def main ():
         avgTable = pd.DataFrame({col_header : avg})
         avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
 
-        x_1 = np.arange(0, ped * row, ped)
-        ax1 = plt.subplot(212)
-        ax1.margins(0.05)
-        ax1.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
-        plt.xlim((0, 0.00004))
-        plt.xlabel('time')
-        plt.ylabel('amplitude')
-
-        if primary_channel:
-            x_2 = np.arange(79 * ped, 108 * ped, ped)                           # for gel
-            avg_2 = avg[79: 108]
-            # x_2 = np.arange(111 * ped, 136 * ped, ped)                        # for tape
-            # avg_2 = avg[111: 136]
-            
-            ax2 = plt.subplot(221)
-            ax2.margins()
-            ax2.plot(x_2, avg_2)
-            ax2.set_title('Echo 1')
-            
-
-            x_3 = np.arange(122*ped, 151*ped, ped)                              # for gel
-            avg_3 = avg[122 : 151]
-            # x_3 = np.arange(215 * ped, 251 * ped, ped)                        # for tape
-            # avg_3 = avg[215: 252]
-            
-            ax3 = plt.subplot(222)
-            # ax3.margins(x=0, y=-0.25)  # Values in (-0.5, 0.0) zooms in to center
-            ax3.plot(x_3, avg_3)
-            ax3.set_title('Echo 2')
-
-        else:
-
-            x_4 = np.arange(144*ped, 187*ped, ped)
-            avg_4 = avg[144 : 188]
-            ax4 = plt.subplot(221)
-            ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
-            ax4.set_title('Echo')
-            ## plt.title(' TC06 |' + ' SoH = 72 | Bandpass Enabled | No Noise removed | secondary')
-
-        ''' -------   plot the avg for checking clean data    ---- '''
         # x_1 = np.arange(0, ped * row, ped)
-        # plt.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
-        # # plt.title(' Me03 |' + ' SoH = 100 | Bandpass Enabled | No Noise removed | primary')
-        # plt.title(' Echo-D | Bandpass Enabled | No Noise removed | secondary')
-        # plt.xlim((0, 0.00005))
+        # ax1 = plt.subplot(212)
+        # ax1.margins(0.05)
+        # ax1.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
+        # plt.xlim((0, 0.00004))
         # plt.xlabel('time')
         # plt.ylabel('amplitude')
 
+        # if primary_channel:
+        #     x_2 = np.arange(79 * ped, 108 * ped, ped)                           # for gel
+        #     avg_2 = avg[79: 108]
+        #     # x_2 = np.arange(111 * ped, 136 * ped, ped)                        # for tape
+        #     # avg_2 = avg[111: 136]
+            
+        #     ax2 = plt.subplot(221)
+        #     ax2.margins()
+        #     ax2.plot(x_2, avg_2)
+        #     ax2.set_title('Echo 1')
+            
 
-        # cycle_id += 1
+        #     x_3 = np.arange(122*ped, 151*ped, ped)                              # for gel
+        #     avg_3 = avg[122 : 151]
+        #     # x_3 = np.arange(215 * ped, 251 * ped, ped)                        # for tape
+        #     # avg_3 = avg[215: 252]
+            
+        #     ax3 = plt.subplot(222)
+        #     # ax3.margins(x=0, y=-0.25)  # Values in (-0.5, 0.0) zooms in to center
+        #     ax3.plot(x_3, avg_3)
+        #     ax3.set_title('Echo 2')
 
-    # avgTable_concat = avgTable_concat.mean( axis =1 )                         # avg all cycle
-    avgTable_concat = avgTable_concat.T
-    avgTable_concat.to_csv(address + input_channel + '-avg.csv')
+        # else:
+
+        #     x_4 = np.arange(144*ped, 187*ped, ped)
+        #     avg_4 = avg[144 : 188]
+        #     ax4 = plt.subplot(221)
+        #     ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
+        #     ax4.set_title('Echo')
+        #     ## plt.title(' TC06 |' + ' SoH = 72 | Bandpass Enabled | No Noise removed | secondary')
+
+        ''' -------   plot the avg for checking clean data    ---- '''
+        x_1 = np.arange(0, ped * row, ped)
+        plt.plot(x_1, avg, label='ME 0%s ' % str(cycle_id))
+        plt.title(' new ME 50Ah cell  |' + ' Bandpass Enabled ')
+        # plt.title(' 16500 |Echo-A | Bandpass Enabled | Gain 0.65')
+        plt.xlim((0, 0.00005))
+        plt.xlabel('time (sec)')
+        plt.ylabel('amplitude')
+
+
+    ## avgTable_concat = avgTable_concat.mean( axis =1 )                         # avg all cycle
+    # avgTable_concat = avgTable_concat.T
+    # avgTable_concat.to_csv(address + input_channel + '-avg.csv')
 
 
     plt.legend()
@@ -470,12 +470,12 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel = 'secondary'
+input_channel = 'primary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
-exclude_num = 0
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC23-H722_190206/' + input_channel + '/'
+# exclude_num = 0
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/' #+ input_channel + '/'
 
 
 echoes_index = []
@@ -483,7 +483,7 @@ backgrd = []
 
 avgPos  = 0  # number of capture in each cycle
 avgNum  = 64
-cycle   = 240
+cycle   = 2
 cycle_id = 0
 
 ME = 4

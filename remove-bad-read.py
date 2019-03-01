@@ -35,15 +35,15 @@ def display_list_of_file(key):
 
 def main():
 
-    for i in range(1, 301):
+    # for i in range(1, 301):
 
-        ## Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-64-*')
+    #     ## Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-64-*')
 
-        ##Call( 'mv ' + address + 'cycle' + str(i) +'-raw_trans-*' + ' ' + address + 'bad/')
-        if primary_channel:
-            Call('rm ' + address + 'cycle' + str(i) + '-raw_echo-1-*')
-        else:
-            Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-1-*')
+    #     ##Call( 'mv ' + address + 'cycle' + str(i) +'-raw_trans-*' + ' ' + address + 'bad/')
+    #     if primary_channel:
+    #         Call('rm ' + address + 'cycle' + str(i) + '-raw_echo-1-*')
+    #     else:
+    #         Call('rm ' + address + 'cycle' + str(i) + '-raw_trans-1-*')
     
     with open(address + 'bad-flat.txt', 'rb') as readout:
         for cnt, line in enumerate( readout ):
@@ -74,27 +74,11 @@ def main():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel = 'secondary'
+input_channel = 'primary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC23-H722_190206/' + input_channel + '/'
-# bad_data = []
-
-# adc_captures_float = [[4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0], [4,4,4,4,0,0,0,0]]
-# backgrd = [2,2,2,2]
-
-# for adc_capture in adc_captures_float:
-#     noise_removal = True
-#     if noise_removal:
-#         print("Removing noise background")
-#         adc_capture = [a_i - b_i for a_i, b_i in zip(adc_capture, backgrd)]
-
-# adc_captures_readout = np.mean( adc_captures_float, axis = 0)
-# print (adc_captures_readout)
-# # adc_captures_readout = [a_i - b_i for a_i, b_i in zip(adc_captures_readout, backgrd)]
-# adc_captures_readout = np.subtract( adc_captures_readout, backgrd )
-# print (adc_captures_readout)
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/cylinder-cell/' + input_channel + '/'
 
 if __name__ == '__main__':
     main()

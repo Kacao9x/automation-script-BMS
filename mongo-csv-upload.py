@@ -185,10 +185,13 @@ def post_raw_data():
         # }
 
         bucket['battery_id']    = battery_id
-        bucket['transducer_id'] = 67143
-        bucket['echoes_id']     = 'echoes-a'
+        bucket['transducer_id'] = {
+            'primary'       : 67143,
+            'secondary'     : 0
+        }
 
-        # bucket['project_name']  = project
+        bucket['echoes_id']     = 'echoes-a'
+        bucket['project_name']  = project
         bucket['test_examiner'] = examiner
 
         bucket['test_setting']  = {
@@ -201,10 +204,6 @@ def post_raw_data():
         }
 
         bucket['SoH']           = float(table['SoH'][cycle_id - 1])
-        row = cycle_id - 1                                                  # row in PANDAS table start from 0
-        print ('row %s' % str(row))
-        data = list(table.iloc[row, -512 : -1].values) 
-
         bucket['temperature']  = {
             'top'   : float(table['Temperature_top'][cycle_id -1]),
             'bottom': float(table['Temperature_bottom'][cycle_id -1])
@@ -216,8 +215,16 @@ def post_raw_data():
             'charging'      : int(table['charging'][cycle_id -1])
         }
 
+
+        row = cycle_id - 1                                                  # row in PANDAS table start from 0
+        print ('row %s' % str(row))
+        data = list(table.iloc[row, -512 : -1].values) 
+
+        
+
         bucket['average_data'] = data
-        bucket['capture_number'] = cycle_id
+        bucket['capture_number'] = int(table['cycle_id'][cycle_id -1])
+        bucket['capture_num_']  = cycle_id
         bucket['raw_data'] = []
 
 
@@ -269,14 +276,14 @@ def post_raw_data():
 #==============================================================================#
 
 # battery_id      = 'TC02-H75'
-battery_id      = 'TC16'    #input('Input Battery ID: \n')
-SoH             = '73'   #input('Input SoH value: \n')
-date            = '181219'  #input('Testing date: \n')
+battery_id      = 'TC17'    #input('Input Battery ID: \n')
+SoH             = '79.5'   #input('Input SoH value: \n')
+date            = '181220'  #input('Testing date: \n')
     
 input_channel   = 'secondary'
 cabinet         = 'tuna-sample'
 examiner        = 'Khoi'
-# project         = 'TUNA016-Phase1-Build_ML_Model'
+project         = 'Phase1-Build_SoH_Model'
 
 
 print("Initializing database")
@@ -284,9 +291,9 @@ echoes_db       = database(database='echoes-captures')
 echoes_db.mongo_db = cabinet
 
 
-filename = battery_id + '-H' + str(SoH) + '_181219_' + input_channel + '-sorted.csv'
+filename = battery_id + '-H' + str(SoH) + '_181220_' + input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC16-H73_181219/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC17-H79.5_181220/' + input_channel + '/'
 
 
 if __name__ == '__main__':
@@ -298,8 +305,8 @@ if __name__ == '__main__':
     #                         unique=False, collection=cabinet)
     # echoes_db.createIndex( [( 'test_results.SoH', pymongo.ASCENDING )],
     #                         unique=False, collection=cabinet)
-    echoes_db.createIndex( [( 'timestamp', pymongo.ASCENDING )],
-                            unique=True, collection=cabinet)
+    # echoes_db.createIndex( [( 'timestamp', pymongo.ASCENDING )],
+    #                         unique=True, collection=cabinet)
 
 
     res = echoes_db.search(query={'battery_id': battery_id,
@@ -308,7 +315,7 @@ if __name__ == '__main__':
                            collection=cabinet)
 
     res_2 = echoes_db.find_one(query={'battery_id': battery_id,
-                                      'capture_number': 74,
+                                      'capture_number': 150,
                                       'test_setting.input_channel': input_channel},
                                collection=cabinet)
 
@@ -318,7 +325,9 @@ if __name__ == '__main__':
     # res_4 = echoes_db.search(query={'timestamp': {'$gte':start,'$lt': end}}, collection=cabinet).sort({'timestamp': -1})
     # res_5 = echoes_db.search(query={"battery_results.runraw_data.3": {'$gte':0.75, "$lt": 1.02}}, collection=cabinet)
 
-    # pprint(res_2['battery_raw_data']['3'])
+    # pprint(res_2)
+    pprint(res_2['capture_num_'])
+    pprint(res_2['capture_number'])
     # pprint(res_5)
     # for post in res_5:
     #     pprint(post['capture_number'])

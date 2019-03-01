@@ -111,13 +111,13 @@ def post_csv_report():
 
     print (len(table.index))
 
-    cycle = 71  #len(table.index)
-    cycle_id = 71
+    cycle = len(table.index)
+    cycle_id = 70
 
     while cycle_id < cycle + 1:
 
-        if cycle_id == 127:
-            cycle_id = 128
+        # if cycle_id == 127:
+        #     cycle_id = 128
         row = cycle_id - 1                                                      # row in PANDAS table start from 0
         print ('row %s' % str(row))
 
@@ -140,6 +140,7 @@ def post_csv_report():
                 'current'       : float(table['current'][cycle_id -1]),
                 'volt'          : float(table['volt'][cycle_id -1]),
                 'charging'      : int(table['charging'][cycle_id -1]),
+                'SoH'           : float(table['SoH'][cycle_id - 1]),
                 'average'       : data
             })
             echoes_db.update(post, {'_id': post['_id']},
@@ -163,27 +164,31 @@ def post_raw_data():
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 
-    cycle = 71
-    cycle_id = 71
+    cycle = 268
+    cycle_id = 72
 
     while cycle_id < cycle + 1:
         bucket = {}
 
-        if cycle_id == 127:
-            cycle_id = 128
+        # if cycle_id == 127:
+        #     cycle_id = 128
 
         timest = _get_timestamp(table['FileName'][cycle_id - 1])
         bucket['timestamp'] = datetime.datetime(timest['year'], timest['month'],
                                                 timest['day'], timest['hour'],
                                                 timest['min'], timest['sec'])
 
-        bucket['test_apparatus'] = {
-            'battery_id'    : battery_id,
-            'transducer_id' : 67143,
-            'echoes_id'     : 'echoes-a'
-        }
+        # bucket['test_apparatus'] = {
+        #     'battery_id'    : battery_id,
+        #     'transducer_id' : 67143,
+        #     'echoes_id'     : 'echoes-a'
+        # }
 
-        bucket['project_name']  = project
+        bucket['battery_id']    = battery_id
+        bucket['transducer_id'] = 67143
+        bucket['echoes_id']     = 'echoes-a'
+
+        # bucket['project_name']  = project
         bucket['test_examiner'] = examiner
 
         bucket['test_setting']  = {
@@ -195,10 +200,26 @@ def post_raw_data():
             'input_channel' : input_channel
         }
 
-        bucket['test_results']  = {
-            'capture_number': cycle_id,
-            'raw_data'      : []
+        bucket['SoH']           = float(table['SoH'][cycle_id - 1])
+        row = cycle_id - 1                                                  # row in PANDAS table start from 0
+        print ('row %s' % str(row))
+        data = list(table.iloc[row, -512 : -1].values) 
+
+        bucket['temperature']  = {
+            'top'   : float(table['Temperature_top'][cycle_id -1]),
+            'bottom': float(table['Temperature_bottom'][cycle_id -1])
         }
+        bucket['battery_details']  = {
+            'cap(mAh)'      : float(table['cap(mAh)'][cycle_id -1]),
+            'current'       : float(table['current'][cycle_id -1]),
+            'volt'          : float(table['volt'][cycle_id -1]),
+            'charging'      : int(table['charging'][cycle_id -1])
+        }
+
+        bucket['average_data'] = data
+        bucket['capture_number'] = cycle_id
+        bucket['raw_data'] = []
+
 
         oneRead, list_file = concat_all_data(tempC=False, search_key='cycle' +
                                             str(cycle_id) + '-')
@@ -210,10 +231,17 @@ def post_raw_data():
         while avgPos < column + 1:
             value = list(oneRead.loc[:, avgPos - 1].values)
             # print (value)
-
-            bucket['test_results']['raw_data'].append(
-                {'run': avgPos, 'result': value}
+            
+            
+            bucket['raw_data'].append(
+                value
+                # {'run': avgPos, 'value': value}
             )
+            
+
+            # data_pack = {}
+            # data_pack.update ({str(avgPos) : value})
+            # bucket['test_results']['raw_data'].update(data_pack)
             avgPos += 1  # go to next column
 
 
@@ -240,20 +268,25 @@ def post_raw_data():
 
 #==============================================================================#
 
-battery_id      = 'TC02-H75'
+# battery_id      = 'TC02-H75'
+battery_id      = 'TC16'    #input('Input Battery ID: \n')
+SoH             = '73'   #input('Input SoH value: \n')
+date            = '181219'  #input('Testing date: \n')
+    
 input_channel   = 'secondary'
-cabinet         = 'tuna-can'
+cabinet         = 'tuna-sample'
 examiner        = 'Khoi'
-project         = 'TUNA016-Phase1-Build_ML_Model'
+# project         = 'TUNA016-Phase1-Build_ML_Model'
+
 
 print("Initializing database")
 echoes_db       = database(database='echoes-captures')
 echoes_db.mongo_db = cabinet
 
 
-filename = battery_id + '_181219_' + input_channel + '-sorted.csv'
+filename = battery_id + '-H' + str(SoH) + '_181219_' + input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao-titan/Ultra-Fit/titan-echo-boards/echo-A/TC16-H73_181219/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC16-H73_181219/' + input_channel + '/'
 
 
 if __name__ == '__main__':
@@ -262,36 +295,48 @@ if __name__ == '__main__':
     # post_csv_report()
 
     # echoes_db.createIndex( [( 'test_apparatus.battery_id', pymongo.ASCENDING )],
-    #                         unique=True, collection=cabinet)
-
-    # res = echoes_db.search(query={'test_apparatus.battery_id': battery_id,
-    #                               'test_results.capture_number': 71,
-    #                               'test_setting.input_channel': input_channel},
-    #                        collection=cabinet)
-
-    # res_2 = echoes_db.find_one(query={'test_apparatus.battery_id': battery_id,
-    #                                   'test_results.capture_number': 71,
-    #                                   'test_setting.input_channel': input_channel},
-    #                            collection=cabinet)
+    #                         unique=False, collection=cabinet)
+    # echoes_db.createIndex( [( 'test_results.SoH', pymongo.ASCENDING )],
+    #                         unique=False, collection=cabinet)
+    echoes_db.createIndex( [( 'timestamp', pymongo.ASCENDING )],
+                            unique=True, collection=cabinet)
 
 
+    res = echoes_db.search(query={'battery_id': battery_id,
+                                  'capture_number': 74,
+                                  'test_setting.input_channel': input_channel},
+                           collection=cabinet)
 
-
-    # pprint(res_2['test_results']['raw_data'][0]['result'])
-
-    # echoes_db.delete( query={'test_apparatus.battery_id': battery_id},
-    #                            collection=cabinet)
-
-    for num in range(0, 200):
-        echoes_db.delete( query={'test_apparatus.battery_id': battery_id,
-                                      'test_results.capture_number': num},
+    res_2 = echoes_db.find_one(query={'battery_id': battery_id,
+                                      'capture_number': 74,
+                                      'test_setting.input_channel': input_channel},
                                collection=cabinet)
 
+    start   = datetime.datetime(2018,12,19,21,24,10)
+    end     = datetime.datetime(2018,12,19,21,55,59)
+    res_3 = echoes_db.search(query={"capture_number": {'$gte':73, "$lt": 80}}, collection=cabinet)
+    # res_4 = echoes_db.search(query={'timestamp': {'$gte':start,'$lt': end}}, collection=cabinet).sort({'timestamp': -1})
+    # res_5 = echoes_db.search(query={"battery_results.runraw_data.3": {'$gte':0.75, "$lt": 1.02}}, collection=cabinet)
 
+    # pprint(res_2['battery_raw_data']['3'])
+    # pprint(res_5)
+    # for post in res_5:
+    #     pprint(post['capture_number'])
     # pprint(res_2)
     # pprint(res)
     # for post in res:
     #     pprint(post)
+
+
+    # echoes_db.delete( query={'test_apparatus.battery_id': battery_id},
+    #                            collection=cabinet)
+
+    # for num in range(0, 200):
+    #     echoes_db.delete( query={'test_apparatus.battery_id': battery_id,
+    #                                   'test_results.capture_number': num},
+    #                            collection=cabinet)
+
+
 
     # echoes_db.delete(query={'test_apparatus.battery_id': battery_id,
     #                               'test_results.capture_number': 46,

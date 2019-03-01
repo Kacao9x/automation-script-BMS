@@ -17,6 +17,7 @@ See Github repo for documentation
 
 import numpy as np
 import argparse, socket
+
 from lib.echoes_protocol import *
 from lib.echoes_spi import *
 from lib.echoes_temp_sensor import *
@@ -28,11 +29,13 @@ from lib.echoes_database import *
 #                                MAIN ACTIVITY                                 #
 # =============================================================================#
 def main():
-    global __INPUT__
+    global __INPUT__, battery_id
     create_data_folder()
     fresh_or_resume()
     save_logs()
     system_config()
+
+    battery_id = input('Input Battery ID: \n')
 
     for cycleID in range(startCycle, __REPEAT__):
         try:
@@ -130,23 +133,18 @@ def _write_test_logs(offset=float):
 
     try:
         with open(name, 'ab') as writeout:
-            # writeout.writelines('Battery on test: ' + __TEST__ + '\n')
-            writeout.writelines('VGA gain: ' + __GAIN__ + '\n')
-            writeout.writelines(
-                'sampling rate: ' + str(__SAMPLING__) + '\n')
-            writeout.writelines(
-                'volt transducer: ' + str(__VOLTAGE__) + '\n')
-            writeout.writelines(
-                'input channel: ' + str(__INPUT__) + '\n')
-            writeout.writelines('impulse type: ' + str(__TYPE__) + '\n')
-            writeout.writelines(
-                'impulse half period: ' + str(__HALF__) + '\n')
-            writeout.writelines('conver sequence: ' + str(__numSEQ__) + '\n')
-            writeout.writelines('ADC config: ' + str(__ADCconfig__) + '\n')
-            writeout.writelines('num of Repeat: ' + str(__REPEAT__) + '\n')
-            writeout.writelines('%s minutes delay' % str(__MINUTE__) + '\n')
-            writeout.writelines('DC offset %s: ' % str(offset) + '\n')
-            writeout.writelines('\n')
+
+            writeout.writelines('the VGA gain is: ' + __GAIN__ + '\n')
+            writeout.writelines('the sampling rate is: ' + str(__SAMPLING__) + '\n')
+            writeout.writelines('The volt transducer is ' + str(__VOLTAGE__) + '\n')
+            writeout.writelines('The input channel to collect data ' + str(__INPUT__) + '\n')
+            writeout.writelines('The impulse type ' + str(__TYPE__) + '\n')
+            writeout.writelines('The impulse half period?  ' + str(__HALF__) + '\n')
+            writeout.writelines('Set conver sequence ' + str(__numSEQ__) + '\n')
+            writeout.writelines('Set ADC config ' + str(__ADCconfig__) + '\n')
+            writeout.writelines('number of Repeat ' + str(__REPEAT__) + '\n')
+            writeout.writelines('%s minutes to delay ' % str(__MINUTE__) + '\n')
+            writeout.writelines('DC offset %s' % str(offset) + '\n')
 
     except:
         sys.exit("error to writing to job file")
@@ -161,37 +159,37 @@ def _write_test_logs(offset=float):
 def _voltage_init():
     print str(__VOLTAGE__)
     if __VOLTAGE__ == 85:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_85v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_85v.value)
     elif __VOLTAGE__ == 80:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_80v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_80v.value)
     elif __VOLTAGE__ == 75:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_75v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_75v.value)
     elif __VOLTAGE__ == 70:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_70v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_70v.value)
     elif __VOLTAGE__ == 65:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_65v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_65v.value)
     elif __VOLTAGE__ == 60:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_60v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_60v.value)
     elif __VOLTAGE__ == 55:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_55v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_55v.value)
     elif __VOLTAGE__ == 50:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_50v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_50v.value)
     elif __VOLTAGE__ == 45:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_45v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_45v.value)
     elif __VOLTAGE__ == 40:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_40v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_40v.value)
     elif __VOLTAGE__ == 35:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_35v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_35v.value)
     elif __VOLTAGE__ == 30:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_30v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_30v.value)
     elif __VOLTAGE__ == 25:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_25v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_25v.value)
     elif __VOLTAGE__ == 20:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_20v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_20v.value)
     elif __VOLTAGE__ == 15:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_15v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_15v.value)
     elif __VOLTAGE__ == 10:
-        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_10v)
+        return echoes_1.set_impulse_type(Impulse_Voltage.impulse_10v.value)
     else:
         return False
 
@@ -201,19 +199,20 @@ def _impulse_type_init():
     if __TYPE__ == 1:
         print ("unipolar: ")
         impulse_type = 'pos-unipolar'
-        return echoes_1.set_impulse_type(Impulse_Type.half)
+        return echoes_1.set_impulse_type(Impulse_Type.half.value)
     elif __TYPE__ == 2:
         print ("bipolar: ")
         impulse_type = 'pos-bipolar'
-        return echoes_1.set_impulse_type(Impulse_Type.full)
+        return echoes_1.set_impulse_type(Impulse_Type.full.value)
     elif __TYPE__ == -1:
         print ("unipolar-negative: ")
         impulse_type = 'neg-unipolar'
-        return echoes_1.set_impulse_type(Impulse_Type.half_negative)
+        return echoes_1.set_impulse_type(Impulse_Type.half_negative.value)
     elif __TYPE__ == -2:
         print ("bipolar-negative: ")
         impulse_type = 'neg-bipolar'
-        return echoes_1.set_impulse_type(Impulse_Type.full_negative)
+        return echoes_1.set_impulse_type(Impulse_Type.full_negative.value)
+
     return False
 
 
@@ -239,11 +238,11 @@ def _input_capture_init():
     if __INPUT__ == 1:
         input_channel = 'primary'
         print (input_channel + ' ')
-        return echoes_1.set_capture_adc(Capture_Adc.adc_primary)
+        return echoes_1.set_capture_adc(Capture_Adc.adc_primary.value)
     elif __INPUT__ == 2:
         input_channel = 'secondary'
         print (input_channel + ' ')
-        return echoes_1.set_capture_adc(Capture_Adc.adc_secondary)
+        return echoes_1.set_capture_adc(Capture_Adc.adc_secondary.value)
     else:
         return False
 
@@ -251,15 +250,15 @@ def _input_capture_init():
 def _sequence_init():
     print str(__numSEQ__)
     if __numSEQ__ == 1:
-        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_1)
+        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_1.value)
     elif __numSEQ__ == 2:
-        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_2)
+        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_2.value)
     elif __numSEQ__ == 4:
-        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_4)
+        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_4.value)
     elif __numSEQ__ == 8:
-        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_8)
+        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_8.value)
     elif __numSEQ__ == 16:
-        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_16)
+        return echoes_1.setConvertsPerSequence(Sequence_Count.sequence_16.value)
     else:
         return False
 
@@ -267,13 +266,13 @@ def _sequence_init():
 def _ADC_sampling_init():
     if __ADCconfig__ == 0:
         print ("12bit_7_2msps")
-        result = echoes_1.ADC_Config(ADC_Config.fs_12bit_7_2msps)
+        result = echoes_1.ADC_Config(ADC_Config.fs_12bit_7_2msps.value)
+
         if result:
             echoes_dsp.setFs(7200000.0)
             print("  Success!")
         else:
             print ('error updating sampling rate')
-
     else:
         print ("Failed setting samping rate")
 
@@ -297,16 +296,19 @@ def system_config():
     print ("\n(2) Set impulse type: %s" % str(_impulse_type_init()))
     time.sleep(2)
 
+
     # 3. Half period width of pulse
     # Need to fix
     # print ("\n(3) Half period width of pulse: ")
     # print _half_pw_pulse_init()
     # time.sleep(2)
 
+
     # 4. number of period impulse
     print ("\n(4) Number of period impulse: " + str(__PERIOD__))
     print (str(_period_impulse_init()))
     time.sleep(2)
+
 
     # 5. select input capture channel:primary or secondary
     print ("\n(5) select input capture: ")
@@ -325,6 +327,7 @@ def system_config():
     # print (str(_sequence_init()))
     # time.sleep(2)
 
+
     # 8. Set VGA gain
     print ("\n(8) set VGA gain: ")
     print (str(_VGA_gain_init()))
@@ -333,9 +336,9 @@ def system_config():
     # 9 delay btw capture
     print ("\n(9) set delay ms: ")
     if _set_delay_capture():
-        print "Successfully delay_us"
+        print "Successfully delay_us\n"
     else:
-        print "Failed delay_us"
+        print "Failed delay_us\n"
 
 
 def save_logs():
@@ -379,8 +382,11 @@ def _save_capture_to_file(cycleID=int, data_arr=[], tempC=[]):
         filehandle.close()
 
     ''' Saving temperature readout '''
-    if tempC:
-        fn = "tempC/" + st + "-" + __HOST__ + ".dat"
+    if tempC and __INPUT__ == 1:
+        fn = "tempC/" + 'cycle' + str(cycleID + 1) + "-" + \
+            'temp-'+ datetime.datetime.fromtimestamp(ts).strftime(
+                '%Y-%m-%d-%H-%M-%S') + '-' + __HOST__ + ".dat"
+        
         with open(fn, "w") as filehandle:
             filehandle.write('TempC_1_and_2: %s  %s oC' % (str(tempC[0]),
                                                            str(tempC[1])))
@@ -396,12 +402,14 @@ def _save_capture_to_Mongodb(cycleID=int, data_arr=[], tempC=[]):
     bucket['project_name']  = project
     bucket['timestamp']     = datetime.datetime.utcnow()
 
-    bucket['test_apparatus'] = {
-        'battery_id'    : battery_id,
-        'transducer_id' : 67143,
-        'echoes_id'     : __HOST__
-    }
 
+    bucket['battery_id']    = battery_id
+    bucket['transducer_id'] ={
+        'primary'       : trans_primary,
+        'secondary'     : trans_secondary
+    }
+    bucket['echoes_id']     = __HOST__
+    
     bucket['test_setting'] = {
         'impulse_volt'  : __VOLTAGE__,
         'vga_gain'      : float(__GAIN__),
@@ -411,23 +419,24 @@ def _save_capture_to_Mongodb(cycleID=int, data_arr=[], tempC=[]):
         'input_channel' : input_channel
     }
 
-    bucket['test_results'] = {
-        'capture_number': cycleID + 1,
-        'raw_data'      : [],
-        'temperature'   : {
-            'top'   : tempC[0],
-            'bottom': tempC[1]
-        }
+    bucket['temperature']  = {
+        'top'   : tempC[0],
+        'bottom': tempC[1]
     }
 
-    for runID, output in enumerate(data_arr):
-        if runID == 0:
-            continue
+    bucket['battery_details']  = {
+        'cap(mAh)'      : 0,
+        'current'       : 0,
+        'volt'          : 0,
+        'charging'      : 0
+    }
 
-        bucket['test_results']['raw_data'].append({
-            'run': runID + 1,
-            'result': output
-        })
+    bucket['capture_number']    = cycleID
+    bucket['raw_data']          = []
+    bucket['average_data']      = []
+
+    for runID, output in enumerate(data_arr):
+        bucket['raw_data'].append(output)
 
     echoes_db.insert_capture(record=bucket, collection=cabinet)
     print ("Successfully insert raw data")
@@ -441,6 +450,31 @@ def capture_raw_output():
     # adc_captures_float = echoes_1.remove_bad_reads(adc_captures_float)        # doesnt work for secondary trans
 
     return adc_captures_float
+
+
+
+def find_dup_run( x ):
+    global __INPUT__
+    max_value = max( x )
+    min_value = min( x )
+
+    if __INPUT__ == 1:
+        return max_value - min_value < 0.4
+    else:
+        return ( max_value - min_value < 0.015 or
+                max_value - min_value > 0.5 )
+
+
+def _check_clean_signal(data_arr=[]):
+    bad_idx = []
+    for idx, output in enumerate(data_arr):
+        if find_dup_run(output):
+            bad_idx.append( idx )
+
+    for ix in bad_idx:
+        del data_arr[ ix ]
+
+    return data_arr
 
 
 def capture_and_average_output(adc_captures_float):
@@ -459,6 +493,7 @@ def capture_and_average_output(adc_captures_float):
         time.sleep(10)
         system_config()
 
+
         echoes_1.measure_dc_offset()
         # offSet = echoes_1.dc_offset
 
@@ -474,7 +509,8 @@ def capture_and_average_output(adc_captures_float):
     print ('good echo: count %s  std_value: %s'
            % (str(count), str(std_value)))
 
-    return adc_captures_float
+    adc_captures_clean = _check_clean_signal(adc_captures_float)
+    return adc_captures_clean
 
 
 def count_good_value(x):
@@ -490,6 +526,7 @@ def find_data_std(x):
     x_arr = np.array(x)
     x_arr = np.absolute(x_arr)
     return np.std(x_arr[50:-1], ddof=1)
+
 
 
 def capture_signal(cycleID=int):
@@ -594,29 +631,31 @@ def ParseHelpers():
 # ==============================================================================#
 
 ParseHelpers()
-__TEST__ = args.test
-__DELAY__ = args.delay_us
-__GAIN__ = args.gain
-__SAMPLING__ = args.rate
+__TEST__    = args.test
+__DELAY__   = args.delay_us
+__GAIN__    = args.gain
+__SAMPLING__= args.rate
 __VOLTAGE__ = args.voltage
-__INPUT__ = args.input
-__TYPE__ = args.type[0]
-__PERIOD__ = args.period
-__HALF__ = args.half
+__INPUT__   = args.input
+__TYPE__    = args.type[0]
+__PERIOD__  = args.period
+__HALF__    = args.half
 __ADCconfig__ = args.adcConfig
-__numSEQ__ = args.numSeq
+__numSEQ__  = args.numSeq
 
-__REPEAT__ = args.repeat
-__MINUTE__ = args.minute
+__REPEAT__  = args.repeat
+__MINUTE__  = args.minute
 
-__HOST__ = str(socket.gethostname())
+__HOST__    = str(socket.gethostname())
 
 isNewRun = args.fresh
 total_capture   = 64
-battery_id      = 'TC02-H75'
+# battery_id      = 'TC32'
 examiner        = 'Khoi'
-project         = 'TUNA002-Phase1-Build_ML_Model'
-cabinet         = 'tuna-can'
+project         = 'Phase1-Build_SoH_Model'
+cabinet         = 'tuna-can-testing'
+trans_primary   = 9804 #67142
+trans_secondary = 67143
 
 print("Initializing EchOES 1 and 2")
 echoes_1 = echoes()  # set Impulse=True for 2nd transducer
@@ -631,8 +670,8 @@ print("Initializing signal processing")
 echoes_dsp = echoes_signals(__SAMPLING__)
 
 print("Initializing temp sensor")
-temp_sense_primary = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
-temp_sense_secondary = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
+temp_sense_primary      = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
+temp_sense_secondary    = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
 
 
 

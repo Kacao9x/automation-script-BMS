@@ -431,7 +431,7 @@ def _save_capture_to_Mongodb(cycleID=int, data_arr=[], tempC=[]):
         'charging'      : 0
     }
 
-    bucket['capture_number']    = cycleID
+    bucket['capture_number']    = cycleID + 1
     bucket['raw_data']          = []
     bucket['average_data']      = []
 

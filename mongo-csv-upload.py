@@ -98,6 +98,11 @@ def _get_timestamp( filename ):
     (timest['year'], timest['month'], timest['day'])    = int(i[2]), int(i[3]), int(i[4])
     (timest['hour'], timest['min'], timest['sec'])      = int(i[5]), int(i[6]), int(i[7])
 
+    # (timest['year'], timest['month'], timest['day']) = int(i[3]), int(
+    #     i[4]), int(i[5])
+    # (timest['hour'], timest['min'], timest['sec']) = int(i[6]), int(i[6]), int(
+    #     i[8])
+
 
     return timest
 
@@ -164,16 +169,23 @@ def post_raw_data():
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 
-    cycle = 268
-    cycle_id = 72
+    cycle = 267
+    cycle_id = 9
 
     while cycle_id < cycle + 1:
+
+        # if cycle_id == 86:
+        #     cycle_id += 1
+        # print (pd.isnull(table.at[cycle_id,'0']))
+        # if pd.isnull(table.at[cycle_id-1,'volt']):
+        #     print ('IGNORE %s' % str(cycle_id))
+        #     continue
+
+        print ('cont %s' % str(cycle_id))
+
         bucket = {}
-
-        # if cycle_id == 127:
-        #     cycle_id = 128
-
         timest = _get_timestamp(table['FileName'][cycle_id - 1])
+        # print (timest)
         bucket['timestamp'] = datetime.datetime(timest['year'], timest['month'],
                                                 timest['day'], timest['hour'],
                                                 timest['min'], timest['sec'])
@@ -190,7 +202,7 @@ def post_raw_data():
             'secondary'     : 0
         }
 
-        bucket['echoes_id']     = 'echoes-a'
+        bucket['echoes_id']     = 'echoes-c'
         bucket['project_name']  = project
         bucket['test_examiner'] = examiner
 
@@ -209,6 +221,7 @@ def post_raw_data():
             'bottom': float(table['Temperature_bottom'][cycle_id -1])
         }
         bucket['battery_details']  = {
+            'power(mWh)'    : float(table['power(mWh)'][cycle_id -1]),
             'cap(mAh)'      : float(table['cap(mAh)'][cycle_id -1]),
             'current'       : float(table['current'][cycle_id -1]),
             'volt'          : float(table['volt'][cycle_id -1]),
@@ -223,8 +236,7 @@ def post_raw_data():
         
 
         bucket['average_data'] = data
-        bucket['capture_number'] = int(table['cycle_id'][cycle_id -1])
-        bucket['capture_num_']  = cycle_id
+        bucket['capture_number'] = cycle_id#int(table['cycle_id'][cycle_id -1])
         bucket['raw_data'] = []
 
 
@@ -276,12 +288,12 @@ def post_raw_data():
 #==============================================================================#
 
 # battery_id      = 'TC02-H75'
-battery_id      = 'TC17'    #input('Input Battery ID: \n')
-SoH             = '79.5'   #input('Input SoH value: \n')
-date            = '181220'  #input('Testing date: \n')
+battery_id      = input('Input Battery ID: \n')
+SoH             = input('Input SoH value: \n')
+date            = input('Testing date: \n')
     
 input_channel   = 'secondary'
-cabinet         = 'tuna-sample'
+cabinet         = 'tuna-can'
 examiner        = 'Khoi'
 project         = 'Phase1-Build_SoH_Model'
 
@@ -291,14 +303,14 @@ echoes_db       = database(database='echoes-captures')
 echoes_db.mongo_db = cabinet
 
 
-filename = battery_id + '-H' + str(SoH) + '_181220_' + input_channel + '-sorted.csv'
+filename = battery_id + '-H' + str(SoH) + '_' + str(date) + '_' +input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC17-H79.5_181220/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC31-H75_190211-echo-C/' + input_channel + '/'
 
 
 if __name__ == '__main__':
 
-    # post_raw_data()
+    post_raw_data()
     # post_csv_report()
 
     # echoes_db.createIndex( [( 'test_apparatus.battery_id', pymongo.ASCENDING )],
@@ -309,28 +321,28 @@ if __name__ == '__main__':
     #                         unique=True, collection=cabinet)
 
 
-    res = echoes_db.search(query={'battery_id': battery_id,
-                                  'capture_number': 74,
-                                  'test_setting.input_channel': input_channel},
-                           collection=cabinet)
+    # res = echoes_db.search(query={'battery_id': battery_id,
+    #                               'capture_number': 76,
+    #                               'test_setting.input_channel': input_channel},
+    #                        collection=cabinet)
+    #
+    # res_2 = echoes_db.find_one(query={'battery_id': battery_id,
+    #                                   'capture_number': 76,
+    #                                   'test_setting.input_channel': input_channel},
+    #                            collection=cabinet)
 
-    res_2 = echoes_db.find_one(query={'battery_id': battery_id,
-                                      'capture_number': 150,
-                                      'test_setting.input_channel': input_channel},
-                               collection=cabinet)
-
-    start   = datetime.datetime(2018,12,19,21,24,10)
-    end     = datetime.datetime(2018,12,19,21,55,59)
-    res_3 = echoes_db.search(query={"capture_number": {'$gte':73, "$lt": 80}}, collection=cabinet)
+    start   = datetime.datetime(2019,3,4,4,24,10)
+    end     = datetime.datetime(2019,3,4,4,55,59)
+    res_3 = echoes_db.search(query={"capture_number": {'$gte':129}}, collection=cabinet)
     # res_4 = echoes_db.search(query={'timestamp': {'$gte':start,'$lt': end}}, collection=cabinet).sort({'timestamp': -1})
     # res_5 = echoes_db.search(query={"battery_results.runraw_data.3": {'$gte':0.75, "$lt": 1.02}}, collection=cabinet)
 
     # pprint(res_2)
-    pprint(res_2['capture_num_'])
-    pprint(res_2['capture_number'])
+    # pprint(res_2['capture_number'])
+    # pprint(res_2['capture_number'])
     # pprint(res_5)
-    # for post in res_5:
-    #     pprint(post['capture_number'])
+    # for post in res_2:
+    #     pprint(post)
     # pprint(res_2)
     # pprint(res)
     # for post in res:

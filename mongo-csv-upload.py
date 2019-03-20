@@ -3,7 +3,7 @@ import pandas as pd
 import subprocess
 from pprint import pprint
 from bson import ObjectId
-import json
+import json, logging, random
 
 
 from lib.echoes_database import *
@@ -52,7 +52,7 @@ def concat_all_data(tempC = bool, search_key = str):
         '''
         tC_1, tC_2 = [], []
         list_file = display_list_of_file(search_key)
-        print (list_file)
+        # print (list_file)
         for filename in list_file:
 
             with open(address + filename) as my_file:
@@ -72,7 +72,7 @@ def concat_all_data(tempC = bool, search_key = str):
         '''Read data from capture files
         '''
         list_file = display_list_of_file(search_key)
-        print (list_file)
+        # print (list_file)
         for captureID, filename in enumerate(list_file):
 
             with open(address + filename) as my_file:
@@ -106,6 +106,12 @@ def _get_timestamp( filename ):
 
     return timest
 
+def _get_cycle_number( filename ):
+    name_strip = filename.split('-')
+    cycle = name_strip[0].split('cycle')[1]
+    print cycle
+    return int(cycle)
+
 
 def post_csv_report():
 
@@ -124,7 +130,6 @@ def post_csv_report():
         # if cycle_id == 127:
         #     cycle_id = 128
         row = cycle_id - 1                                                      # row in PANDAS table start from 0
-        print ('row %s' % str(row))
 
         res = echoes_db.search(query={'test_apparatus.battery_id': battery_id,
                                       'test_results.capture_number': cycle_id,
@@ -169,32 +174,25 @@ def post_raw_data():
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 
-    cycle = 267
-    cycle_id = 9
+    cycle = 300
+    cycle_id = 1
 
     while cycle_id < cycle + 1:
 
-        # if cycle_id == 86:
-        #     cycle_id += 1
-        # print (pd.isnull(table.at[cycle_id,'0']))
-        # if pd.isnull(table.at[cycle_id-1,'volt']):
-        #     print ('IGNORE %s' % str(cycle_id))
-        #     continue
 
-        print ('cont %s' % str(cycle_id))
+        if pd.isnull(table.at[cycle_id-1,'volt']) or pd.isnull(table.at[cycle_id-1,'0']):
+            print ('IGNORE %s' % str(cycle_id))
+            cycle_id += 1
+            continue
+
 
         bucket = {}
+
         timest = _get_timestamp(table['FileName'][cycle_id - 1])
-        # print (timest)
         bucket['timestamp'] = datetime.datetime(timest['year'], timest['month'],
                                                 timest['day'], timest['hour'],
                                                 timest['min'], timest['sec'])
 
-        # bucket['test_apparatus'] = {
-        #     'battery_id'    : battery_id,
-        #     'transducer_id' : 67143,
-        #     'echoes_id'     : 'echoes-a'
-        # }
 
         bucket['battery_id']    = battery_id
         bucket['transducer_id'] = {
@@ -221,8 +219,8 @@ def post_raw_data():
             'bottom': float(table['Temperature_bottom'][cycle_id -1])
         }
         bucket['battery_details']  = {
-            'power(mWh)'    : float(table['power(mWh)'][cycle_id -1]),
-            'cap(mAh)'      : float(table['cap(mAh)'][cycle_id -1]),
+            'power(Wh)'     : float(table['power(Wh)'][cycle_id -1]),
+            'cap(Ah)'       : float(table['cap(Ah)'][cycle_id -1]),
             'current'       : float(table['current'][cycle_id -1]),
             'volt'          : float(table['volt'][cycle_id -1]),
             'charging'      : int(table['charging'][cycle_id -1])
@@ -230,18 +228,23 @@ def post_raw_data():
 
 
         row = cycle_id - 1                                                  # row in PANDAS table start from 0
-        print ('row %s' % str(row))
-        data = list(table.iloc[row, -512 : -1].values) 
 
-        
+        data = list(table.iloc[row, -512 : ].values)
+        capture_num = _get_cycle_number( table['FileName'][cycle_id - 1])
 
         bucket['average_data'] = data
-        bucket['capture_number'] = cycle_id#int(table['cycle_id'][cycle_id -1])
+        bucket['capture_number'] = capture_num
         bucket['raw_data'] = []
 
+        # pprint (bucket['capture_number'])
 
         oneRead, list_file = concat_all_data(tempC=False, search_key='cycle' +
-                                            str(cycle_id) + '-')
+                                            str(capture_num) + '-')
+
+        if not list_file:
+            cycle_id +=1
+            continue
+
 
         [row, column] = oneRead.shape
         print (column)
@@ -258,28 +261,17 @@ def post_raw_data():
             )
             
 
-            # data_pack = {}
-            # data_pack.update ({str(avgPos) : value})
-            # bucket['test_results']['raw_data'].update(data_pack)
             avgPos += 1  # go to next column
 
 
-        res = echoes_db.insert_capture(record=bucket, collection=cabinet)
-        print (res)
-        print ("completed uploading cycle %s" % str(cycle_id))
+        # res = echoes_db.insert_capture(record=bucket, collection=cabinet)
+        # print (res)
+        try:
+            res = echoes_db.insert_capture(record=bucket, collection=cabinet)
+            print (res)
+        except pymongo.errors.ConnectionFailure, e:
+            print ('No connection: %s' % e)
         cycle_id += 1
-
-
-        #------- upsert every run each capture into 'test-results' --------#
-        # bucket = {
-        #   dat : [
-        #       {"id": 110, "data": {"Country": "ES", "Count": [64,65,66]}},
-        #       {"id": 112, "data": {"Country": "ES", "Count": 5}},
-        #       {"id": 114, "data": {"Country": "UK", "Count": 3}}
-        #   ]
-        #}
-        # db.test_collection.find({"data.Country": "ES"})
-        # db.test_collection.find({"data.Count": {"$lt": 6}})
 
 
     return
@@ -287,13 +279,12 @@ def post_raw_data():
 
 #==============================================================================#
 
-# battery_id      = 'TC02-H75'
-battery_id      = input('Input Battery ID: \n')
-SoH             = input('Input SoH value: \n')
-date            = input('Testing date: \n')
-    
+battery_id      = 'TC32'    #input('Input Battery ID: \n')
+SoH             = 86.28        #input('Input SoH value: \n')
+date            = 190302    #input('Testing date: \n')
+
 input_channel   = 'secondary'
-cabinet         = 'tuna-can'
+cabinet         = 'tuna-can-official'
 examiner        = 'Khoi'
 project         = 'Phase1-Build_SoH_Model'
 
@@ -303,14 +294,95 @@ echoes_db       = database(database='echoes-captures')
 echoes_db.mongo_db = cabinet
 
 
+
 filename = battery_id + '-H' + str(SoH) + '_' + str(date) + '_' +input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC31-H75_190211-echo-C/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC32-H86.28_190302/' + input_channel + '/'
+#
+#
+
+class Test(unittest.TestCase):
 
 
+    def test_random(self):
+
+        print('checking mismatch query data vs csv data')
+
+        with open(address + filename) as outfile:
+            table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+        outfile.close()
+
+        db = database(database='echoes-captures')
+        rad_test = [65, 100, 150]
+        # cycle_num = _get_cycle_number( table['FileName'][index - 1])
+
+
+        for cycle_num in rad_test:
+            res = db.find_one({'battery_id': battery_id,
+                               'capture_number': cycle_num,
+                               'test_setting.input_channel': input_channel},
+                              collection=cabinet)
+
+            if res is None:
+                continue
+
+
+            check_volt = (res['battery_details']['volt'] == table['volt'][cycle_num - 1])
+            print('voltage: ' + str(check_volt))
+            self.assertEqual(check_volt, True)
+
+            check_cap = (res['battery_details']['cap(Ah)']) == table['cap(Ah)'][
+                cycle_num - 1]
+            print('cap: ' + str(check_cap))
+            self.assertEqual(check_cap, True)
+
+            check_name = ( _get_cycle_number(table['Filename'][cycle_num - 1]) == cycle_num)
+            self.assertEqual(check_name, True)
+
+
+            check_data_1 = (res['average_data'][0]) == table['0'][cycle_num - 1]
+            print(res['average_data'][0])
+            print(table['0'][cycle_num - 1])
+            print('data_1 match: ' + str(check_data_1))
+            self.assertEqual(check_data_1, True)
+
+            check_data_512 = (res['average_data'][511]) == table['511'][cycle_num - 1]
+            print('data_512 match: ' + str(check_data_512))
+            self.assertEqual(check_data_512, True)
+
+
+    # def test_reverse(self):
+    #     db = database(database='echoes-captures')
+    #
+    #
+    #     with open(address + 'background.dat') as my_file:
+    #         y_str = my_file.read()
+    #         y_str = y_str.splitlines()
+    #         my_file.close()
+    #
+    #     set_1 = [float(num) for num in y_str]
+    #
+    #     for _ in range(3):
+    #         if len(res['raw_data']) == 64:
+    #             check_data_1 = (res['raw_data'][0][0]) == set_1[0]
+    #             pass
+    #         elif len(res['raw_data']) > 62:
+    #             check_data_1 = (res['raw_data'][0][512]) == set_1[0]
+    #             pass
+    #         else:
+    #             pass
+    #     return
+
+    echoes_db.close()
 if __name__ == '__main__':
+    unittest.main()
 
-    post_raw_data()
+    # post_raw_data()
+
+    # echoes_db.rename_field('battery_details.power(mWh)', 'battery_details.power(Wh)', collection=cabinet)
+
+    # echoes_db.remove_field('average_data', collection=cabinet)
+
     # post_csv_report()
 
     # echoes_db.createIndex( [( 'test_apparatus.battery_id', pymongo.ASCENDING )],
@@ -322,7 +394,6 @@ if __name__ == '__main__':
 
 
     # res = echoes_db.search(query={'battery_id': battery_id,
-    #                               'capture_number': 76,
     #                               'test_setting.input_channel': input_channel},
     #                        collection=cabinet)
     #
@@ -330,17 +401,13 @@ if __name__ == '__main__':
     #                                   'capture_number': 76,
     #                                   'test_setting.input_channel': input_channel},
     #                            collection=cabinet)
-
-    start   = datetime.datetime(2019,3,4,4,24,10)
-    end     = datetime.datetime(2019,3,4,4,55,59)
-    res_3 = echoes_db.search(query={"capture_number": {'$gte':129}}, collection=cabinet)
+    #
+    # start   = datetime.datetime(2019,3,4,4,24,10)
+    # end     = datetime.datetime(2019,3,4,4,55,59)
+    # res_3 = echoes_db.search(query={"capture_number": {'$gte':129}}, collection=cabinet)
     # res_4 = echoes_db.search(query={'timestamp': {'$gte':start,'$lt': end}}, collection=cabinet).sort({'timestamp': -1})
-    # res_5 = echoes_db.search(query={"battery_results.runraw_data.3": {'$gte':0.75, "$lt": 1.02}}, collection=cabinet)
 
-    # pprint(res_2)
-    # pprint(res_2['capture_number'])
-    # pprint(res_2['capture_number'])
-    # pprint(res_5)
+
     # for post in res_2:
     #     pprint(post)
     # pprint(res_2)
@@ -349,26 +416,12 @@ if __name__ == '__main__':
     #     pprint(post)
 
 
-    # echoes_db.delete( query={'test_apparatus.battery_id': battery_id},
-    #                            collection=cabinet)
-
-    # for num in range(0, 200):
-    #     echoes_db.delete( query={'test_apparatus.battery_id': battery_id,
-    #                                   'test_results.capture_number': num},
-    #                            collection=cabinet)
-
-
-
-    # echoes_db.delete(query={'test_apparatus.battery_id': battery_id,
-    #                               'test_results.capture_number': 46,
-    #                               'test_setting.input_channel': input_channel},
+    ## echoes_db.delete(query={'battery_id': battery_id,
+    #                         'test_setting.input_channel': input_channel},
     #                        collection=cabinet)
 
 
-    # for run in res_2['test_results']['raw_data']:
-    #     if run['run'] == 60:
-    #         pprint(res_2['test_results']['temperature'])
 
-    echoes_db.close()
+    # echoes_db.close()
 
 

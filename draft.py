@@ -3,6 +3,8 @@
 
 
 from enum import Enum
+import json as j
+import numpy as np
 
 class LED_Color(Enum):
     __order__ = 'red green blue yellow purple'
@@ -74,9 +76,46 @@ def calculate_mean_value():
     print (adc_captures_readout)
 
 
+def JSON_to_file():
+    FILE = 'data/average.json'
+    try:
+        with open(FILE, 'r') as f:
+            jsonData = j.load(f)
+            all_captures = jsonData["avg_captures"]
+        f.close()
+    except IOError:
+        all_captures = []
+
+    print(all_captures)
+    # jsonData = {}
+    # jsonData['avg_captures'] = []
+    # signal = [1, 3, 5, 7, 9]
+    signal = np.array([[0,1,2],[3,4,5],[6,7,8]]).tolist()
+    with open(FILE, 'wb') as file:
+        jsonData["avg_captures"].append( signal )
+        file.write(j.dumps(jsonData))
+
+    file.close()
+    
+
 
 if __name__ == "__main__":
-   test_Enum34(1)
-   id = 'cycle3-raw_echo-2-2018-08-23-17-24-43-echoes-e.dat'
-   i = id.split('-')
-   print (i[0].split('cycle')[1])
+    # test_Enum34(1)
+    id = 'cycle3-raw_echo-2-2018-08-23-17-24-43-echoes-e.dat'
+    i = id.split('-')
+    print (i[0].split('cycle')[1])
+
+    result = False
+
+    result |= True
+    print (result)
+
+    arr = [1, 2, 3, 4]
+    for id, ele in enumerate(arr):
+        ele += 2
+        arr[id] = ele
+    # arr = [ele +2 for ele in arr]
+    print arr
+
+    JSON_to_file()
+    

@@ -125,8 +125,8 @@ def merge_column(table):
 
     print (ind)
     id_num      = table.columns.get_loc("id_num")
-    cap_mAh     = table.columns.get_loc("cap(mAh)")
-    energy_mWh  = table.columns.get_loc("en(mWh)")
+    cap_mAh     = table.columns.get_loc("cap(Ah)")
+    energy_mWh  = table.columns.get_loc("en(Wh)")
 
     #add 21.00 for real capacity
     # for i in range(0, int(ind[1])):
@@ -260,7 +260,7 @@ def find_capacity(begin, end, table):
     line += int(diff / 5)
     print ('end_temp: ' + str(end_temp))
     print ("diff: %s" % str(line))
-    return line, table['cap(mAh)'][line], table['en(mWh)'][line],\
+    return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
         table['current'][line], table['volt'][line]
 
 
@@ -310,15 +310,15 @@ def sort_by_name(filelist, starttime, table):
             charging.append( 1 )
 
     print ("start sorting")
-    column = ['index', 'charging', 'volt', 'current', 'cap(mAh)', 
-            'power(mWh)', 'FileName']
+    column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
+            'power(Wh)', 'FileName']
 
     table_sorted = pd.DataFrame({'index'    : index,
                                  'charging' : charging,
                                  'volt'     : volt,
                                  'current'  : current,
-                                 'cap(mAh)' : cap,
-                                 'power(mWh)':power,
+                                 'cap(Ah)'  : cap,
+                                 'power(Wh)':power,
                                  'FileName' : filename},
                                 columns=column)                                 # columns=[] used to set order of columns
 
@@ -358,7 +358,7 @@ def _filter_data_by_timeInterval(table, sec):
         tb = pd.concat([tb, table_data], axis=0)
 
     tb.columns = ['id','id_num', 'time', 'volt', 'current',
-                    'cap(mAh)', 'Date/Time']
+                    'cap(Ah)', 'Date/Time']
     tb.sort_values('id')
     # del tb['extra']
 
@@ -383,7 +383,7 @@ def clean_test_data(Neware_report = True, fix = False):
     # cycler_data = lines.iloc[::50, 0:10]
     print (cycler_data.shape)
     header_list = ['id_num', 'time', 'volt', 'current',
-                   'del2', 'cap(mAh)', 'cap(microAh)', 'en(mWh)',
+                   'del2', 'cap(Ah)', 'cap(microAh)', 'en(Wh)',
                    'en(microWh)', 'Date/Time']
     cycler_data.columns = header_list
     del cycler_data['del2'], \
@@ -392,7 +392,7 @@ def clean_test_data(Neware_report = True, fix = False):
 
     # added extra 'id' columns to shift the first rows
     header_list = ['id', 'id_num', 'time', 'volt','current',
-                   'cap(mAh)', 'en(mWh)','Date/Time']
+                   'cap(Ah)', 'en(Wh)','Date/Time']
     cycler_data = cycler_data.reindex(columns=header_list)
     print (cycler_data.head())
     cycler_data.to_csv(cycler_path)
@@ -496,7 +496,9 @@ date            = input('Testing date: \n')
 transducer_id   = '067143' #'09807'
 name            = battery_id + '-H' + str(SoH) + '_' + str(date)
 
-path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC31-H75_190211-echo-C/tempC/'
+actual_capacity = raw_input('Input Real capacity')
+
+path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC32-H86.28_190302/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'

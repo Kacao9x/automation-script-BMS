@@ -104,21 +104,21 @@ class preprocessing(object):
 
 
     def merge_column(self, table):
-        # print (table.head().to_string())
-        print (table.shape)
-        # row, col = table.shape
 
-        NAN_finder = table['id'].notna()  # a boolean list of ID columns
+        print (table.shape)
+
+        NAN_finder = table['id'].notna()                                        # a boolean list of ID columns
         # global ind
+
         ind = []
         for i in range(len(NAN_finder)):
             if NAN_finder[i] == True:
                 ind = np.append(ind, i)
 
         print (ind)
-        id_num = table.columns.get_loc("id_num")
-        cap_mAh = table.columns.get_loc("cap(Ah)")
-        energy_mWh = table.columns.get_loc("en(Wh)")
+        id_num      = table.columns.get_loc("id_num")
+        cap_Ah      = table.columns.get_loc("cap(Ah)")
+        energy_Wh   = table.columns.get_loc("en(Wh)")
 
         # add 21.00 for real capacity
         # for i in range(0, int(ind[1])):
@@ -126,72 +126,117 @@ class preprocessing(object):
 
         for i in range(len(ind) - 1):
 
-            # Addition of cap for CV and CC cycle (step 1 and 2)
+            # Adding capacity - CC charge --> CV charge
             if (table.iat[int(ind[i]), id_num] == 'CV_Chg' and
                 table.iat[int(ind[i - 1]), id_num]) == 'CC_Chg':
 
-                tot = table.iat[int(ind[i]) - 1, cap_mAh]  # store the capacity
-                diff = int(ind[i + 1]) - int(
-                    ind[i])  # find the length of the stage
+                tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]                    # store the capacity
+                diff    = int(ind[i + 1]) - int(ind[i])                         # find the length of the stage
 
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_mAh] += tot
-            # step 3 and 2
+                    table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
+
+            # Adding capacity - CV charge --> CC charge
             elif (table.iat[int(ind[i]), id_num] == 'CC_Chg' and
                   table.iat[int(ind[i - 1]), id_num] == 'CV_Chg'):
 
-                tot = table.iat[int(ind[i]) - 1, cap_mAh]
-                diff = int(ind[i + 1]) - int(ind[i])
+                tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
+                diff    = int(ind[i + 1]) - int(ind[i])
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_mAh] += tot
-                    table.iat[int(ind[i]) + j, cap_mAh] += tot
+                    table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
 
 
             # Keep the same capacity of CV_charge for rest cycle
-            elif (table.iat[int(ind[i]), id_num] == 'Rest' and
+            elif ((table.iat[int(ind[i]), id_num] == 'Rest' and
                   table.iat[int(ind[i - 1]), id_num] == 'CC_Chg' and
-                  table.iat[int(ind[i + 1]), id_num] == 'CC_DChg'):
+                  table.iat[int(ind[i + 1]), id_num] == 'CC_DChg')) or \
+                ((table.iat[int(ind[i]), id_num] == 'Rest' and
+                  table.iat[int(ind[i - 1]), id_num] == 'CV_Chg' and
+                  table.iat[int(ind[i + 1]), id_num] == 'CC_DChg')):
 
-                tot = table.iat[int(ind[i]) - 1, cap_mAh]
-                diff = int(ind[i + 1]) - int(ind[i])
+                tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
+                diff    = int(ind[i + 1]) - int(ind[i])
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_mAh] += tot
+                    table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
 
+
+            # Keep the last capacity/power of CCCV_charge for rest cycle
             elif (table.iat[int(ind[i]), id_num] == 'Rest' and
                   table.iat[int(ind[i - 1]), id_num] == 'CCCV_Chg'):
 
-                tot = table.iat[int(ind[i]) - 1, cap_mAh]
-                tot_mwh = table.iat[int(ind[i]) - 1, energy_mWh]
-                diff = int(ind[i + 1]) - int(ind[i])
+                tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
+                tot_wh  = table.iat[int(ind[i]) - 1, energy_Wh]
+                diff    = int(ind[i + 1]) - int(ind[i])
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_mAh] += tot
-                    table.iat[int(ind[i]) + j, energy_mWh] += tot_mwh
+                    table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
+                    table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
 
 
             # Subtraction the capacity for dischage cycle
             elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
                   table.iat[int(ind[i]), id_num] == 'CC_DChg'):
 
-                tot = table.iat[int(ind[i + 1]) - 1, cap_mAh]
-                tot_mwh = table.iat[int(ind[i + 1]) - 1, energy_mWh]
-                diff = int(ind[i + 1]) - int(ind[i])
+                tot_cap = table.iat[int(ind[i + 1]) - 1, cap_Ah]
+                tot_wh  = table.iat[int(ind[i + 1]) - 1, energy_Wh]
+                diff    = int(ind[i + 1]) - int(ind[i])
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_mAh] = tot - \
-                                                          table.iat[int(ind[
-                                                                            i]) + j, cap_mAh]
-                    table.iat[int(ind[i]) + j, energy_mWh] = tot_mwh - \
-                                                             table.iat[int(ind[i]) + j, energy_mWh]
+                    table.iat[int(ind[i]) + j, cap_Ah] = tot_cap -\
+                                                         table.iat[int(ind[i]) + j, cap_Ah]
+                    table.iat[int(ind[i]) + j, energy_Wh] = tot_wh - \
+                                                        float(table.iat[int(ind[i]) + j, energy_Wh])
 
 
         return table
 
 
+    def calculate_SoH(self, table, rated_cap=None):
+        SoH_value = 100
 
-    def _filter_data_by_timeInterval(table, sec):
-        """
-            merge the table with a time step of 0.1s
-            :param table:
-            """
+        ind = table[table['id'].notna()].index.tolist()                        # a list of ID rows
+        print (ind)
+
+        # id_num      = table.columns.get_loc("id_num")
+        # cap_Ah      = table.columns.get_loc("cap(Ah)")
+        # energy_Wh   = table.columns.get_loc("en(Wh)")
+
+        # actual_cap_Ah_arr = []
+        # for i in range(len(ind)):
+        #     if table.iat[ind[i], id_num] == 'Rest' and \
+        #         table.iat[ind[i-1], id_num] == 'CV_Chg':
+        #
+        #         actual_cap_Ah_arr.append(table.iat[ind[i-1], cap_Ah])
+        #
+        #
+        # print(actual_cap_Ah_arr)
+        # max_cap_Ah = max(actual_cap_Ah_arr)
+        # print ('max capacity: ' + str(max_cap_Ah))
+
+        max_cap_Ah = table['cap(Ah)'].max()
+        print ('max capacity: ' + str(max_cap_Ah))
+
+        if rated_cap is None:
+            pass
+        else:
+            SoH_value *= max_cap_Ah/rated_cap
+
+
+        return SoH_value
+
+
+    def calculate_SoC(self, table, actual_capacity=None):
+
+        table['SoC'] = 100*table['cap(Ah)']/actual_capacity
+        table['SoH'] = 100*actual_capacity/18650
+        return table
+
+
+
+    def _filter_data_by_timeInterval(self, table, sec):
+        '''
+        Merge the table with a time step of 0.1s
+        :param sec: time step (second)
+        :return: new table with time step of 5 sec
+        '''
 
         NAN_finder = table['id'].notna()  # result is in a boolean list
 
@@ -263,6 +308,10 @@ class preprocessing(object):
 
 
 
+
+
+
+
 class Test(unittest.TestCase):
     cycler_sort = preprocessing(
         filename='/media/kacao/Ultra-Fit/titan-echo-boards/18650/tempC/18650_190320',
@@ -274,16 +323,30 @@ class Test(unittest.TestCase):
 
         cycler_sort.clean_test_data()
         return
-    
+
+
     def test_merge_column(self, cycler_sort=cycler_sort):
 
         table = cycler_sort.clean_test_data()
         print (table.head().to_string())
 
-        cycler_sort.merge_column(table)                                 # Merge capactity of CC and CV stages
-        table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/18650/tempC/18650_190320_merged.csv')
+        cycler_sort.merge_column(table)                                         # Merge capactity of CC and CV stages
+        # table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/18650/tempC/18650_190320_merged.csv')
+        return table
 
+
+    def test_calculate_SOHSOC(self,cycler_sort=cycler_sort):
+        table = Test.test_merge_column(self, cycler_sort=cycler_sort)
+
+        SoH_value = cycler_sort.calculate_SoH(table, rated_cap=18650)
+        print('SOH: {0:.2f}'.format(SoH_value) )
+
+        table = cycler_sort.calculate_SoC(table, SoH_value*18650/100)
+
+        print (table.head().to_string())
+        table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/18650/tempC/18650_190320_merged_soc.csv')
         return
+
 
 
     def test_something(self):

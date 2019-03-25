@@ -174,7 +174,7 @@ def post_raw_data():
         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
     outfile.close()
 
-    cycle = 300
+    cycle = 150
     cycle_id = 1
 
     while cycle_id < cycle + 1:
@@ -200,7 +200,7 @@ def post_raw_data():
             'secondary'     : 0
         }
 
-        bucket['echoes_id']     = 'echoes-c'
+        bucket['echoes_id']     = 'echoes-a'
         bucket['project_name']  = project
         bucket['test_examiner'] = examiner
 
@@ -214,6 +214,7 @@ def post_raw_data():
         }
 
         bucket['SoH']           = float(table['SoH'][cycle_id - 1])
+        bucket['SoC']           = float(table['SoC'][cycle_id - 1])
         bucket['temperature']  = {
             'top'   : float(table['Temperature_top'][cycle_id -1]),
             'bottom': float(table['Temperature_bottom'][cycle_id -1])
@@ -264,13 +265,14 @@ def post_raw_data():
             avgPos += 1  # go to next column
 
 
-        # res = echoes_db.insert_capture(record=bucket, collection=cabinet)
-        # print (res)
-        try:
-            res = echoes_db.insert_capture(record=bucket, collection=cabinet)
-            print (res)
-        except pymongo.errors.ConnectionFailure, e:
-            print ('No connection: %s' % e)
+        res = echoes_db.insert_capture(record=bucket, collection=cabinet)
+        print (res)
+
+        # try:
+        #     res = echoes_db.insert_capture(record=bucket, collection=cabinet)
+        #     print (res)
+        # except pymongo.errors.ConnectionFailure, e:
+        #     print ('No connection: %s' % e)
         cycle_id += 1
 
 
@@ -279,12 +281,12 @@ def post_raw_data():
 
 #==============================================================================#
 
-battery_id      = 'TC32'    #input('Input Battery ID: \n')
-SoH             = 86.28        #input('Input SoH value: \n')
-date            = 190302    #input('Testing date: \n')
+battery_id      = 'TC04'    #input('Input Battery ID: \n')
+SoH             = 74        #input('Input SoH value: \n')
+date            = 181113    #input('Testing date: \n')
 
 input_channel   = 'secondary'
-cabinet         = 'tuna-can-official'
+cabinet         = 'tuna-can-testing'
 examiner        = 'Khoi'
 project         = 'Phase1-Build_SoH_Model'
 
@@ -297,7 +299,7 @@ echoes_db.mongo_db = cabinet
 
 filename = battery_id + '-H' + str(SoH) + '_' + str(date) + '_' +input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC32-H86.28_190302/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/' + input_channel + '/'
 #
 #
 
@@ -308,11 +310,22 @@ class Test(unittest.TestCase):
 
         print('checking mismatch query data vs csv data')
 
+        battery_id = 'TC32'  # input('Input Battery ID: \n')
+        SoH = 86.28  # input('Input SoH value: \n')
+        date = 190302  # input('Testing date: \n')
+
+        input_channel = 'secondary'
+        cabinet = 'tuna-can-official'
+
+
         with open(address + filename) as outfile:
             table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
         outfile.close()
 
         db = database(database='echoes-captures')
+
+        db.insert_capture({'name': 'kacao-test'}, collection='tuna-can')
+
         rad_test = [65, 100, 150]
         # cycle_num = _get_cycle_number( table['FileName'][index - 1])
 
@@ -336,48 +349,48 @@ class Test(unittest.TestCase):
             print('cap: ' + str(check_cap))
             self.assertEqual(check_cap, True)
 
-            check_name = ( _get_cycle_number(table['Filename'][cycle_num - 1]) == cycle_num)
-            self.assertEqual(check_name, True)
+            # check_name = ( _get_cycle_number(table['Filename'][cycle_num - 1]) == cycle_num)
+            # self.assertEqual(check_name, True)
+        #
+        #
+        #     check_data_1 = (res['average_data'][0]) == table['0'][cycle_num - 1]
+        #     print(res['average_data'][0])
+        #     print(table['0'][cycle_num - 1])
+        #     print('data_1 match: ' + str(check_data_1))
+        #     self.assertEqual(check_data_1, True)
+        #
+        #     check_data_512 = (res['average_data'][511]) == table['511'][cycle_num - 1]
+        #     print('data_512 match: ' + str(check_data_512))
+        #     self.assertEqual(check_data_512, True)
 
-
-            check_data_1 = (res['average_data'][0]) == table['0'][cycle_num - 1]
-            print(res['average_data'][0])
-            print(table['0'][cycle_num - 1])
-            print('data_1 match: ' + str(check_data_1))
-            self.assertEqual(check_data_1, True)
-
-            check_data_512 = (res['average_data'][511]) == table['511'][cycle_num - 1]
-            print('data_512 match: ' + str(check_data_512))
-            self.assertEqual(check_data_512, True)
-
-
-    # def test_reverse(self):
-    #     db = database(database='echoes-captures')
-    #
-    #
-    #     with open(address + 'background.dat') as my_file:
-    #         y_str = my_file.read()
-    #         y_str = y_str.splitlines()
-    #         my_file.close()
-    #
-    #     set_1 = [float(num) for num in y_str]
-    #
-    #     for _ in range(3):
-    #         if len(res['raw_data']) == 64:
-    #             check_data_1 = (res['raw_data'][0][0]) == set_1[0]
-    #             pass
-    #         elif len(res['raw_data']) > 62:
-    #             check_data_1 = (res['raw_data'][0][512]) == set_1[0]
-    #             pass
-    #         else:
-    #             pass
-    #     return
 
     echoes_db.close()
-if __name__ == '__main__':
-    unittest.main()
 
-    # post_raw_data()
+
+if __name__ == '__main__':
+
+    # battery_id = 'TC32'  # input('Input Battery ID: \n')
+    # SoH = 86.28  # input('Input SoH value: \n')
+    # date = 190302  # input('Testing date: \n')
+    #
+    # input_channel = 'secondary'
+    # cabinet = 'tuna-can-official'
+    # examiner = 'Khoi'
+    # project = 'Phase1-Build_SoH_Model'
+    #
+    # print("Initializing database")
+    # echoes_db = database(database='echoes-captures')
+    # echoes_db.mongo_db = cabinet
+    #
+    # filename = battery_id + '-H' + str(SoH) + '_' + str(
+    #     date) + '_' + input_channel + '-sorted.csv'
+    # bucket = {}
+    # address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC32-H86.28_190302/' + input_channel + '/'
+
+    # unittest.main()
+
+
+    post_raw_data()
 
     # echoes_db.rename_field('battery_details.power(mWh)', 'battery_details.power(Wh)', collection=cabinet)
 
@@ -420,8 +433,50 @@ if __name__ == '__main__':
     #                         'test_setting.input_channel': input_channel},
     #                        collection=cabinet)
 
+    print('checking mismatch query data vs csv data')
 
+    with open(address + filename) as outfile:
+        table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
 
-    # echoes_db.close()
+    db = database(database='echoes-captures')
+    rad_test = [65, 100, 150]
+    # cycle_num = _get_cycle_number( table['FileName'][index - 1])
+
+    for cycle_num in rad_test:
+        res = db.find_one({'battery_id': battery_id,
+                           'capture_number': cycle_num,
+                           'test_setting.input_channel': input_channel},
+                          collection=cabinet)
+
+        if res is None:
+            continue
+
+        check_volt = (res['battery_details']['volt'] == table['volt'][
+            cycle_num - 1])
+        print('voltage: ' + str(check_volt))
+        # self.assertEqual(check_volt, True)
+
+        check_cap = (res['battery_details']['cap(Ah)']) == table['cap(Ah)'][
+            cycle_num - 1]
+        print('cap: ' + str(check_cap))
+        # self.assertEqual(check_cap, True)
+    #
+    #     check_name = (_get_cycle_number(
+    #         table['Filename'][cycle_num - 1]) == cycle_num)
+    #     # self.assertEqual(check_name, True)
+    #
+    #     check_data_1 = (res['average_data'][0]) == table['0'][cycle_num - 1]
+    #     print(res['average_data'][0])
+    #     print(table['0'][cycle_num - 1])
+    #     print('data_1 match: ' + str(check_data_1))
+    #     # self.assertEqual(check_data_1, True)
+    #
+    #     check_data_512 = (res['average_data'][511]) == table['511'][
+    #         cycle_num - 1]
+    #     print('data_512 match: ' + str(check_data_512))
+    #     # self.assertEqual(check_data_512, True)
+
+    echoes_db.close()
 
 

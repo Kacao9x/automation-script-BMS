@@ -496,9 +496,10 @@ date            = input('Testing date: \n')
 transducer_id   = '067143' #'09807'
 name            = battery_id + '-H' + str(SoH) + '_' + str(date)
 
-actual_capacity = raw_input('Input Real capacity')
+# name            = '18650_190320'
+# actual_capacity = raw_input('Input Real capacity')
 
-path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC32-H86.28_190302/tempC/'
+path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'

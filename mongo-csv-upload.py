@@ -289,13 +289,13 @@ def post_raw_data():
 
 #==============================================================================#
 
-battery_id      = 'TC08'    #input('Input Battery ID: \n')
-SoH             = 74.4        #input('Input SoH value: \n')
-date            = 181119    #input('Testing date: \n')
+battery_id      = 'TC18'    #input('Input Battery ID: \n')
+SoH             = 72.75       #input('Input SoH value: \n')
+date            = 181222    #input('Testing date: \n')
 
 input_channel   = 'secondary'
 cabinet         = 'tuna-can-official'
-examiner        = 'Ashish'
+examiner        = 'Khoi'
 project         = 'Phase1-Build_SoH_Model'
 
 
@@ -307,7 +307,7 @@ echoes_db.mongo_db = cabinet
 
 filename = battery_id + '-H' + str(SoH) + '_' + str(date) + '_' +input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC08-H74.4_181119/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC18-H72.75_181222/' + input_channel + '/'
 #
 #
 
@@ -377,7 +377,14 @@ address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC08-H74.4_181119/' +
 
 if __name__ == '__main__':
 
-    post_raw_data()
+    res = echoes_db.find_one({'battery_id': battery_id,
+                       'test_setting.input_channel': input_channel},
+                      collection=cabinet)
+
+    if res is None:
+        post_raw_data()
+    else:
+        pass
 
     # echoes_db.rename_field('battery_details.power(mWh)', 'battery_details.power(Wh)', collection=cabinet)
 

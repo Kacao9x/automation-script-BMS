@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import datetime, sys
-from pprint import pprint
 
 import unittest
 
@@ -11,8 +10,8 @@ import unittest
 
 class preprocessing(object):
 
-    period      = 5 #time differnce between each capture
-    start_row   = 1 #number of header to remove
+    period      = 5                                                             #time differnce between each capture
+    start_row   = 1                                                             #number of header to remove
     ind         = []
 
     _debug_level = None
@@ -22,7 +21,6 @@ class preprocessing(object):
     def __init__(self, filename=None, neware = True, time_sync_fix = False,
                  debug = False):
         '''
-
         :param filename: Path to the data set
         :param neware: True if sorting the Neware data report
         :param time_sync_fix: True if the report captured data very 0.1s
@@ -64,6 +62,7 @@ class preprocessing(object):
         print (cycler_data.shape)
         header_list = ['id_num', 'time', 'volt', 'current', 'del2', 'cap(Ah)',
                        'cap(microAh)', 'en(Wh)','en(microWh)', 'Date/Time']
+
         cycler_data.columns = header_list
         del cycler_data['del2'], cycler_data['en(microWh)'], \
             cycler_data['cap(microAh)']
@@ -98,7 +97,7 @@ class preprocessing(object):
             cycler_data = self._filter_data_by_timeInterval(cycler_data,
                                                             self.period)
 
-        cycler_data.to_csv(self._filename + '.csv')     #cycler path
+        cycler_data.to_csv(self._filename + '.csv')                             #cycler path
 
         return cycler_data
 
@@ -123,7 +122,8 @@ class preprocessing(object):
         # add 21.00 for real capacity
         # for i in range(0, int(ind[1])):
         #     table.iat[i, cap_mAh] = 38 + table.iat[i, cap_mAh]
-
+        table['cap(Ah)'] = table['cap(Ah)'].astype(float)
+        table['en(Wh)'] = table['en(Wh)'].astype(float)
         for i in range(len(ind) - 1):
 
             # Adding capacity - CC charge --> CV charge
@@ -164,12 +164,13 @@ class preprocessing(object):
             elif (table.iat[int(ind[i]), id_num] == 'Rest' and
                   table.iat[int(ind[i - 1]), id_num] == 'CCCV_Chg'):
 
-                tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
-                tot_wh  = table.iat[int(ind[i]) - 1, energy_Wh]
+                tot_cap = float(table.iat[int(ind[i]) - 1, cap_Ah])
+                tot_wh  = float(table.iat[int(ind[i]) - 1, energy_Wh])
                 diff    = int(ind[i + 1]) - int(ind[i])
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
-                    table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
+
+                    table.iat[int(ind[i]) + j, energy_Wh]   +=  tot_wh
 
 
             # Subtraction the capacity for dischage cycle
@@ -183,7 +184,7 @@ class preprocessing(object):
                     table.iat[int(ind[i]) + j, cap_Ah] = tot_cap -\
                                                          table.iat[int(ind[i]) + j, cap_Ah]
                     table.iat[int(ind[i]) + j, energy_Wh] = tot_wh - \
-                                                        float(table.iat[int(ind[i]) + j, energy_Wh])
+                                                        table.iat[int(ind[i]) + j, energy_Wh]
 
 
         return table
@@ -211,7 +212,13 @@ class preprocessing(object):
         # max_cap_Ah = max(actual_cap_Ah_arr)
         # print ('max capacity: ' + str(max_cap_Ah))
 
-        max_cap_Ah = table['cap(Ah)'].max()
+        # max_cap_Ah = table['cap(Ah)'].max()
+
+        cap_ah_arr = []
+        for i in ind:
+            if table['id_num'][i] == 'CCCV_Chg':
+                cap_ah_arr.append( table['volt'][i])
+        max_cap_Ah = max(cap_ah_arr)
         print ('max capacity: ' + str(max_cap_Ah))
 
         if rated_cap is None:
@@ -223,10 +230,14 @@ class preprocessing(object):
         return SoH_value
 
 
-    def calculate_SoC(self, table, actual_capacity=None):
+    def calculate_SoC(self, table, actual_capacity=None, rated_cap=None):
 
-        table['SoC'] = 100*table['cap(Ah)']/actual_capacity
-        table['SoH'] = 100*actual_capacity/18650
+
+        if rated_cap is None:
+            table['SoH'] = 100*actual_capacity/1
+        else:
+            table['SoH'] = 100 * actual_capacity / rated_cap
+            table['SoC'] = 100 * table['cap(Ah)'] / actual_capacity
         return table
 
 
@@ -314,8 +325,8 @@ class preprocessing(object):
 
 class Test(unittest.TestCase):
     cycler_sort = preprocessing(
-        filename='/media/kacao/Ultra-Fit/titan-echo-boards/18650/tempC/18650_190320',
-        neware=False,
+        filename='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/TC04-H74_181113',
+        neware=True,
         time_sync_fix=False, debug=False)
 
 
@@ -331,20 +342,20 @@ class Test(unittest.TestCase):
         print (table.head().to_string())
 
         cycler_sort.merge_column(table)                                         # Merge capactity of CC and CV stages
-        # table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/18650/tempC/18650_190320_merged.csv')
+        table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/TC04-H74_181113_merged.csv')
         return table
 
 
     def test_calculate_SOHSOC(self,cycler_sort=cycler_sort):
         table = Test.test_merge_column(self, cycler_sort=cycler_sort)
 
-        SoH_value = cycler_sort.calculate_SoH(table, rated_cap=18650)
+        SoH_value = cycler_sort.calculate_SoH(table, rated_cap=64)
         print('SOH: {0:.2f}'.format(SoH_value) )
 
-        table = cycler_sort.calculate_SoC(table, SoH_value*18650/100)
+        table = cycler_sort.calculate_SoC(table, SoH_value*64/100, 64)
 
         print (table.head().to_string())
-        table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/18650/tempC/18650_190320_merged_soc.csv')
+        table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/TC04_merged_soc.csv')
         return
 
 

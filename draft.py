@@ -5,6 +5,7 @@
 from enum import Enum
 import json as j
 import numpy as np
+import time
 
 class LED_Color(Enum):
     __order__ = 'red green blue yellow purple'
@@ -99,6 +100,53 @@ def JSON_to_file():
     
 
 
+def use_timeout_with_signal():
+    import signal
+    '''
+    This solution only works Unix system
+    '''
+    def handler(signum, frame):
+       print "Forever is over!"
+       raise Exception("end of time")
+
+
+    def loop_forever():
+        while 1:
+            print ('sec')
+            time.sleep(1)
+
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(5)
+    try:
+        loop_forever()
+    except Exception, exc:
+        print exc
+
+    return
+
+
+def use_timeout_with_process():
+    from multiprocessing import Process
+
+    def do_action(mess=str, mess2=str):
+        while 1:
+            print (mess)
+            print (mess2)
+            time.sleep(1)
+
+    action_process = Process(target=do_action, args=('repeat','what'))
+
+    # Start the process and block for 5s
+    action_process.start()
+    action_process.join(timeout=2)
+
+    # Terminate the process
+    action_process.terminate()
+    print('Kill the action')
+
+    return
+
+
 if __name__ == "__main__":
     # test_Enum34(1)
     id = 'cycle3-raw_echo-2-2018-08-23-17-24-43-echoes-e.dat'
@@ -106,16 +154,29 @@ if __name__ == "__main__":
     print (i[0].split('cycle')[1])
 
     result = False
-
     result |= True
     print (result)
 
+    # JSON_to_file()
+
+    # use_timeout_with_signal()
+    use_timeout_with_process()
+
+
+
     arr = [1, 2, 3, 4]
+    temp_1 = 21
+    temp_2 = 20
+    xxx = np.array([temp_1, temp_2])
+    print (xxx[1])
+    # arr = [[1,2], [3,4]]
+    arr_np = np.array(arr)
     for id, ele in enumerate(arr):
         ele += 2
-        arr[id] = ele
+        # arr[id] = ele
     # arr = [ele +2 for ele in arr]
     print arr
 
-    JSON_to_file()
-    
+    for ele in np.nditer(arr_np, op_flags=['readwrite']):
+        ele += 2
+    print arr_np

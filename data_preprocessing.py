@@ -1,11 +1,9 @@
 import pandas as pd
 import numpy as np
 import datetime, sys
+from lib.echoes_database import *
 
 import unittest
-
-
-
 
 
 class preprocessing(object):
@@ -227,7 +225,7 @@ class preprocessing(object):
             SoH_value *= max_cap_Ah/rated_cap
 
 
-        return SoH_value
+        return round(SoH_value, 2)
 
 
     def calculate_SoC(self, table, actual_capacity=None, rated_cap=None):
@@ -303,6 +301,54 @@ class preprocessing(object):
         return start_time
 
 
+
+    def post_csv_data(self, table):
+
+        from pymongo import MongoClient, InsertOne
+        from bson.json_util import loads
+
+        import json
+
+
+        print("Initializing database")
+        echoes_db       = database(database='cycler-data')
+
+        batch_size = 1000
+        inserts = []
+        count = 0
+
+
+            
+        data_table = json.loads(table.to_json(orient='records'))
+        # pprint(data_table)
+
+        for element in data_table:
+            pprint (element)
+            result = echoes_db.insert_capture(element, collection='cycler-test')
+
+            print (result)
+
+
+        echoes_db.close()
+
+        # for line in dataset:
+        #     inserts.append(InsertOne(loads(line)))
+
+        #     count += 1
+
+        #     if count == batch_size:
+                
+        #         inserts = [] # empty out the buffer
+        #         count = 0 # reset the counter
+
+        # # post the data if any available in the buffer
+        # if inserts:
+
+        #     count = 0
+        # my_file.close()
+        return
+
+
     # Prints messages with function and class
     def dprint(self, txt, timestamp=False, error=False, level=1):
 
@@ -324,8 +370,10 @@ class preprocessing(object):
 
 
 class Test(unittest.TestCase):
+    
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC06-H73_181115/tempC/TC06-H73_181115'
     cycler_sort = preprocessing(
-        filename='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/TC04-H74_181113',
+        filename=_pathname,
         neware=True,
         time_sync_fix=False, debug=False)
 
@@ -342,7 +390,7 @@ class Test(unittest.TestCase):
         print (table.head().to_string())
 
         cycler_sort.merge_column(table)                                         # Merge capactity of CC and CV stages
-        table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/TC04-H74_181113_merged.csv')
+        table.to_csv(self._pathname + '_merged.csv')
         return table
 
 
@@ -355,7 +403,18 @@ class Test(unittest.TestCase):
         table = cycler_sort.calculate_SoC(table, SoH_value*64/100, 64)
 
         print (table.head().to_string())
-        table.to_csv('/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/TC04_merged_soc.csv')
+        table.to_csv(self._pathname + '_merged_full.csv')
+        return
+
+
+    def test_post_data_to_mongo(self, cycler_sort=cycler_sort):
+        with open (self._pathname + '_merged_full.csv') as my_file:
+            table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
+
+        my_file.close()
+
+        cycler_sort.post_csv_data(table)
+
         return
 
 

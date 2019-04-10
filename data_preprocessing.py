@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import datetime, sys
+import datetime
 from lib.echoes_database import *
 
 import unittest
@@ -302,12 +302,30 @@ class preprocessing(object):
 
 
 
-    def post_csv_data(self, table):
-
-        from pymongo import MongoClient, InsertOne
-        from bson.json_util import loads
-
+    def post_csv_data(self, table, battery_id):
         import json
+        import time
+
+        def convert_to_time_utc(time_string):
+            # time_string = u'11/14/2018 4:09:03 PM'
+            # format = "%m/%d/%Y %I:%M:%S %p"
+            format = "%m/%d/%Y %H:%M:%S"
+            strptime = datetime.datetime.strptime(time_string, format)
+
+            return strptime.isoformat()
+
+        def datetime_format(time_string):
+            format = "%m/%d/%Y %H:%M:%S"
+            timest =  time.strptime(time_string, format)
+            # tm_year = 2018, tm_mon = 11, tm_mday = 15,
+            # tm_hour = 16, tm_min = 45, tm_sec = 43,
+            # tm_wday = 3, tm_yday = 319, tm_isdst = -1)
+
+
+            return datetime.datetime(timest[0], timest[1],
+                              timest[2], timest[3],
+                              timest[4], timest[5])
+
 
 
         print("Initializing database")
@@ -316,36 +334,29 @@ class preprocessing(object):
         batch_size = 1000
         inserts = []
         count = 0
-
-
-            
+        del table['Unnamed: 0']
         data_table = json.loads(table.to_json(orient='records'))
-        # pprint(data_table)
 
         for element in data_table:
-            pprint (element)
-            result = echoes_db.insert_capture(element, collection='cycler-test')
+            if element['Date/Time'] is not None:
+                try:
+                    # print (element['Date/Time'])
+                    element['Date/Time'] = datetime_format(element['Date/Time'])
 
-            print (result)
+                except:
+                    print ('wrong format')
+                    continue
 
+
+
+                element['battery_id'] = battery_id
+                # pprint (element)
+
+                result = echoes_db.insert_capture(element, collection='cycler-test')
+                print (result)
 
         echoes_db.close()
 
-        # for line in dataset:
-        #     inserts.append(InsertOne(loads(line)))
-
-        #     count += 1
-
-        #     if count == batch_size:
-                
-        #         inserts = [] # empty out the buffer
-        #         count = 0 # reset the counter
-
-        # # post the data if any available in the buffer
-        # if inserts:
-
-        #     count = 0
-        # my_file.close()
         return
 
 
@@ -407,13 +418,13 @@ class Test(unittest.TestCase):
         return
 
 
-    def test_post_data_to_mongo(self, cycler_sort=cycler_sort):
+    def test_post_data_to_mongo(self, cycler_sort=cycler_sort, battery_id='TC06'):
         with open (self._pathname + '_merged_full.csv') as my_file:
             table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
 
         my_file.close()
 
-        cycler_sort.post_csv_data(table)
+        cycler_sort.post_csv_data(table, battery_id)
 
         return
 

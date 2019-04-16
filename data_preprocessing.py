@@ -129,19 +129,24 @@ class preprocessing(object):
                 table.iat[int(ind[i - 1]), id_num]) == 'CC_Chg':
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]                    # store the capacity
+                tot_wh = table.iat[int(ind[i]) - 1, energy_Wh]                  # store the energy
                 diff    = int(ind[i + 1]) - int(ind[i])                         # find the length of the stage
 
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
+                    table.iat[int(ind[i]) + j, energy_Wh] += tot_wh
 
             # Adding capacity - CV charge --> CC charge
             elif (table.iat[int(ind[i]), id_num] == 'CC_Chg' and
                   table.iat[int(ind[i - 1]), id_num] == 'CV_Chg'):
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
+                tot_wh = table.iat[int(ind[i]) - 1, energy_Wh]
                 diff    = int(ind[i + 1]) - int(ind[i])
+
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
+                    table.iat[int(ind[i]) + j, energy_Wh] += tot_wh
 
 
             # Keep the same capacity of CV_charge for rest cycle
@@ -153,9 +158,11 @@ class preprocessing(object):
                   table.iat[int(ind[i + 1]), id_num] == 'CC_DChg')):
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
+                tot_wh = table.iat[int(ind[i]) - 1, energy_Wh]
                 diff    = int(ind[i + 1]) - int(ind[i])
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
+                    table.iat[int(ind[i]) + j, energy_Wh] += tot_wh
 
 
             # Keep the last capacity/power of CCCV_charge for rest cycle
@@ -214,8 +221,10 @@ class preprocessing(object):
 
         cap_ah_arr = []
         for i in ind:
-            if table['id_num'][i] == 'CCCV_Chg':
-                cap_ah_arr.append( table['volt'][i])
+            # if table['id_num'][i] == 'CCCV_Chg':
+            #     cap_ah_arr.append( table['volt'][i])
+            if table['id_num'][i] == 'Rest':
+                cap_ah_arr.append( table['cap(Ah)'][i])
         max_cap_Ah = max(cap_ah_arr)
         print ('max capacity: ' + str(max_cap_Ah))
 
@@ -340,7 +349,6 @@ class preprocessing(object):
         for element in data_table:
             if element['Date/Time'] is not None:
                 try:
-                    # print (element['Date/Time'])
                     element['Date/Time'] = datetime_format(element['Date/Time'])
 
                 except:
@@ -350,7 +358,6 @@ class preprocessing(object):
 
 
                 element['battery_id'] = battery_id
-                # pprint (element)
 
                 result = echoes_db.insert_capture(element, collection='cycler-test')
                 print (result)
@@ -382,15 +389,19 @@ class preprocessing(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC06-H73_181115/tempC/TC06-H73_181115'
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-D/18650/tempC/18650_190412'
+    rated_cap = 2600
+
+    battery_id = raw_input('battery_id \n')
+
     cycler_sort = preprocessing(
         filename=_pathname,
-        neware=True,
+        neware=False,
         time_sync_fix=False, debug=False)
 
 
     def test_clean_data(self, cycler_sort=cycler_sort):
-
+        print (self.battery_id)
         cycler_sort.clean_test_data()
         return
 
@@ -408,17 +419,19 @@ class Test(unittest.TestCase):
     def test_calculate_SOHSOC(self,cycler_sort=cycler_sort):
         table = Test.test_merge_column(self, cycler_sort=cycler_sort)
 
-        SoH_value = cycler_sort.calculate_SoH(table, rated_cap=64)
+        SoH_value = cycler_sort.calculate_SoH(table, rated_cap=self.rated_cap)
         print('SOH: {0:.2f}'.format(SoH_value) )
 
-        table = cycler_sort.calculate_SoC(table, SoH_value*64/100, 64)
+        table = cycler_sort.calculate_SoC(table, SoH_value*self.rated_cap/100,
+                                          self.rated_cap)
 
         print (table.head().to_string())
         table.to_csv(self._pathname + '_merged_full.csv')
         return
 
 
-    def test_post_data_to_mongo(self, cycler_sort=cycler_sort, battery_id='TC06'):
+    def test_post_data_to_mongo(self, cycler_sort=cycler_sort,
+                                battery_id=battery_id):
         with open (self._pathname + '_merged_full.csv') as my_file:
             table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
 

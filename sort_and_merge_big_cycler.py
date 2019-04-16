@@ -23,12 +23,12 @@ def PopenIter(cmd):
                             shell=True).stdout.readline
 
 #==============================================================================#
-def _convert_to_time_object(str_obj, Neware_fix=False):
+def _convert_to_time_object(time_obj=str, Neware_machine=False):
 
-    if Neware_fix:
-        return dt.datetime.strptime(str_obj, '%m/%d/%Y %H:%M:%S')
+    if Neware_machine:
+        return dt.datetime.strptime(time_obj, '%m/%d/%Y %H:%M:%S')
     else:
-        return dt.datetime.strptime(str_obj, '%Y-%m-%d %H:%M:%S')
+        return dt.datetime.strptime(time_obj, '%Y-%m-%d %H:%M:%S')
 
 
 def _validate_strptime_format( date_text ):
@@ -205,13 +205,12 @@ def _read_time(table):
 
 
 # calculate the time difference in seconds. Return int
-def calculate_time(begin, end, unit):
-    end_dt      = _convert_to_time_object(end, False)
+def calculate_time(begin, end, neware_machine=True):
+    end_dt      = _convert_to_time_object(time_obj=end, Neware_machine=False)
 
-    if unit == 'sec':
-        # start_dt = _convert_to_time_object_fix(begin)
+    if neware_machine:
         start_dt = _convert_to_time_object(begin, True)
-    elif unit == 'min':
+    else:
         start_dt = _convert_to_time_object(begin, False)
 
 
@@ -223,17 +222,19 @@ def calculate_time(begin, end, unit):
         sec += diff.days*24*60*60 + diff.seconds
 
     m, s = divmod(sec, 60)
-    if unit == 'sec':
-        return sec
-    elif unit == 'min':
-        return m
+
+    return sec
+    # if unit == 'sec':
+    #     return sec
+    # elif unit == 'min':
+    #     return m
 
 
 # grasp the capacity corresponding to the filename
 # return line and value
 def find_capacity(begin, end, table):
     line = _start_row
-    diff = calculate_time(begin, end, 'sec')
+    diff = calculate_time(begin, end, neware_machine=__NEWARE__)
 
 
     # while diff > __PERIOD__:
@@ -254,14 +255,17 @@ def find_capacity(begin, end, table):
 
     if check:
         end_temp = table['Date/Time'][line + 2]
+    print ('end_temp_1: ' + str(end_temp))
 
+    diff = calculate_time(end_temp, end, neware_machine=__NEWARE__)
+    line += int(diff / __PERIOD__)
 
-    diff = calculate_time(end_temp, end, 'sec')
-    line += int(diff / 5)
-    print ('end_temp: ' + str(end_temp))
-    print ("diff: %s" % str(line))
+    print ('end_temp_correct: ' + str(end_temp))
+    print ("correct diff: %s \n" % str(diff))
+
     return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
-        table['current'][line], table['volt'][line]
+        table['current'][line], table['volt'][line], table['SoH'][line],\
+           table['SoC'][line]
 
 
 
@@ -291,11 +295,14 @@ def sort_by_name(filelist, starttime, table):
     volt    = []
     current = []
     charging= []
+    SoH     = []
+    SoC     = []
+
 
     for i, element in enumerate( filelist ):
 
         endtime = _get_timestamp_from_filename( element )
-        row, c, p, curr, voltage  = find_capacity(starttime, endtime, table)
+        row, c, p, curr, voltage, soh, soc  = find_capacity(starttime, endtime, table)
 
         index.append(row)
         cap.append(c)
@@ -303,6 +310,8 @@ def sort_by_name(filelist, starttime, table):
         volt.append(voltage)
         current.append(curr)
         filename.append(element)
+        SoH.append(soh)
+        SoC.append(soc)
 
         if curr < 0:
             charging.append( -1 )
@@ -311,15 +320,12 @@ def sort_by_name(filelist, starttime, table):
 
     print ("start sorting")
     column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
-            'power(Wh)', 'FileName']
+            'power(Wh)', 'FileName', 'SoH', 'SoC']
 
-    table_sorted = pd.DataFrame({'index'    : index,
-                                 'charging' : charging,
-                                 'volt'     : volt,
-                                 'current'  : current,
-                                 'cap(Ah)'  : cap,
-                                 'power(Wh)':power,
-                                 'FileName' : filename},
+    table_sorted = pd.DataFrame({'index'    : index, 'charging' : charging,
+                                 'volt'     : volt, 'current'  : current,
+                                 'cap(Ah)'  : cap, 'power(Wh)':power,
+                                 'FileName' : filename, 'SoH' : SoH, 'SoC' : SoC},
                                 columns=column)                                 # columns=[] used to set order of columns
 
     del table_sorted['index']
@@ -426,27 +432,31 @@ def clean_test_data(Neware_report = True, fix = False):
 
 def main():
 
-    ''' select data in 5s interval.
-    Fix=True if the general report captured data every 0.1s '''
-    table = clean_test_data(Neware_report = True, fix = False)
-
-
-    with open(cycler_path) as outfile:
-        table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    outfile.close()
-
-    table = merge_column(table)                                                 # Merge capactity of CC and CV stages
-    table.to_csv(cycler_path_merged)
+    # ''' select data in 5s interval.
+    # Fix=True if the general report captured data every 0.1s '''
+    # table = clean_test_data(Neware_report = True, fix = False)
+    #
+    #
+    # with open(cycler_path) as outfile:
+    #     table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    # outfile.close()
+    #
+    # table = merge_column(table)                                                 # Merge capactity of CC and CV stages
+    # table.to_csv(cycler_path_merged)
 
     '''
         Determining rows to check the value based on the time differnce
     '''
+    with open(cycler_path_merged) as outfile:
+        table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
+
+
     starttime = _read_time(table)                                               # when the test kicked-off
     print ('start-time: ' + str(starttime))
 
     filelist = display_list_of_file(keyword)                                    # store the list of filename
     battery_id_list = [battery_id for _ in range(len( filelist ))]              # fill up the whole list with battery_id
-    SoH_list        = [SoH for _ in range(len( filelist ))]
     trans_list      = [transducer_id for _ in range(len( filelist ))]
 
     # grasp the datetime from the filename
@@ -456,8 +466,9 @@ def main():
         datetime_list.append( st )
 
     table_sorted = sort_by_name(filelist, starttime, table)                     # grasp the data instance and sort
+    print (table_sorted.head().to_string())
+
     table_sorted['battery_id']      = battery_id_list                           # add battery id list into the report dateframe
-    table_sorted['SoH']             = SoH_list                                  # add SOH list into the report dateframe
     table_sorted['collection_date'] = datetime_list                             # add collection date list into report dateframe
     table_sorted['transducer_id']   = trans_list
 
@@ -493,20 +504,21 @@ keyword         = 'cycle'
 battery_id      = input('Input Battery ID: \n')
 SoH             = input('Input SoH value: \n')
 date            = input('Testing date: \n')
-transducer_id   = '067143' #'09807'
+transducer_id   = '039015'#'067143' #'09807'
 name            = battery_id + '-H' + str(SoH) + '_' + str(date)
 
 # name            = '18650_190320'
 # actual_capacity = raw_input('Input Real capacity')
 
-path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/'
+# path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/'
+path            = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-D/18650/tempC/'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
 cycler_path_merged = path + name + '_merged.csv'
 final_log_path  = path + name + '_sorted.csv'
 
-
-__PERIOD__  = 5                                                                 #time difference btw each log
+__NEWARE__  = False
+__PERIOD__  = 1                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
 

@@ -417,61 +417,60 @@ def main ():
         avgTable = pd.DataFrame({col_header : avg})
         avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)        # concat the avg data into dataframe
 
-        x_1 = np.arange(0, ped * row, ped)
-        ax1 = plt.subplot(212)
-        ax1.margins(0.05)
-        ax1.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
-        plt.xlim((0, 40))
-        plt.xlabel('time (us)')
-        plt.ylabel('amplitude')
-        plt.grid('on')
-        ax1.set_title(battery_id + SoH + ' | Bandpass [0.3 - 2.6] Mhz')
-        ax1.legend(loc='upper right')
-
-        if primary_channel:
-            x_2 = np.arange(79 * ped, 107 * ped, ped)                           # for gel
-            avg_2 = avg[79: 108]
-            # x_2 = np.arange(111 * ped, 136 * ped, ped)                        # for tape
-            # avg_2 = avg[111: 136]
-
-            ax2 = plt.subplot(221)
-            ax2.margins()
-            ax2.plot(x_2, avg_2)
-            ax2.set_title('Echo 1')
-            ax2.grid('on')
-
-            x_3 = np.arange(127*ped, 160*ped, ped)                              # for gel
-            avg_3 = avg[127 : 160]
-            # x_3 = np.arange(215 * ped, 251 * ped, ped)                        # for tape
-            # avg_3 = avg[215: 252]
-
-            ax3 = plt.subplot(222)
-            ax3.plot(x_3, avg_3)
-            ax3.set_title('Echo 2')
-            ax3.grid('on')
-
-        else:
-
-            x_4 = np.arange(144*ped, 187*ped, ped)
-            avg_4 = avg[144 : 187]
-            ax4 = plt.subplot(221)
-            ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
-            ax4.grid('on')
-            ax4.set_title(
-                battery_id + SoH + ' | Transmission | Bandpass [0.3 - 2.6] Mhz')
-        #     # plt.title(' TC06 |' + ' SoH = 72 | Bandpass Enabled | No Noise removed | secondary')
-
-        # ''' -------   plot the avg for checking clean data    ---- '''
-        # x_1 = np.arange(0, 1000000 *ped * row, 1000000*ped)
-        # # x_1 = [1000000.0*ped for i in range(0, row)]                 #convert to micro-sec unit scale
-        # plt.plot(x_1, avg,label='Capture 0%s ' % str(cycle_id))
-        # # plt.title(' Hyundai batt  |' + ' Bandpass Enabled [0.3Mhz - 2.0Mhz] ')
-        # # plt.title(' 16500 |Echo-A | Bandpass Enabled | Gain 0.65')
-        # # plt.xlim((0, 0.00005))
-        # plt.xlim(0,50)
-        # plt.xlabel('time (usec)')
+        # x_1 = np.arange(0, ped * row, ped)
+        # ax1 = plt.subplot(212)
+        # ax1.margins(0.05)
+        # ax1.plot(x_1, avg, label='Cycle %s ' % str(cycle_id))
+        # plt.xlim((0, 40))
+        # plt.xlabel('time (us)')
         # plt.ylabel('amplitude')
         # plt.grid('on')
+        # ax1.set_title(battery_id + SoH + ' | Bandpass [0.3 - 2.6] Mhz')
+        # ax1.legend(loc='upper right')
+        #
+        # if primary_channel:
+        #     x_2 = np.arange(79 * ped, 107 * ped, ped)                           # for gel
+        #     avg_2 = avg[79: 108]
+        #     # x_2 = np.arange(111 * ped, 136 * ped, ped)                        # for tape
+        #     # avg_2 = avg[111: 136]
+        #
+        #     ax2 = plt.subplot(221)
+        #     ax2.margins()
+        #     ax2.plot(x_2, avg_2)
+        #     ax2.set_title('Echo 1')
+        #     ax2.grid('on')
+        #
+        #     x_3 = np.arange(127*ped, 160*ped, ped)                              # for gel
+        #     avg_3 = avg[127 : 160]
+        #     # x_3 = np.arange(215 * ped, 251 * ped, ped)                        # for tape
+        #     # avg_3 = avg[215: 252]
+        #
+        #     ax3 = plt.subplot(222)
+        #     ax3.plot(x_3, avg_3)
+        #     ax3.set_title('Echo 2')
+        #     ax3.grid('on')
+        #
+        # else:
+        #
+        #     x_4 = np.arange(144*ped, 187*ped, ped)
+        #     avg_4 = avg[144 : 187]
+        #     ax4 = plt.subplot(221)
+        #     ax4.plot(x_4, avg_4, label='Cycle %s ' % str(cycle_id))
+        #     ax4.grid('on')
+        #     ax4.set_title(
+        #         battery_id + SoH + ' | Transmission | Bandpass [0.3 - 2.6] Mhz')
+
+        ''' -------   plot the avg for checking clean data    ---- '''
+        x_1 = np.arange(0, ped * row, ped)
+        # x_1 = [1000000.0*ped for i in range(0, row)]                 #convert to micro-sec unit scale
+        plt.plot(x_1, avg,label='Capture 0%s ' % str(cycle_id))
+        plt.title(' 18650 | Echo-D | Raw [0.3 - 2.6] Mhz | Gain 0.55')
+        # plt.xlim((0, 0.00005))
+        plt.xlim(0,50)
+        plt.xlabel('time (usec)')
+        plt.ylabel('amplitude')
+        plt.grid('on')
+        plt.legend(loc='upper right')
 
 
     ## avgTable_concat = avgTable_concat.mean( axis =1 )                         # avg all cycle
@@ -487,25 +486,25 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel = 'secondary'
+input_channel = 'primary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
-battery_id  = 'TC19-'
-SoH         = 'H78.1'
-day         = '_181223'
+battery_id  = 'TC02-'
+SoH         = 'H77.23'
+day         = '_190123'
 
 
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/' \
-          + battery_id + SoH + day + '/' + input_channel + '/'
+# address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/' \
+#           + battery_id + SoH + day + '-echo-B'+ '/' + input_channel + '/'
 
-
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-D/18650/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos  = 0  # number of capture in each cycle
 avgNum  = 64
-cycle   = 300
+cycle   = 750
 cycle_id = 0
 
 ME = 4
@@ -513,11 +512,12 @@ ME_id = 1
 
 # with open(address + 'background.dat') as my_file:
 #     y_str = my_file.read()
-#    y_str = y_str.splitlines()
-
+#     y_str = y_str.splitlines()
+#
 #     for num in y_str:
 #         backgrd.append(float(num))
 # my_file.close()
+
 
 echoes_dsp = echoes_signals( 7200000.0 )
 if __name__ == '__main__':

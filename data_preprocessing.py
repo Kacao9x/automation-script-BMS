@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-import datetime
+from datetime import datetime
 from lib.echoes_database import *
-
+import bson, time
 import unittest
 
 
@@ -46,6 +46,23 @@ class preprocessing(object):
 
 
     def clean_test_data(self):
+        def convert_runtime_to_sec(time_arr=[]):
+            end_stage_index = []
+            for idx, st in enumerate(time_arr):
+
+                try:
+                    pt = datetime.datetime.strptime(st, '%H:%M:%S.%f')
+                    sec = pt.second + pt.minute * 60 + pt.hour * 3600
+                except:
+                    print ('Value error')
+                    end_stage_index.append(idx)
+                    continue
+
+                # print ('index: {}, sec: {}'.format(str(idx), str(sec)))
+                time_arr[idx] = sec
+            return time_arr, end_stage_index
+
+
         with open(self._filename + '.txt', 'r') as my_file:
             if self._neware_:
                 lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
@@ -95,7 +112,14 @@ class preprocessing(object):
             cycler_data = self._filter_data_by_timeInterval(cycler_data,
                                                             self.period)
 
+        ''' Convert the runtime to sec '''
+        cycler_data['time'], bad_idx = convert_runtime_to_sec( cycler_data['time'] )
+        cycler_data.drop(bad_idx, axis=0, inplace=True)
+        cycler_data.reset_index(drop=True, inplace=True)
+        print (bad_idx)
+
         cycler_data.to_csv(self._filename + '.csv')                             #cycler path
+
 
         return cycler_data
 
@@ -116,12 +140,16 @@ class preprocessing(object):
         id_num      = table.columns.get_loc("id_num")
         cap_Ah      = table.columns.get_loc("cap(Ah)")
         energy_Wh   = table.columns.get_loc("en(Wh)")
+        sec         = table.columns.get_loc("time")
 
         # add 21.00 for real capacity
         # for i in range(0, int(ind[1])):
         #     table.iat[i, cap_mAh] = 38 + table.iat[i, cap_mAh]
-        table['cap(Ah)'] = table['cap(Ah)'].astype(float)
-        table['en(Wh)'] = table['en(Wh)'].astype(float)
+        table['cap(Ah)']    = table['cap(Ah)'].astype(float)
+        table['en(Wh)']     = table['en(Wh)'].astype(float)
+        table['time']       = table['time'].astype(float)
+
+
         for i in range(len(ind) - 1):
 
             # Adding capacity - CC charge --> CV charge
@@ -129,12 +157,14 @@ class preprocessing(object):
                 table.iat[int(ind[i - 1]), id_num]) == 'CC_Chg':
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]                    # store the capacity
-                tot_wh = table.iat[int(ind[i]) - 1, energy_Wh]                  # store the energy
+                tot_wh  = table.iat[int(ind[i]) - 1, energy_Wh]                 # store the energy
+                tot_sec = table.iat[int(ind[i]) - 1, sec]                       # store the total second
                 diff    = int(ind[i + 1]) - int(ind[i])                         # find the length of the stage
 
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
-                    table.iat[int(ind[i]) + j, energy_Wh] += tot_wh
+                    table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
+                    table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
+                    table.iat[int(ind[i]) + j, sec]         += tot_sec
 
             # Adding capacity - CV charge --> CC charge
             elif (table.iat[int(ind[i]), id_num] == 'CC_Chg' and
@@ -142,11 +172,13 @@ class preprocessing(object):
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
                 tot_wh = table.iat[int(ind[i]) - 1, energy_Wh]
+                tot_sec = table.iat[int(ind[i]) - 1, sec]
                 diff    = int(ind[i + 1]) - int(ind[i])
 
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
-                    table.iat[int(ind[i]) + j, energy_Wh] += tot_wh
+                    table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
+                    table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
+                    table.iat[int(ind[i]) + j, sec]         += tot_sec
 
 
             # Keep the same capacity of CV_charge for rest cycle
@@ -158,11 +190,14 @@ class preprocessing(object):
                   table.iat[int(ind[i + 1]), id_num] == 'CC_DChg')):
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
-                tot_wh = table.iat[int(ind[i]) - 1, energy_Wh]
+                tot_wh  = table.iat[int(ind[i]) - 1, energy_Wh]
+                tot_sec = table.iat[int(ind[i]) - 1, sec]
                 diff    = int(ind[i + 1]) - int(ind[i])
+
                 for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_Ah] += tot_cap
-                    table.iat[int(ind[i]) + j, energy_Wh] += tot_wh
+                    table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
+                    table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
+                    table.iat[int(ind[i])+ j, sec]          += tot_sec
 
 
             # Keep the last capacity/power of CCCV_charge for rest cycle
@@ -171,11 +206,25 @@ class preprocessing(object):
 
                 tot_cap = float(table.iat[int(ind[i]) - 1, cap_Ah])
                 tot_wh  = float(table.iat[int(ind[i]) - 1, energy_Wh])
+                tot_sec = table.iat[int(ind[i]) - 1, sec]
                 diff    = int(ind[i + 1]) - int(ind[i])
+
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
-
                     table.iat[int(ind[i]) + j, energy_Wh]   +=  tot_wh
+                    table.iat[int(ind[i]) + j, sec]         += tot_sec
+
+            # Adding total seconds of runtime to the next stage
+            elif ((table.iat[int(ind[i]), id_num] == 'Rest' and
+                  table.iat[int(ind[i - 1]), id_num] == 'CC_DChg')) or\
+                ((table.iat[int(ind[i]), id_num] == 'CCCV_Chg') and
+                 table.iat[int(ind[i - 1]), id_num] == 'Rest'):
+
+                tot_sec = table.iat[int(ind[i]) - 1, sec]
+                diff = int(ind[i + 1]) - int(ind[i])
+
+                for j in range(diff):
+                    table.iat[int(ind[i]) + j, sec] += tot_sec
 
 
             # Subtraction the capacity for dischage cycle
@@ -184,12 +233,15 @@ class preprocessing(object):
 
                 tot_cap = table.iat[int(ind[i + 1]) - 1, cap_Ah]
                 tot_wh  = table.iat[int(ind[i + 1]) - 1, energy_Wh]
+                tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
                 diff    = int(ind[i + 1]) - int(ind[i])
+
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah] = tot_cap -\
                                                          table.iat[int(ind[i]) + j, cap_Ah]
                     table.iat[int(ind[i]) + j, energy_Wh] = tot_wh - \
                                                         table.iat[int(ind[i]) + j, energy_Wh]
+                    table.iat[int(ind[i]) + j, sec] += tot_sec
 
 
         return table
@@ -343,6 +395,7 @@ class preprocessing(object):
         batch_size = 1000
         inserts = []
         count = 0
+
         del table['Unnamed: 0']
         data_table = json.loads(table.to_json(orient='records'))
 
@@ -356,10 +409,9 @@ class preprocessing(object):
                     continue
 
 
-
                 element['battery_id'] = battery_id
 
-                result = echoes_db.insert_capture(element, collection='cycler-test')
+                result = echoes_db.insert_capture(element, collection='TC06')
                 print (result)
 
         echoes_db.close()
@@ -375,28 +427,28 @@ class preprocessing(object):
                 function_name = sys._getframe(1).f_code.co_name
                 if timestamp:
                     print("  " + str(
-                        datetime.datetime.now()) + " " + self._class + ":" + function_name + "(): " + txt)
+                        datetime.datetime.now()) + " " + self._class +
+                          ":" + function_name + "(): " + txt)
                 else:
-                    print(
-                                "  " + self._class + ":" + function_name + "(): " + txt)
+                    print("  " + self._class + ":" + function_name + "(): " + txt)
 
 
 
-
+        return
 
 
 
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-D/18650/tempC/18650_190412'
-    rated_cap = 2600
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC06-H73_181115/tempC/TC06-H73_181115'
+    rated_cap = 64
 
-    battery_id = raw_input('battery_id \n')
+    battery_id = 'TC06' #raw_input('battery_id \n')
 
     cycler_sort = preprocessing(
         filename=_pathname,
-        neware=False,
+        neware=True,
         time_sync_fix=False, debug=False)
 
 
@@ -409,6 +461,8 @@ class Test(unittest.TestCase):
     def test_merge_column(self, cycler_sort=cycler_sort):
 
         table = cycler_sort.clean_test_data()
+        # with open (self._pathname + '.csv') as my_file:
+        #     table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
         print (table.head().to_string())
 
         cycler_sort.merge_column(table)                                         # Merge capactity of CC and CV stages
@@ -443,7 +497,15 @@ class Test(unittest.TestCase):
 
 
 
-    def test_something(self):
+    def test_cycler_data(self):
+        cycler_db = database(database='cycler-data')
+
+        query = {'Date/Time':{'$gt':ISODate('2018-11-15T16:45:45.000Z'),
+					'$lt':ISODate('2018-11-15T16:45:50.000Z')}}
+
+        res = cycler_db.search( query, collection='cycler-test')
+
+        pprint(res)
 
         return
 

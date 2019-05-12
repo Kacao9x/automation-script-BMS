@@ -4,9 +4,12 @@ import subprocess
 from pprint import pprint
 from bson import ObjectId
 import json, logging, random
+import pymongo.errors
 
 
 from lib.echoes_database import *
+
+import signal
 
 
 
@@ -24,6 +27,16 @@ def Popen(cmd):
 def PopenIter(cmd):
     return subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             shell=True).stdout.readline
+
+# def raise_timeout(signum, frame):
+#     # raise TimeoutError
+#     print('Exit program')
+#     pass
+
+def handler(signum, frame):
+    print ('... Forever is over! ...')
+    raise Exception("End of time")
+
 #==============================================================================#
 
 # display the file with keyword in ascending using BASH
@@ -113,7 +126,7 @@ def _get_cycle_number( filename ):
     name_strip = filename.split('-')
     cycle = name_strip[0].split('cycle')[1]
     print cycle
-    return int(cycle)
+    return (int(cycle))
 
 
 def post_csv_report():
@@ -184,15 +197,17 @@ def post_raw_data():
     while cycle_id < cycle + 1:
 
 
-        if pd.isnull(table.at[cycle_id-1,'volt']) or pd.isnull(table.at[cycle_id-1,'0']):
+        row = cycle_id - 1
+        if pd.isnull(table.at[row, 'volt']) or pd.isnull(table.at[row, '0']):
             print ('IGNORE %s' % str(cycle_id))
             cycle_id += 1
             continue
 
 
         bucket = {}
+        row = row  # row in PANDAS table start from 0
 
-        timest = _get_timestamp(table['FileName'][cycle_id - 1])
+        timest = _get_timestamp(table['FileName'][row])
         # print (timest)
         bucket['timestamp'] = datetime.datetime(timest['year'], timest['month'],
                                                 timest['day'], timest['hour'],
@@ -221,31 +236,28 @@ def post_raw_data():
             'input_channel' : input_channel
         }
 
-        bucket['SoH']           = float(table['SoH'][cycle_id - 1])
-        bucket['SoC']           = round(float(table['SoC'][cycle_id - 1]), 2)
+        bucket['SoH']           = float(table['SoH'][row])
+        bucket['SoC']           = round(float(table['SoC'][row]), 2)
         bucket['temperature']  = {
-            'top'   : float(table['Temperature_top'][cycle_id -1]),
-            'bottom': float(table['Temperature_bottom'][cycle_id -1])
+            'top'   : float(table['Temperature_top'][row -1]),
+            'bottom': float(table['Temperature_bottom'][row])
         }
-        bucket['battery_details']  = {
-            'power(Wh)'     : float(table['power(Wh)'][cycle_id -1]),
-            'cap(Ah)'       : float(table['cap(Ah)'][cycle_id -1]),
-            'current'       : float(table['current'][cycle_id -1]),
-            'volt'          : float(table['volt'][cycle_id -1]),
-            'charging'      : int(table['charging'][cycle_id -1])
-        }
+        # bucket['battery_details']  = {
+        #     'power(Wh)'     : float(table['power(Wh)'][row]),
+        #     'cap(Ah)'       : float(table['cap(Ah)'][row]),
+        #     'current'       : float(table['current'][row]),
+        #     'volt'          : float(table['volt'][row]),
+        #     'charging'      : int(table['charging'][row])
+        # }
 
-
-        row = cycle_id - 1                                                  # row in PANDAS table start from 0
 
         data = list(table.iloc[row, -512 : ].values)
-        capture_num = _get_cycle_number( table['FileName'][cycle_id - 1])
+        capture_num = _get_cycle_number(table['FileName'][row])
 
-        bucket['average_data'] = data
+        # bucket['average_data'] = data
         bucket['capture_number'] = capture_num
         bucket['raw_data'] = []
 
-        # pprint (bucket['capture_number'])
 
         oneRead, list_file = concat_all_data(tempC=False, search_key='cycle' +
                                             str(capture_num) + '-')
@@ -261,7 +273,6 @@ def post_raw_data():
         avgPos = 1
         while avgPos < column + 1:
             value = list(oneRead.loc[:, avgPos - 1].values)
-            # print (value)
             
             
             bucket['raw_data'].append(
@@ -273,43 +284,39 @@ def post_raw_data():
             avgPos += 1  # go to next column
 
 
-        res = echoes_db.insert_capture(record=bucket, collection=cabinet)
-        print (res)
+        # res = echoes_db.insert_capture(record=bucket, collection=cabinet)
+        # print (res)
 
-        # try:
-        #     res = echoes_db.insert_capture(record=bucket, collection=cabinet)
-        #     print (res)
-        # except pymongo.errors.ConnectionFailure, e:
-        #     print ('No connection: %s' % e)
+        try:
+            res = echoes_db.insert_capture(record=bucket, collection=cabinet)
+            print (res)
+        except pymongo.errors.ConnectionFailure as e:
+            print ('No connection: %s' % e)
+
         cycle_id += 1
-
 
     return
 
 
 #==============================================================================#
 
-battery_id      = 'TC18'    #input('Input Battery ID: \n')
-SoH             = 72.75       #input('Input SoH value: \n')
-date            = 181222    #input('Testing date: \n')
+battery_id      = 'TC06'    #input('Input Battery ID: \n')
+SoH             = 73       #input('Input SoH value: \n')
+date            = 181115    #input('Testing date: \n')
 
-input_channel   = 'secondary'
-cabinet         = 'tuna-can-official'
+input_channel   = 'primary'
+cabinet         = 'TC06'
 examiner        = 'Khoi'
 project         = 'Phase1-Build_SoH_Model'
 
-
-print("Initializing database")
-echoes_db       = database(database='echoes-captures')
-echoes_db.mongo_db = cabinet
 
 
 
 filename = battery_id + '-H' + str(SoH) + '_' + str(date) + '_' +input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC18-H72.75_181222/' + input_channel + '/'
-#
-#
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC06-H73_181115/' + input_channel + '/'
+
+
 
 # class Test(unittest.TestCase):
 #
@@ -330,7 +337,7 @@ address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC18-H72.75_181222/' 
 #             table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
 #         outfile.close()
 #
-#         db = database(database='echoes-captures')
+#         db = database(database='cycler-data')
 #
 #         db.insert_capture({'name': 'kacao-test'}, collection='tuna-can')
 #
@@ -377,18 +384,28 @@ address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC18-H72.75_181222/' 
 
 if __name__ == '__main__':
 
+    print("Initializing database")
+    echoes_db = database(database='cycler-data')
+
     res = echoes_db.find_one({'battery_id': battery_id,
                        'test_setting.input_channel': input_channel},
                       collection=cabinet)
 
-    if res is None:
-        post_raw_data()
-    else:
-        pass
+    post_raw_data()
+    # if res is None:
+    #     signal.signal(signal.SIGALRM, handler)
+    #     signal.alarm(1)
+    #
+    #     try:
+    #         post_raw_data()
+    #     except Exception, exc:
+    #         print exc
+    # else:
+    #     pass
 
-    # echoes_db.rename_field('battery_details.power(mWh)', 'battery_details.power(Wh)', collection=cabinet)
+    ## echoes_db.rename_field('battery_details.power(mWh)', 'battery_details.power(Wh)', collection=cabinet)
 
-    # echoes_db.remove_field('average_data', collection=cabinet)
+    ## echoes_db.remove_field('average_data', collection=cabinet)
 
     # post_csv_report()
 
@@ -423,7 +440,7 @@ if __name__ == '__main__':
     #     pprint(post)
 
 
-    ## echoes_db.delete(query={'battery_id': battery_id,
+    # echoes_db.delete(query={'battery_id': battery_id,
     #                         'test_setting.input_channel': input_channel},
     #                        collection=cabinet)
 
@@ -434,7 +451,7 @@ if __name__ == '__main__':
     outfile.close()
 
     db = database(database='echoes-captures')
-    rad_test = [65, 100, 150]
+    rad_test = [150, 100]
     # cycle_num = _get_cycle_number( table['FileName'][index - 1])
 
     for cycle_num in rad_test:
@@ -447,28 +464,27 @@ if __name__ == '__main__':
             print('cycle: ' + str(cycle_num) + ' No record found')
             continue
 
-        check_volt = (res['battery_details']['volt'] == table['volt'][
-            cycle_num - 1])
+        row_tb = cycle_num - 1
+
+        check_volt = (res['battery_details']['volt'] == table['volt'][row_tb])
         print('voltage: ' + str(check_volt))
         # self.assertEqual(check_volt, True)
 
-        check_cap = (res['battery_details']['cap(Ah)']) == table['cap(Ah)'][
-            cycle_num - 1]
+        check_cap=(res['battery_details']['cap(Ah)']) ==table['cap(Ah)'][row_tb]
         print('cap: ' + str(check_cap))
         # self.assertEqual(check_cap, True)
 
         check_name = (_get_cycle_number(
-            table['FileName'][cycle_num - 1]) == cycle_num)
+            table['FileName'][row_tb]) == cycle_num)
         # self.assertEqual(check_name, True)
 
-        check_data_1 = (res['average_data'][0]) == table['0'][cycle_num - 1]
+        check_data_1 = (res['average_data'][0]) == table['0'][row_tb]
         print(res['average_data'][0])
-        print(table['0'][cycle_num - 1])
+        print(table['0'][row_tb])
         print('data_1 match: ' + str(check_data_1))
         # self.assertEqual(check_data_1, True)
 
-        check_data_512 = (res['average_data'][511]) == table['511'][
-            cycle_num - 1]
+        check_data_512 = (res['average_data'][511]) == table['511'][row_tb]
         print('data_512 match: ' + str(check_data_512))
         # self.assertEqual(check_data_512, True)
 

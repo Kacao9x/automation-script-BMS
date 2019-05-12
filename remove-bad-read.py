@@ -78,7 +78,8 @@ input_channel = 'primary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/cylinder-cell/' + input_channel + '/'
+# address = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/' + input_channel + '/'
 
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-D/18650/primary/'
 if __name__ == '__main__':
     main()

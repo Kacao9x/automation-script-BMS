@@ -6,6 +6,10 @@ from enum import Enum
 import json as j
 import numpy as np
 import time
+import os
+import json
+from urllib import unquote
+import datetime
 
 class LED_Color(Enum):
     __order__ = 'red green blue yellow purple'
@@ -77,6 +81,25 @@ def calculate_mean_value():
     print (adc_captures_readout)
 
 
+def edit_element_numpy():
+    arr = [1, 2, 3, 4]
+    temp_1 = 21
+    temp_2 = 20
+    xxx = np.array([temp_1, temp_2])
+    print (xxx[1])
+    # arr = [[1,2], [3,4]]
+    arr_np = np.array(arr)
+    for id, ele in enumerate(arr):
+        ele += 2
+        # arr[id] = ele
+    # arr = [ele +2 for ele in arr]
+    print arr
+    
+    for ele in np.nditer(arr_np, op_flags=['readwrite']):
+        ele += 2
+    print arr_np
+
+
 def JSON_to_file():
     FILE = 'data/average.json'
     try:
@@ -106,7 +129,7 @@ def use_timeout_with_signal():
     This solution only works Unix system
     '''
     def handler(signum, frame):
-       print "Forever is over!"
+       print ("Forever is over!")
        raise Exception("end of time")
 
 
@@ -146,9 +169,99 @@ def use_timeout_with_process():
 
     return
 
+def convert_timest_to_sec(timest=""):
+    pt = datetime.datetime.strptime(timest, '%H:%M:%S.%f')
+    sec = pt.second + pt.minute * 60 + pt.hour * 3600
+
+    # x = time.strptime(timest.split('.')[0], '%H:%M:%S')
+    # sec = datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min,
+    #                    seconds=x.tm_sec).total_seconds()
+
+    #Method 2
+    # time = "01:34:11"
+    # sum(x * int(t) for x, t in zip([3600, 60, 1], time.split(":")))
+
+    print (sec)
+    return sec
+
+
+def convert_to_time_utc(time_string):
+    import pytz
+    import dateutil.parser
+    import datetime
+
+    # time_string = u'11/14/2018 4:09:03 PM'
+    desire = '2019-01-23T14:14:08.000+00:00'
+
+    # format = "%m/%d/%Y %I:%M:%S %p"
+    format = "%m/%d/%Y %H:%M:%S"
+    strptime = datetime.datetime.strptime(time_string, format)
+    print (strptime)
+    return strptime.isoformat()
+
+
+def datetime_format(time_string):
+    format = "%m/%d/%Y %H:%M:%S"
+    return time.strptime(time_string, format)
+
+
+def grap_middle_value():
+    def left(s, amount):
+        return s[:amount]
+
+    def right(s, amount):
+        return s[-amount:]
+
+    def mid(s, offset, amount):
+        return s[offset:offset+amount]
+
+    zc_array = [1,2,3,4, 9,10,11,12]
+    zc_left = [x for x in zc_array if x<=5]
+    print (zc_left)
+
+    # zc_left = left(zc_array, 4)
+    # zc_right = right (zc_array, 4)
+    zc_left_max = right( zc_left, 2)
+    print (zc_left)
+    # print (zc_right)
+    print (zc_left_max)
+
+def test_exception():
+    # timest = datetime_format(u'11/14/2018 16:09:03')
+    time_arr = [u'11/14/2018 16:09:03', None,u'353415574.4', u'12/1/2018 16:09:03']
+    for timest in time_arr:
+        if timest is not None:
+            try:
+                timest = datetime_format(timest)
+            except:
+                print ('wrong format')
+                continue
+
+            print (timest)
+            print (timest[1])
+
+    return
+
+
+def test_file_path():
+    file_path = os.path.dirname(os.path.abspath(__file__))
+    if os.path.isdir(file_path + '/data/'):
+        SESSION_CONFIG_PATH = file_path + '/data/session-config.pickle'
+        print (SESSION_CONFIG_PATH)
+    elif os.path.isdir('../data/'):
+        SESSION_CONFIG_PATH = '../data/session-config.pickle'
+        print (SESSION_CONFIG_PATH)
+    else:
+        print("Missing data/ directory")
+        exit()
+
+    return
+
 
 if __name__ == "__main__":
     # test_Enum34(1)
+
+
     id = 'cycle3-raw_echo-2-2018-08-23-17-24-43-echoes-e.dat'
     i = id.split('-')
     print (i[0].split('cycle')[1])
@@ -160,23 +273,14 @@ if __name__ == "__main__":
     # JSON_to_file()
 
     # use_timeout_with_signal()
-    use_timeout_with_process()
+    # use_timeout_with_process()
 
+    test_exception()
 
+    #edit_element_numpy()
 
-    arr = [1, 2, 3, 4]
-    temp_1 = 21
-    temp_2 = 20
-    xxx = np.array([temp_1, temp_2])
-    print (xxx[1])
-    # arr = [[1,2], [3,4]]
-    arr_np = np.array(arr)
-    for id, ele in enumerate(arr):
-        ele += 2
-        # arr[id] = ele
-    # arr = [ele +2 for ele in arr]
-    print arr
+    edit_element_numpy()
+    grap_middle_value()
+    convert_timest_to_sec('0:01:05.000')
+    test_file_path()
 
-    for ele in np.nditer(arr_np, op_flags=['readwrite']):
-        ele += 2
-    print arr_np

@@ -5,11 +5,12 @@
 from enum import Enum
 import json as j
 import numpy as np
-import time
 import os
 import json
-from urllib import unquote
-import datetime
+from datetime import datetime, timedelta
+from time import time
+import pytz
+
 
 class LED_Color(Enum):
     __order__ = 'red green blue yellow purple'
@@ -35,6 +36,13 @@ def test_Enum34(color):
         print("GGGG")
     elif color is LED_Color.blue.value:
         print("BBBB")
+
+
+def test_boolean_operator():
+    result = False
+    result |= True
+    print (result)
+
 
 def test_branching_function():
     for val in "string":
@@ -93,11 +101,11 @@ def edit_element_numpy():
         ele += 2
         # arr[id] = ele
     # arr = [ele +2 for ele in arr]
-    print arr
+    print (arr)
     
     for ele in np.nditer(arr_np, op_flags=['readwrite']):
         ele += 2
-    print arr_np
+    print (arr_np)
 
 
 def JSON_to_file():
@@ -142,8 +150,8 @@ def use_timeout_with_signal():
     signal.alarm(5)
     try:
         loop_forever()
-    except Exception, exc:
-        print exc
+    except Exception as e:
+        print (e)
 
     return
 
@@ -170,7 +178,7 @@ def use_timeout_with_process():
     return
 
 def convert_timest_to_sec(timest=""):
-    pt = datetime.datetime.strptime(timest, '%H:%M:%S.%f')
+    pt = datetime.strptime(timest, '%H:%M:%S.%f')
     sec = pt.second + pt.minute * 60 + pt.hour * 3600
 
     # x = time.strptime(timest.split('.')[0], '%H:%M:%S')
@@ -195,7 +203,7 @@ def convert_to_time_utc(time_string):
 
     # format = "%m/%d/%Y %I:%M:%S %p"
     format = "%m/%d/%Y %H:%M:%S"
-    strptime = datetime.datetime.strptime(time_string, format)
+    strptime = datetime.strptime(time_string, format)
     print (strptime)
     return strptime.isoformat()
 
@@ -258,6 +266,59 @@ def test_file_path():
     return
 
 
+def test_datetime_import():
+    # from datetime import datetime
+    # from time import time
+    import socket
+
+    CWD = os.getcwd()
+    if True:
+        st = datetime.fromtimestamp(time()).strftime('%Y%m%dT%H%M%S')
+        sk = socket.gethostname()
+        fn = os.path.join(CWD, "data", "{}_{}.dat".format(st, sk))
+
+        print (fn)
+
+def test_time_zone():
+
+
+    timezones = ['America/New_York', 
+                'America/Los_Angeles', 
+                'Europe/Madrid', 
+                'America/Puerto_Rico']
+
+    ts = datetime.now().replace(microsecond=0)
+    print ("Time ISOformat: {}".format(ts))
+    # time_string = datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+    # print ("Time to save file: {}".format(time_string))
+
+    bucket = {}
+    bucket['timestamp'] = ts.isoformat()
+
+    with open('data/timestamp_' + str(bucket['timestamp']) + '.json', 'w') as outfile:
+        outfile.write(json.dumps(bucket))
+    outfile.close()
+
+    # Python3 only!
+    # tzinfo = timezone.utc
+    # ts.replace(tzinfo=tzinfo)
+    # print (ts.replace(tzinfo=timezone.utc).isoformat())
+    # print (ts.strftime('%Y-%m-%dT%H-%M-%S'+'Z'+str(tzinfo)))
+    # print (ts.astimezone)
+    # print (datetime.utcnow().replace(tzinfo=timezone.utc).isoformat())
+
+    current_timezone = pytz.timezone("US/Eastern")
+    print (datetime.now(current_timezone).replace(microsecond=0).isoformat())
+    time_now = datetime.now(current_timezone).replace(microsecond=0)
+    print (time_now.strftime('%Y%m%dT%H%M%S.%Z'))
+    # print ()
+    unaware = datetime(2011, 8, 15, 8, 15, 12, 0)
+    aware = datetime(2011, 8, 15, 8, 15, 12, 0, pytz.UTC)
+    now_aware = pytz.utc.localize(unaware)
+    assert aware == now_aware
+
+
+
 if __name__ == "__main__":
     # test_Enum34(1)
 
@@ -266,21 +327,20 @@ if __name__ == "__main__":
     i = id.split('-')
     print (i[0].split('cycle')[1])
 
-    result = False
-    result |= True
-    print (result)
 
-    # JSON_to_file()
-
-    # use_timeout_with_signal()
-    # use_timeout_with_process()
 
     test_exception()
-
-    #edit_element_numpy()
+    test_datetime_import()
 
     edit_element_numpy()
     grap_middle_value()
     convert_timest_to_sec('0:01:05.000')
     test_file_path()
 
+    # JSON_to_file()
+
+    # use_timeout_with_signal()
+    # use_timeout_with_process()
+
+    test_time_zone()
+    

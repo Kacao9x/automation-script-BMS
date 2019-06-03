@@ -72,8 +72,94 @@ class Test(unittest.TestCase):
 		echoes_db.close()
 		return True
 
-	def test_two(self):
+	def test_timedelta(self):
+		echoes_db = database(database='cycler-data')
 
+		start_time_query = {
+			'battery_id': 'TC06',
+			'time': 0,
+			'id_num': "1"
+		}
+		projection = {
+			'_id': 0,
+			'Date/Time':1
+		}
+		start_time = echoes_db.find_one(start_time_query, projection,
+										collection='TC06')
+		print ('Start time : {} '.format(start_time))
+
+
+		# echoes_query = {
+		# 	'battery_id': 'TC06',
+		# 	'echoes_id': 'echoes-a'
+		# }
+		# projection = {
+		# 	'_id': 1,
+		# 	'timestamp':1,
+		# }
+		# echoes_cursor = echoes_db.search(echoes_query, projection,
+		# 								 collection='TC06')
+		#
+		# for element in echoes_cursor:
+		# 	pprint (element['timestamp'])
+		# 	print('Start time : {} '.format(start_time['Date/Time']))
+		#
+		# 	time_delta = element['timestamp'] - start_time['Date/Time']
+		# 	sec_diff = time_delta.days*86400 + time_delta.seconds - 5
+		# 	print ('delta time to find: {}'.format(sec_diff))
+		#
+		# 	cycler_search = {
+		# 		# 'time': {'$gte': sec_diff, '$lte': time_delta.seconds}
+		# 		'time': {
+		# 			'$gte':{
+		# 				'$subtract': [element['timestamp'], start_time['Date/Time']]
+		# 			}
+		# 		}
+		# 	}
+		#
+		# 	projection = {
+		# 		'_id': 0,
+		# 		'Date/Time':1,
+		# 		'time': 1,
+		# 	}
+		#
+		# 	res = echoes_db.search(cycler_search, projection, collection='TC06').limit(1)
+		#
+		# 	for element in res:
+		# 		pprint ('Reuslt: {}'.format(element))
+		# 	print ('\n')
+
+
+
+		'''
+		query 'start_time'
+		calculate + add new field for the time difference in Echoes data
+		compare with runtime on each cycler logs
+		retrieve and merge two collections
+		'''
+		field = 'timestamp'
+		projection = {
+			'$project': {
+				'duration': {
+					'$divide': [{
+						'$subtract': ['$'+field, start_time]
+					}, 3600000]
+				}
+			}}
+		sort_stage = {'$sort': {'duration': 1}}
+		limit_stage = {'$limit': 1}
+
+
+		pipeline = [
+			projection,
+			sort_stage,
+			limit_stage
+		]
+
+		echoes_db.aggregation(pipeline, collection='TC06')
+
+
+		echoes_db.close()
 		return True
 
 
@@ -81,4 +167,4 @@ class Test(unittest.TestCase):
 
 
 if __name__ == 'main':
-    unittest.main()
+	unittest.main()

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 '''
@@ -69,8 +69,6 @@ def main():
         elif __TEST__ == 'tran':
             pass  # Do nothing on secondary
 
-        # ============== Save Temperature ==============#
-        # _save_capture_data(cycleID, 'temp', [], True, True, False)
 
         print ('End cycle \n \n')
         time.sleep(__MINUTE__ * 60)
@@ -87,8 +85,7 @@ def main():
 
 def create_data_folder():
     # ======= Create folder to save logs and data =======#
-    ts = time.time()
-    ts_print = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+    ts_print = datetime.datetime.now().replace(microsecond=0).isoformat()
     try:
         if not os.path.exists(os.getcwd() + '/logs/'):
             os.makedirs(os.getcwd() + '/logs/')
@@ -153,7 +150,7 @@ def save_system_logs():
 #                               System Config                                  #
 # =============================================================================#
 def _voltage_init():
-    print str(__VOLTAGE__)
+    print (str(__VOLTAGE__))
     if __VOLTAGE__ == 85:
         return echoes_1.set_impulse_type(Impulse_Voltage.impulse_85v.value)
     elif __VOLTAGE__ == 80:
@@ -232,7 +229,7 @@ def _input_capture_init():
 
 
 def _VGA_gain_init():
-    print __GAIN__
+    print (__GAIN__)
     return echoes_1.set_vga_gain(__GAIN__)
 
 
@@ -271,144 +268,75 @@ def system_config():
 # =============================================================================#
 #                       Signal Acquisition Supporting Method                   #
 # =============================================================================#
-
-# def _save_capture_to_file(cycleID=int, data_arr=[], tempC=[]):
-#     ''' Save signal data readout'''
-#     for runID, output in enumerate(data_arr):
-
-#         ts = time()
-
-#         if (output and __INPUT__ == 1):
-#             st = 'cycle' + str(cycleID + 1) + \
-#                  '-raw_echo-' + str(runID + 1) + \
-#                  '-' + datetime.fromtimestamp(ts).strftime(
-#                 '%Y-%m-%d-%H-%M-%S')
-#             fn = "data/primary/" + st + "-" + __HOST__ + ".dat"
-
-#         elif (output and __INPUT__ == 2):
-#             st = 'cycle' + str(cycleID + 1) + \
-#                  '-raw_trans-' + str(runID + 1) + \
-#                  '-' + datetime.fromtimestamp(ts).strftime(
-#                 '%Y-%m-%d-%H-%M-%S')
-#             fn = "data/secondary/" + st + "-" + __HOST__ + ".dat"
-
-#         else:
-#             return
-
-#         with open(fn, "w") as filehandle:
-#             for samp in output:
-#                 filehandle.write(str(samp) + "\n")
-#         filehandle.close()
-
-#     ''' Saving temperature readout '''
-#     if tempC:
-#         fn = "tempC/" + 'cycle' + str(cycleID + 1) + "-" + \
-#             'temp-'+ datetime.fromtimestamp(ts).strftime(
-#                 '%Y-%m-%d-%H-%M-%S') + '-' + __HOST__ + ".dat"
-        
-#         with open(fn, "w") as filehandle:
-#             filehandle.write('TempC_1_and_2: %s  %s oC' % (str(tempC[0]),
-#                                                            str(tempC[1])))
-#         filehandle.close()
-#     return
-
-def _save_capture_to_file(cycleID=int, data_arr=[], tempC=[]):
-    global trans_primary, trans_secondary
-    ts = time.time()
-    time_str = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     
+def _json_creator(cycleID=int, data_arr=[], tempC=[]):
+    global trans_primary, trans_secondary
+
+    bucket = {}
+    bucket['test_examiner'] = __EXAMINER__
+
+    bucket['battery_id'] = __battID__
+    bucket['transducer_id'] = {
+        'primary': trans_primary,
+        'secondary': trans_secondary
+    }
+    bucket['echoes_id'] = __HOST__
+
+    bucket['test_setting'] = echoes_1.get_session_data()
+
+    bucket['temperature'] = tempC
+
+    bucket['capture_number'] = cycleID + 1
+    # avg = np.mean(data_arr, axis=0)
+    # bucket['average_data'] = avg.tolist()
+    bucket['raw_data'] = []
+
+    for output in data_arr:
+        bucket['raw_data'].append(output)
+    return bucket
+
+
+def save_data_to_file(cycleID=int, bucket={}):
+    bucket['timestamp'] = datetime.datetime.now().replace(microsecond=0).isoformat()
+
     if (__INPUT__ == 1):
-        st = 'cycle' + str(cycleID + 1) + '_echo_'+ time_str
+        st = 'cycle' + str(cycleID + 1) + '_echo_' + bucket['timestamp']
         fn = "data/primary/" + st + "_" + __HOST__ + ".json"
     elif (__INPUT__ == 2):
-        st = 'cycle' + str(cycleID + 1) + '_trans_'+ time_str
+        st = 'cycle' + str(cycleID + 1) + '_trans_' + bucket['timestamp']
         fn = "data/secondary/" + st + "_" + __HOST__ + ".json"
     else:
         return
 
 
-    bucket = {}
-    bucket['test_examiner'] = __EXAMINER__
-    bucket['timestamp']     = time_str
-
-
-    bucket['battery_id']    = __battID__
-    bucket['transducer_id'] =   {
-        'primary'       : trans_primary,
-        'secondary'     : trans_secondary
-    }
-    bucket['echoes_id']     = __HOST__
-    
-    bucket['test_setting'] = echoes_1.get_session_data()
-
-    bucket['temperature']  = {
-        'top'   : tempC[0],
-        'bottom': tempC[1]
-    }
-
-    bucket['capture_number']    = cycleID + 1
-    bucket['raw_data']          = []
-
-    for output in data_arr:
-        bucket['raw_data'].append(output)
-    
     try:
         with open(fn, 'w') as writeout:
             writeout.write(json.dumps(bucket))
     except:
-        sys.exit("error to writing to job file")
+        print ("error to writing to job file")
     finally:
         writeout.close()
-        
+
     return
 
 
-def _save_capture_to_Mongodb(cycleID=int, data_arr=[], tempC=[]):
+def save_data_to_mongo(bucket={}):
     print("Initializing database")
-    echoes_db           = database(database='echoes-captures')
-    cabinet             = __battID__
-    echoes_db.mongo_db  = cabinet
+    echoes_db = database(database='echoes-captures')
+    cabinet = __battID__
+    echoes_db.mongo_db = cabinet
 
-    global trans_primary, trans_secondary
-
-    bucket = {}
-    bucket['test_examiner'] = __EXAMINER__
-    bucket['project_name']  = 'Phase1-BuildML-model'
-    bucket['timestamp']     = datetime.datetime.now()
-
-
-    bucket['battery_id']    = __battID__
-    bucket['transducer_id'] =   {
-        'primary'       : trans_primary,
-        'secondary'     : trans_secondary
-    }
-    bucket['echoes_id']     = __HOST__
-    
-    bucket['test_setting'] = echoes_1.get_session_data()
-
-    bucket['temperature']  = {
-        'top'   : tempC[0],
-        'bottom': tempC[1]
-    }
-
-    
-    bucket['capture_number']    = cycleID + 1
-    bucket['raw_data']          = []
-    # avg = np.mean(data_arr, axis=0)
-    # bucket['average_data']      = avg.tolist()
-
-    for output in data_arr:
-        bucket['raw_data'].append(output)
-
+    bucket['timestamp'] = datetime.datetime.now().replace(microsecond=0)
     try:
         res = echoes_db.insert_capture(record=bucket, collection=cabinet)
-        print (res)
+        print(res)
     except:
-        print ("Error save file to mongo")
-    
+        print("Error save file to mongo")
+
     echoes_db.close()
     return
-    
+
+
 
 def capture_raw_output():
     adc_captures = echoes_1.capture_and_read(send_impulse=True)
@@ -470,13 +398,14 @@ def capture_signal(cycleID=int):
     adc_captures_float = capture_and_average_output(adc_captures_float)
 
     # Reading temperature sensor
-    tempC_bottom = temp_sense_secondary.get_average_temperature_celcius(16)
-    tempC_top = temp_sense_secondary.get_average_temperature_celcius(16)
+    tempC_bottom = 10   #temp_sense_secondary.get_average_temperature_celcius(16)
+    tempC_top = 12      #temp_sense_secondary.get_average_temperature_celcius(16)
     tempC = [tempC_top, tempC_bottom]
 
     # Capture signal and saving
-    # _save_capture_to_Mongodb(cycleID, adc_captures_float, tempC)
-    _save_capture_to_file(cycleID, adc_captures_float, tempC)
+    bucket = _json_creator(cycleID, adc_captures_float, tempC)
+    save_data_to_file(cycleID, bucket)
+    save_data_to_mongo(bucket)
 
     print ("Successfully capture raw data")
     return
@@ -533,7 +462,7 @@ def ParseHelpers():
 
 
     # ============================ Add-on feature ==============================#
-    parser.add_argument('--repeat', default=1, type=int, choices=range(1, 1001),
+    parser.add_argument('--repeat', default=1, type=int, choices=range(1, 2501),
                         dest='repeat', metavar='[1,100]',
                         help='number of repetition')
 
@@ -570,27 +499,24 @@ trans_secondary = 98102
 
 
 print("Initializing EchOES 1 and 2")
-echoes_1 = echoes()  # set Impulse=True for 2nd transducer
+echoes_1 = echoes()
 echoes_1.reset_micro()
 echoes_1.start_new_session()
+echoes_1.set_adc_synchro_delay(25)
 
-# print("Initializing database")
-# echoes_db = database(database='echoes-captures')
-# cabinet         = 'tuna-can-testing'
-# echoes_db.mongo_db = cabinet
 
 print("Initializing signal processing")
 echoes_dsp = echoes_signals(__SAMPLING__)
 
-print("Initializing temp sensor")
-temp_sense_primary      = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
-temp_sense_secondary    = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
+# print("Initializing temp sensor")
+# temp_sense_primary      = echoes_temp_sense(PRIMARY_TEMP_SENSE_ADDR)
+# temp_sense_secondary    = echoes_temp_sense(SECONDARY_TEMP_SENSE_ADDR)
 
 
 
 if __TEST__ is None:
     __TEST__ = ' '
-    print ('Battery type not selected \n')
+    print ('Please select Reflection or Tranmission test \n')
 else:
     print ('Test selected: ' + args.test)
 

@@ -92,60 +92,60 @@ def concat_all_data(tempC = bool, search_key = str):
 
 
 
-def _unsued_method():
+def plot_temperature():
     """
     (5) Temperature Plot
     """
-    # with open(address + 'Me03-H100_181214_sorted.csv') as outfile:
-    #     tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    # outfile.close()
-    #
-    # # calculate the value at 30ns
-    # cyc, temp_value = [], []
-    # while cycle_id < cycle + 1:
-    #     cyc.append(cycle_id)
-    #     temp_value.append(tempTable['Temperature_top'][ cycle_id - 1])
-    #     cycle_id += 1
-    #
-    # plt.figure(5)
-    # plt.plot(cyc, temp_value, '-*')
-    # plt.title('Temperature vs Cycle | SOH = 100')
-    # plt.xlabel('Cycle')
-    # plt.ylabel('TempC oC')
-    # plt.interactive(False)
-    # plt.show()
+    with open(address + 'Me03-H100_181214_sorted.csv') as outfile:
+        tempTable = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+    outfile.close()
+    
+    # calculate the value at 30ns
+    cyc, temp_value = [], []
+    while cycle_id < cycle + 1:
+        cyc.append(cycle_id)
+        temp_value.append(tempTable['Temperature_top'][ cycle_id - 1])
+        cycle_id += 1
+    
+    plt.figure(5)
+    plt.plot(cyc, temp_value, '-*')
+    plt.title('Temperature vs Cycle | SOH = 100')
+    plt.xlabel('Cycle')
+    plt.ylabel('TempC oC')
+    plt.interactive(False)
+    plt.show()
 
 
-def _extra_plot_function():
+def signal_comparision_board2board():
 
     """
      (7) plot signals from different board
     """
-    # txt = 'Board 1-2-3-4 denotes for Echoes-A, B, C, D respectively'
-    # while cycle_id < cycle + 1:
-    #     with open(address + 'cycle' + str(cycle_id) + '.csv') as outfile:
-    #         table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
-    #     outfile.close()
+    txt = 'Board 1-2-3-4 denotes for Echoes-A, B, C, D respectively'
+    while cycle_id < cycle + 1:
+        with open(address + 'cycle' + str(cycle_id) + '.csv') as outfile:
+            table = pd.read_csv(outfile, sep=',', error_bad_lines=False)
+        outfile.close()
 
-    #     print (table.head().to_string())
-    #     [row, column] = table.shape
+        print (table.head().to_string())
+        [row, column] = table.shape
 
-    #     # avg = np.mean(table['data'], axis=1)  # average 64 captures
-    #     avg = echoes_dsp.apply_bandpass_filter(table['data'], 300000, 1200000,
-    #                                            51)  # apply bandpass
+        # avg = np.mean(table['data'], axis=1)  # average 64 captures
+        avg = echoes_dsp.apply_bandpass_filter(table['data'], 300000, 1200000,
+                                               51)  # apply bandpass
 
-    #     x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
-    #     plt.plot(x, avg, marker='-*', label='Board %s ' % str(cycle_id))
-    #     # plt.title(' Me02 |' + ' Bandpass Enabled | No Noise removed')
-    #     plt.title('Tuna Can | Negative-bipolar | Gain 0.55 | External Oscillator')
-    #     plt.text(1, 1, txt)
-    #     plt.xlim((0, 0.00005))
-    #     plt.xlabel('time')
-    #     plt.ylabel('amplitude')
-    #     cycle_id += 1
+        x = np.arange(0, 1.38888889e-7 * row, 1.38888889e-7)
+        plt.plot(x, avg, marker='-*', label='Board %s ' % str(cycle_id))
+        # plt.title(' Me02 |' + ' Bandpass Enabled | No Noise removed')
+        plt.title('Tuna Can | Negative-bipolar | Gain 0.55 | External Oscillator')
+        plt.text(1, 1, txt)
+        plt.xlim((0, 0.00005))
+        plt.xlabel('time')
+        plt.ylabel('amplitude')
+        cycle_id += 1
 
-    # plt.legend()
-    # plt.show()
+    plt.legend()
+    plt.show()
 
 
 def check_data_quality():
@@ -437,6 +437,41 @@ def check_data_quality_mongo():
 
     return
 
+def plot_signal_from_mongo():
+    echoes_db = database(database='echoes-captures')
+
+    query = {}
+    projection={
+        'raw_data':1
+        # 'temperature':1,
+        # 'echoes_setting':1
+    }
+    data = echoes_db.search(query=query,projection=projection,
+                                     collection="Me06")
+
+
+    sample = 0
+    print (len(data['raw_data'][0]))
+    while sample < len(data['raw_data']):
+        dt = 1.38888E-7#float(1/7200000)
+        row = 512
+        x = np.arange(0, dt * row, dt)
+        filter_data = echoes_dsp.apply_bandpass_filter(data['raw_data'][sample],
+                                               100000, 1000000, 51)
+        plt.figure(1)
+        plt.title('Signal Plot')
+        plt.interactive(False)
+        # plt.plot(x, data['raw_data'][sample])
+        plt.plot(x, data['raw_data'][sample], label='Sample 0{} '.format( str(sample +1)))
+        plt.grid('on')
+        plt.legend(loc='upper right')
+
+        sample += 1
+    plt.show()
+
+    echoes_db.close()
+    return
+
 
 #==============================================================================#
 #======================== MAIN FUNCTION ======================================-#
@@ -465,42 +500,8 @@ def main ():
     """
     (4) Plot all 64 samplings in a capture. Query data from Mongodb
     """
-    # echoes_db = database(database='echoes-captures')
-
-    # query = {}
-    # projection={
-    #     'raw_data':1
-    #     # 'temperature':1,
-    #     # 'echoes_setting':1
-    # }
-    # data = echoes_db.search(query=query,projection=projection,
-    #                                  collection="Me06")
-
-
-    # sample = 0
-    # print (len(data['raw_data'][0]))
-    # while sample < len(data['raw_data']):
-    #     dt = 1.38888E-7#float(1/7200000)
-    #     row = 512
-    #     x = np.arange(0, dt * row, dt)
-    #     filter_data = echoes_dsp.apply_bandpass_filter(data['raw_data'][sample],
-    #                                            100000, 1000000, 51)
-    #     plt.figure(1)
-    #     plt.title('Signal Plot')
-    #     plt.interactive(False)
-    #     # plt.plot(x, data['raw_data'][sample])
-    #     plt.plot(x, data['raw_data'][sample], label='Sample 0{} '.format( str(sample +1)))
-    #     plt.grid('on')
-    #     plt.legend(loc='upper right')
-
-    #     sample += 1
-    # plt.show()
-
-    # echoes_db.close()
-
-
-
-
+    plot_signal_from_mongo()
+    
 
     return
 #==============================================================================#

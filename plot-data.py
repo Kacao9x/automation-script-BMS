@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
+
 # import thLib as th
 import pandas as pd
 from lib.echoes_signalprocessing import *
 from lib.echoes_database import *
 from bson import ObjectId
-
+import json
 
 #==============================================================================#
 
@@ -115,7 +116,6 @@ def plot_temperature():
     plt.interactive(False)
     plt.show()
 
-
 def signal_comparision_board2board():
 
     """
@@ -149,17 +149,26 @@ def signal_comparision_board2board():
 
 
 def check_data_quality():
-    
-    def find_dup_run( x, isPrimary ):
+    """
+    This functions detect bad sampling in a capture.
+    The first method detect a flat curve
+    Second method detect a time shift more than 2 data points
+    """
+    # These constants are sensitive to VGA change. VGA default is 0.55
+
+    PRIMARY_AMP_RANGE = 0.4
+    SECONDARY_AMP_RANGE_LOW = 0.015
+    SECONDARY_AMP_RANGE_HIGH = 0.5
+    def find_dup_run(x, isPrimary):
         # return max(x) == min(x)   # for echo C + D
-        max_value = max( x )
-        min_value = min( x )
+        max_value = max(x)
+        min_value = min(x)
 
         if isPrimary:
-            return max_value - min_value < 0.4
+            return max_value - min_value < PRIMARY_AMP_RANGE
         else:
-            return ( max_value - min_value < 0.015 or
-                    max_value - min_value > 0.5 )                                   # for echo B
+            return (max_value - min_value < SECONDARY_AMP_RANGE_LOW or
+                    max_value - min_value > SECONDARY_AMP_RANGE_HIGH)                                   # for echo B
 
 
     def _locate_2ndEcho_index( data ):
@@ -193,15 +202,15 @@ def check_data_quality():
             my_file.close()
 
             data = [float(num) for num in y_str]                                # convert string to float
-            ''' DETECT a long streak in a sample '''
+            ''' DETECT a flat curve in a sample '''
             if find_dup_run(data, primary_channel):
                 print ("cycle : {}".format( cycle_id + 1 ))
                 with open(address + 'bad-flat.txt', 'ab') as writeout:
                     writeout.writelines(filename + '\n')
                 writeout.close()
 
-            ''' detect a time-shift in signal
-                by checking differnce of 2nd echo position against average'''
+            ''' DETECT a time-shift in signal
+                by checking differnce of 1st/2nd echo position against average'''
             # echo_idx = _locate_2ndEcho_index(data)
             echo_idx = _locate_1stEcho_index(data)
             echoes_index.append(echo_idx)
@@ -323,16 +332,26 @@ def check_signal_plot(bandpass=False, backgrd_subtract=False):
 
 
 def check_data_quality_mongo():
+    """
+    This functions detect bad sampling in a capture.
+    The first method detect a flat curve
+    Second method detect a time shift more than 2 data points
+    """
+    # These constants are sensitive to VGA change. VGA default is 0.55
+
+    PRIMARY_AMP_RANGE = 0.4
+    SECONDARY_AMP_RANGE_LOW = 0.015
+    SECONDARY_AMP_RANGE_HIGH = 0.5
     def find_dup_run(x, isPrimary):
         # return max(x) == min(x)   # for echo C + D
         max_value = max(x)
         min_value = min(x)
 
         if isPrimary:
-            return max_value - min_value < 0.4
+            return max_value - min_value < PRIMARY_AMP_RANGE
         else:
-            return (max_value - min_value < 0.015 or
-                    max_value - min_value > 0.5)  # for echo B
+            return (max_value - min_value < SECONDARY_AMP_RANGE_LOW or
+                    max_value - min_value > SECONDARY_AMP_RANGE_HIGH)
 
     def _locate_2ndEcho_index(data):
         data = data[140: 260]
@@ -394,46 +413,7 @@ def check_data_quality_mongo():
         print ("capture ID: {}".format(count))
 
 
-
     echoes_db.close()
-    # global cycle
-    # global cycle_id
-    # while cycle_id < cycle + 1:
-    #     echoes_index = []
-    #     list_file = display_list_of_file('cycle' + str(cycle_id) + '-')
-    #     print(list_file)
-    #
-    #     ''' Loop through every sample data in a read/capture '''
-    #     for filename in list_file:
-    #         with open(address + filename) as my_file:
-    #             y_str = my_file.read()
-    #             y_str = y_str.splitlines()
-    #         my_file.close()
-    #
-    #         data = [float(num) for num in y_str]  # convert string to float
-    #         ''' DETECT a long streak in a sample '''
-    #         if find_dup_run(data, primary_channel):
-    #             print("cycle : %s" % str(cycle_id + 1))
-    #             with open(address + 'bad-flat.txt', 'ab') as writeout:
-    #                 writeout.writelines(filename + '\n')
-    #             writeout.close()
-    #
-    #         ''' detect a time-shift in signal
-    #             by checking differnce of 2nd echo position against average'''
-    #         echo_idx = _locate_2ndEcho_index(data)
-    #         echoes_index.append(echo_idx)
-    #
-    #     ''' DETECT a time-shift in signal '''
-    #     avg = _find_avg(echoes_index)
-    #     print('avg is: %s' % str(avg))
-    #     for i, element in enumerate(echoes_index):
-    #         if abs(element - avg) > 2:
-    #             print("shift %s" % str(i + 1))
-    #             with open(address + 'bad-shift.txt', 'ab') as writeout:
-    #                 writeout.writelines(str(cycle_id) + '-' + str(i + 1) + '\n')
-    #             writeout.close()
-    #
-    #     cycle_id += 1
 
     return
 
@@ -473,6 +453,78 @@ def plot_signal_from_mongo():
     return
 
 
+def check_data_quality_json():
+
+    return
+
+def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
+    """
+    (2) plot avg of each cycle. Save avg (mean) to csv file
+    """
+    global cycle
+    global cycle_id
+    avgTable_concat = pd.DataFrame()
+    plt.figure(1)
+    plt.interactive(False)
+    ped = 1.38888889e-1         #* 1000000
+
+
+    key='cycle'
+    list_file = display_list_of_file(key)
+    print (list_file)
+
+    for oneFile in list_file:
+        strip_name = oneFile.split('_')
+        captureID =  (strip_name[0].split('cycle')[1])
+        print ('captureID: {}'.format(captureID))
+
+        with open(address + oneFile) as json_file:
+            echo_data = json.load(json_file)
+        json_file.close()
+
+        raw_set_pd = pd.DataFrame()
+        for idx, raw in enumerate( echo_data['raw_data'] ):
+            single_set = pd.DataFrame({idx: raw})                        # concat all data set into a singl dataframe
+            raw_set_pd = pd.concat([raw_set_pd, single_set], axis=1,
+                                    ignore_index=True)
+
+        
+        [row,column] = raw_set_pd.shape
+        print ("capture: {}, row {} col {}".format(str(echo_data['capture_number']), 
+                                                    str(row), str(column)))
+
+        avg = np.mean(raw_set_pd, axis=1)                                          # average 64 captures
+        if bandpass:
+            avg = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)      # apply bandpass
+
+        if backgrd_subtract:
+            avg = [a_i - b_i for a_i, b_i in zip( avg, backgrd )] 
+
+        ''' -------   plot the avg for checking clean data    ---- '''
+        x_1 = np.arange(0, ped * row, ped)
+        # x_1 = [1000000.0*ped for i in range(0, row)]                 #convert to micro-sec unit scale
+        plt.plot(x_1, avg,label='Cycle {:.1f}'.format(echo_data['capture_number']))
+        plt.title(' 18650 | bandpass [0.3 - 1.2] Mhz | Gain 0.55')
+        # plt.xlim((0, 0.00005))
+        plt.xlim(0,70)
+        plt.xlabel('time (usec)')
+        plt.ylabel('amplitude')
+        plt.grid('on')
+        plt.legend(loc='upper right')
+
+        # plt.show() # plot an individual signal
+
+
+        # Save all average data into Dataframe
+        avgTable = pd.DataFrame({captureID : avg})
+        avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
+
+    plt.show()
+    avgTable_concat = avgTable_concat.T
+    avgTable_concat.to_csv(address + input_channel + '-raw-avg-1.csv')
+    
+    
+    return
 #==============================================================================#
 #======================== MAIN FUNCTION ======================================-#
 def main ():
@@ -486,21 +538,21 @@ def main ():
         (1) Check data quality: detect flat curve, missing echo
     """
     # check_data_quality()
-
+    check_data_quality_json()
 
     """
     (2) plot avg of each capture. Save avg (mean) to csv file
     """
     # check_signal_plot(bandpass = True, backgrd_subtract = False)
-
+    plot_signal_from_json(bandpass=True, backgrd_subtract= False)
     """
     (3) Check quality each capture. Query data from mongodb
     """
-    check_data_quality_mongo()
+    # check_data_quality_mongo()
     """
     (4) Plot all 64 samplings in a capture. Query data from Mongodb
     """
-    plot_signal_from_mongo()
+    # plot_signal_from_mongo()
     
 
     return
@@ -516,13 +568,13 @@ SoH         = 'H77.23'
 day         = '_190123'
 
 
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/ME06/primary/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/primary/'
 echoes_index = []
 backgrd = []
 
 avgPos  = 0  # number of capture in each cycle
 avgNum  = 64
-cycle   = 500
+cycle   = 5
 cycle_id = 0
 
 ME = 4

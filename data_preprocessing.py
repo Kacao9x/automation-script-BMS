@@ -2,15 +2,19 @@
 
 import pandas as pd
 import numpy as np
+import json
 from datetime import datetime
 from lib.echoes_database import *
 import bson, time
 import unittest
+import pprint
+
+from lib.commandline import *
 
 
-class preprocessing(object):
+class cycler_preprocessing(object):
 
-    period      = 5                                                             #time differnce between each capture
+    __PERIOD__      = 5                                                         #time differnce between each capture
     start_row   = 1                                                             #number of header to remove
     ind         = []
 
@@ -31,7 +35,7 @@ class preprocessing(object):
         self._debug = debug
         self._class = self.__class__.__name__
 
-        self._neware_   = neware
+        self._neware    = neware
         self._time_fix  = time_sync_fix
 
 
@@ -67,7 +71,7 @@ class preprocessing(object):
 
 
         with open(self._filename + '.txt', 'r') as my_file:
-            if self._neware_:
+            if self._neware:
                 lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
                                     error_bad_lines=False, engine='python')
             else:
@@ -113,7 +117,7 @@ class preprocessing(object):
         ''' filter data of 5 sec interval '''
         if self._time_fix:
             cycler_data = self._filter_data_by_timeInterval(cycler_data,
-                                                            self.period)
+                                                            self.__PERIOD__)
 
         ''' Convert the runtime to sec '''
         # cycler_data['time'], bad_idx = convert_runtime_to_sec( cycler_data['time'] )
@@ -350,30 +354,6 @@ class preprocessing(object):
 
 
 
-
-    def get_timestamp_from_filename(self, filename):
-
-        i = filename.split('-')
-
-        if i[1] == 'temp':
-            endtime = i[2] + '-' + i[3] + '-' + i[4] + ' ' \
-                      + i[5] + ':' + i[6] + ':' + i[7]
-            print ('endtime raw: ' + endtime)
-
-        else:
-            endtime = i[3] + '-' + i[4] + '-' + i[5] + ' ' \
-                      + i[6] + ':' + i[7] + ':' + i[8]
-            print ('endtime filtered: ' + endtime)
-
-        return endtime
-
-
-    def read_time(self, table):
-        start_time = table['Date/Time'][self.start_row]
-        return start_time
-
-
-
     def post_csv_data(self, table, battery_id):
         import json
         import time
@@ -442,25 +422,197 @@ class preprocessing(object):
                           ":" + function_name + "(): " + txt)
                 else:
                     print("  " + self._class + ":" + function_name + "(): " + txt)
-
-
-
         return
 
+
+class echoes_sorting(object):
+
+    __PERIOD__      = 5                                                         #time differnce between each capture
+    __start_row__   = 1                                                             #number of header to remove
+    ind         = []
+
+    _debug_level = None
+    _class       = None
+    _debug       = None
+
+    def __init__(self, path=None, neware = True, debug = False):
+        '''
+        :param filename: Path to the data set
+        :param neware: True if sorting the Neware data report
+        :param time_sync_fix: True if the report captured data very 0.1s
+        :param start_row: number of header to remove
+        :param period: time difference between each capture
+        :param debug:
+        '''
+        self._debug = debug
+        self._class = self.__class__.__name__
+
+        self._neware   = neware
+
+        if not path:
+            self.dprint('No data set specified', error = True)
+            exit()
+        else:
+            self._path = path
+        self.dprint('Initializing data cleaning algo')
+
+
+    def close(self):
+        return True
+
+    # Prints messages with function and class
+    def dprint(self, txt, timestamp=False, error=False, level=1):
+
+        if level <= self._debug_level:
+            if self._debug or error:
+                function_name = sys._getframe(1).f_code.co_name
+                if timestamp:
+                    print("  " + str(
+                        datetime.now()) + " " + self._class +
+                          ":" + function_name + "(): " + txt)
+                else:
+                    print("  " + self._class + ":" + function_name + "(): " + txt)
+        return
+
+    # calculate the time difference in seconds. Return int
+    def calculate_time(self, begin, end):
+        # def _convert_to_time_object(time_obj=str):
+
+        #     if self._neware:
+        #         return datetime.strptime(time_obj, '%m/%d/%Y %H:%M:%S')
+        #     else:
+        #         return datetime.strptime(time_obj, '%Y-%m-%d %H:%M:%S')
+
+
+        # end_dt      = _convert_to_time_object(time_obj=end)
+
+        # if self._neware:
+        #     start_dt = _convert_to_time_object(begin, True)
+        # else:
+        #     start_dt = _convert_to_time_object(begin, True)
+
+
+        sec = 0
+        print ('end {}, begin {}'.format(end, begin))
+        end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+        begin = datetime.strptime(begin, '%Y-%m-%d %H:%M:%S')
+
+        diff = (end - begin)
+        if ( diff.days == 0 ):
+            sec += diff.seconds
+        else:
+            sec += diff.days*24*60*60 + diff.seconds
+
+        m, s = divmod(sec, 60)
+
+        return sec
+
+
+    def find_capacity(self, begin, end, table):
+        line = self.__start_row__
+
+        diff = self.calculate_time(begin, end)
+
+
+        line += int( diff / self.__PERIOD__ )
+        # identify the index to grasp the proper row of data instance
+        cycler_end_temp = table['Date/Time'][line]
+        check = pd.isnull(table.at[line, 'Date/Time'])
+
+        if check:
+            cycler_end_temp = table['Date/Time'][line + 2]
+        print ('cycler_end_temp_1: ' + str(cycler_end_temp))
+
+        diff = self.calculate_time(cycler_end_temp, end)
+        line += int(diff / self.__PERIOD__)
+
+        print ('cycler_end_temp_correct: ' + str(cycler_end_temp))
+        print ("correct diff: %s \n" % str(diff))
+
+        return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
+            table['current'][line], table['volt'][line], \
+            # table['SoH'][line], table['SoC'][line]
+
+    
+    # return a sorted table with capacity, filename, index
+    def sort_by_name(self, filelist, table):
+        cap     = []
+        power   = []
+        filename= []
+        index   = []
+        volt    = []
+        current = []
+        charging= []
+        SoH     = []
+        SoC     = []
+
+        cycler_start_time = table['Date/Time'][self.__start_row__]                             # Read the start time in Cycler
+
+        for i, element in enumerate( filelist ):
+            with open(self._path + element) as json_file:
+                aCapture = json.load(json_file)
+            json_file.close()
+
+            endtime = aCapture['timestamp']
+            echoes_endtime = datetime.strptime(aCapture['timestamp'], 
+                            '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
+            print (echoes_endtime)
+            # row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
+            row, c, p, curr, voltage  = self.find_capacity(cycler_start_time, echoes_endtime, table)
+
+
+        #     endtime = _get_timestamp_from_filename( element )
+        #     row, c, p, curr, voltage, soh, soc  = find_capacity(starttime, endtime, table)
+
+        #     index.append(row)
+        #     cap.append(c)
+        #     power.append(p)
+        #     volt.append(voltage)
+        #     current.append(curr)
+        #     filename.append(element)
+        #     SoH.append(soh)
+        #     SoC.append(soc)
+
+        #     if curr < 0:
+        #         charging.append( -1 )
+        #     else:
+        #         charging.append( 1 )
+
+        # print ("start sorting")
+        # column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
+        #         'power(Wh)', 'FileName', 'SoH', 'SoC']
+
+        # table_sorted = pd.DataFrame({'index'    : index, 'charging' :charging,
+        #                             'volt'     : volt, 'current'  : current,
+        #                             'cap(Ah)'  : cap, 'power(Wh)':power,
+        #                             'FileName' : filename, 'SoH' : SoH, 'SoC' : SoC},
+        #                             columns=column)                                 # columns=[] used to set order of columns
+
+        # del table_sorted['index']
+        # # table_sorted = table_sorted.sort_values('index')
+        # print ("done sorting")
+        # return table_sorted
+        
 
 
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC28-H75.4_190516/tempC/TC28_190516'
-    rated_cap = 64
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/18650_190605'
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/primary/'
+    rated_cap = 2500
 
-    battery_id = 'TC28' #raw_input('battery_id \n')
+    battery_id = '18650' #raw_input('battery_id \n')
 
-    cycler_sort = preprocessing(
+    cycler_sort = cycler_preprocessing(
         filename=_pathname,
-        neware=True,
+        neware=False,
         time_sync_fix=True, debug=False)
+
+    echoes_sort = echoes_sorting(
+        path = path,
+        neware=False,
+        debug=False)
 
 
     def test_clean_data(self, cycler_sort=cycler_sort):
@@ -495,9 +647,28 @@ class Test(unittest.TestCase):
         return
 
 
+    def test_sort_Cycler_Echoes(self, cycler_sort=cycler_sort, echoes_sort=echoes_sort):
+        with open(self._pathname + '_merged.csv') as readTable:
+            table = pd.read_csv(readTable, sep=',', error_bad_lines=False)
+        readTable.close()
+
+        print (table.head().to_string())
+
+        key = 'cycle'
+        path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/primary/'
+        filelist = display_list_of_file(path, key)
+        print (filelist)
+
+        _start_row = 1        
+        echoes_sort.sort_by_name(filelist, table)
+        return
+
+
+
     def test_post_data_to_mongo(self, cycler_sort=cycler_sort,
                                 battery_id=battery_id):
-        with open (self._pathname + '_merged_full.csv') as my_file:
+        
+        with open (self._pathname + '_merged.csv') as my_file:
             table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
 
         my_file.close()
@@ -506,19 +677,6 @@ class Test(unittest.TestCase):
 
         return
 
-
-
-    def test_cycler_data(self):
-        cycler_db = database(database='cycler-data')
-
-        query = {'Date/Time':{'$gt':ISODate('2018-11-15T16:45:45.000Z'),
-					'$lt':ISODate('2018-11-15T16:45:50.000Z')}}
-
-        res = cycler_db.search( query, collection='cycler-test')
-
-        pprint(res)
-
-        return
 
 
 

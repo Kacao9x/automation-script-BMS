@@ -521,12 +521,12 @@ class echoes_sorting(object):
 
         if check:
             cycler_end_temp = table['Date/Time'][line + 2]
-        print ('cycler_end_temp_1: ' + str(cycler_end_temp))
+        print ('grasp a time Node: ' + str(cycler_end_temp))
 
         diff = self.calculate_time(cycler_end_temp, end)
         line += int(diff / self.__PERIOD__)
 
-        print ('cycler_end_temp_correct: ' + str(cycler_end_temp))
+        print ('cycler_end_temp_correct: {}'.format(table['Date/Time'][line]))
         print ("correct diff: %s \n" % str(diff))
 
         return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
@@ -560,25 +560,30 @@ class echoes_sorting(object):
             # row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
             row, c, p, curr, voltage  = self.find_capacity(cycler_start_time, echoes_endtime, table)
 
+            index.append(row)
+            cap.append(c)
+            power.append(p)
+            volt.append(voltage)
+            current.append(curr)
+            filename.append(element)
+            # SoH.append(soh)
+            # SoC.append(soc)
 
-        #     endtime = _get_timestamp_from_filename( element )
-        #     row, c, p, curr, voltage, soh, soc  = find_capacity(starttime, endtime, table)
+            if curr < 0:
+                charging.append( -1 )
+            else:
+                charging.append( 1 )
 
-        #     index.append(row)
-        #     cap.append(c)
-        #     power.append(p)
-        #     volt.append(voltage)
-        #     current.append(curr)
-        #     filename.append(element)
-        #     SoH.append(soh)
-        #     SoC.append(soc)
+        print ("start sorting")
+        column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
+                'power(Wh)', 'FileName']
+        table_sorted = pd.DataFrame({'index'    : index, 'charging' :charging,
+                                    'volt'     : volt, 'current'  : current,
+                                    'cap(Ah)'  : cap, 'power(Wh)':power,
+                                    'FileName' : filename},
+                                    columns=column) 
 
-        #     if curr < 0:
-        #         charging.append( -1 )
-        #     else:
-        #         charging.append( 1 )
 
-        # print ("start sorting")
         # column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
         #         'power(Wh)', 'FileName', 'SoH', 'SoC']
 
@@ -588,10 +593,10 @@ class echoes_sorting(object):
         #                             'FileName' : filename, 'SoH' : SoH, 'SoC' : SoC},
         #                             columns=column)                                 # columns=[] used to set order of columns
 
-        # del table_sorted['index']
+        del table_sorted['index']
         # # table_sorted = table_sorted.sort_values('index')
-        # print ("done sorting")
-        # return table_sorted
+        print ("done sorting")
+        return table_sorted
         
 
 
@@ -660,7 +665,8 @@ class Test(unittest.TestCase):
         print (filelist)
 
         _start_row = 1        
-        echoes_sort.sort_by_name(filelist, table)
+        sorted_table = echoes_sort.sort_by_name(filelist, table)
+        sorted_table.to_csv(self._pathname + '_echoescyler_final.csv')
         return
 
 

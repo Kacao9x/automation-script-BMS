@@ -312,20 +312,52 @@ def test_time_zone():
     time_now = datetime.now(current_timezone).replace(microsecond=0)
     print (time_now.strftime('%Y%m%dT%H%M%S.%Z'))
     # print ()
+
     unaware = datetime(2011, 8, 15, 8, 15, 12, 0)
     aware = datetime(2011, 8, 15, 8, 15, 12, 0, pytz.UTC)
     now_aware = pytz.utc.localize(unaware)
     assert aware == now_aware
 
 
+def avg_arr_of_arr():
+    list_1 = [None, [1,3,4,7], None, [3,7,6,3], None, [4,5,6,3]]
+
+    list_1 = [i for i in list_1 if i != None]
+    # list_1 = filter(lambda x: x != None, list_1)
+    avg = np.mean(list_1 ,axis=0)
+    print(avg)
+
+
+    I = [0, 2]
+    list_1_np = np.array(list_1)
+    # np.delete(a, 1, 0)
+    list_2 = np.delete(list_1_np, I, axis = 0).tolist()
+    print ('remove element from array: {}'.format(list_2))
+    print (np.array(list_1))
+
+
+
+def join_list():
+    dup = [0,3,6,4]
+    record = {'raw_data.'.join(str(dup))}
+
+    print('record {}'.format(record))
+    return
+
 
 if __name__ == "__main__":
     # test_Enum34(1)
+    avg_arr_of_arr()
+    join_list()
 
 
-    id = 'cycle3-raw_echo-2-2018-08-23-17-24-43-echoes-e.dat'
-    i = id.split('-')
+    id = 'cycle1_echo_2019-06-04-13-46-57_echoes-c'
+    i = id.split('_')
     print (i[0].split('cycle')[1])
+
+    time_readout = "2019-06-04-13-46-57"
+    time_converted = datetime.strptime(time_readout, '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
+    print (time_converted)
 
 
 

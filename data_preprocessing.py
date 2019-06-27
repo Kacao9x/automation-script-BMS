@@ -439,7 +439,6 @@ class echoes_sorting(object):
         '''
         :param filename: Path to the data set
         :param neware: True if sorting the Neware data report
-        :param time_sync_fix: True if the report captured data very 0.1s
         :param start_row: number of header to remove
         :param period: time difference between each capture
         :param debug:
@@ -476,22 +475,7 @@ class echoes_sorting(object):
 
     # calculate the time difference in seconds. Return int
     def calculate_time(self, begin, end):
-        # def _convert_to_time_object(time_obj=str):
-
-        #     if self._neware:
-        #         return datetime.strptime(time_obj, '%m/%d/%Y %H:%M:%S')
-        #     else:
-        #         return datetime.strptime(time_obj, '%Y-%m-%d %H:%M:%S')
-
-
-        # end_dt      = _convert_to_time_object(time_obj=end)
-
-        # if self._neware:
-        #     start_dt = _convert_to_time_object(begin, True)
-        # else:
-        #     start_dt = _convert_to_time_object(begin, True)
-
-
+        
         sec = 0
         print ('end {}, begin {}'.format(end, begin))
         end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
@@ -512,9 +496,8 @@ class echoes_sorting(object):
         line = self.__start_row__
 
         diff = self.calculate_time(begin, end)
-
-
         line += int( diff / self.__PERIOD__ )
+        
         # identify the index to grasp the proper row of data instance
         cycler_end_temp = table['Date/Time'][line]
         check = pd.isnull(table.at[line, 'Date/Time'])
@@ -554,8 +537,9 @@ class echoes_sorting(object):
             json_file.close()
 
             endtime = aCapture['timestamp']
+            # ValueError: time data '2019-06-24T11:11:00' does not match format '%Y-%m-%d-%H-%M-%S'
             echoes_endtime = datetime.strptime(aCapture['timestamp'], 
-                            '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
+                            '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
             print (echoes_endtime)
             # row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
             row, c, p, curr, voltage  = self.find_capacity(cycler_start_time, echoes_endtime, table)
@@ -603,8 +587,8 @@ class echoes_sorting(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/18650_190605'
-    path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/primary/'
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/Todd_20190625/Cell_18650_cycler_Todd_6-25-2019'
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/Todd_20190625/primary/'
     rated_cap = 2500
 
     battery_id = '18650' #raw_input('battery_id \n')
@@ -660,8 +644,8 @@ class Test(unittest.TestCase):
         print (table.head().to_string())
 
         key = 'cycle'
-        path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/primary/'
-        filelist = display_list_of_file(path, key)
+        path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/Todd_20190625/primary/'
+        filelist = display_list_of_file_by_date(path, key)
         print (filelist)
 
         _start_row = 1        

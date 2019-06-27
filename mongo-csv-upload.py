@@ -1,4 +1,5 @@
-from datetime import time
+from datetime import datetime
+# import datetime
 import pandas as pd
 import subprocess
 from pprint import pprint
@@ -125,7 +126,7 @@ def _convert_timestamp( collection_date ):
 def _get_cycle_number( filename ):
     name_strip = filename.split('-')
     cycle = name_strip[0].split('cycle')[1]
-    print cycle
+    print (cycle)
     return (int(cycle))
 
 
@@ -208,8 +209,8 @@ def post_raw_data():
         row = row  # row in PANDAS table start from 0
 
         timest = _get_timestamp(table['FileName'][row])
-        # print (timest)
-        bucket['timestamp'] = datetime.datetime(timest['year'], timest['month'],
+        print (timest)
+        bucket['timestamp'] = datetime(timest['year'], timest['month'],
                                                 timest['day'], timest['hour'],
                                                 timest['min'], timest['sec'])
 
@@ -236,8 +237,8 @@ def post_raw_data():
             'input_channel' : input_channel
         }
 
-        bucket['SoH']           = float(table['SoH'][row])
-        bucket['SoC']           = round(float(table['SoC'][row]), 2)
+        # bucket['SoH']           = float(table['SoH'][row])
+        # bucket['SoC']           = round(float(table['SoC'][row]), 2)
         bucket['temperature']  = {
             'top'   : float(table['Temperature_top'][row -1]),
             'bottom': float(table['Temperature_bottom'][row])
@@ -305,7 +306,7 @@ SoH             = 73       #input('Input SoH value: \n')
 date            = 181115    #input('Testing date: \n')
 
 input_channel   = 'primary'
-cabinet         = 'TC06'
+cabinet         = 'echoes-data'
 examiner        = 'Khoi'
 project         = 'Phase1-Build_SoH_Model'
 
@@ -314,7 +315,7 @@ project         = 'Phase1-Build_SoH_Model'
 
 filename = battery_id + '-H' + str(SoH) + '_' + str(date) + '_' +input_channel + '-sorted.csv'
 bucket = {}
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC06-H73_181115/' + input_channel + '/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Nissan-Leaf/TC06-H73_181115/' + input_channel + '/'
 
 
 

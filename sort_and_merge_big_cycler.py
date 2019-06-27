@@ -211,7 +211,7 @@ def calculate_time(begin, end, neware_machine=True):
     if neware_machine:
         start_dt = _convert_to_time_object(begin, True)
     else:
-        start_dt = _convert_to_time_object(begin, False)
+        start_dt = _convert_to_time_object(begin, True)
 
 
     sec = 0
@@ -265,7 +265,7 @@ def find_capacity(begin, end, table):
 
     return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
         table['current'][line], table['volt'][line], table['SoH'][line],\
-           table['SoC'][line]
+        table['SoC'][line]
 
 
 
@@ -469,7 +469,7 @@ def main():
     print (table_sorted.head().to_string())
 
     table_sorted['battery_id']      = battery_id_list                           # add battery id list into the report dateframe
-    table_sorted['collection_date'] = datetime_list                             # add collection date list into report dateframe
+    # table_sorted['collection_date'] = datetime_list                             # add collection date list into report dateframe
     table_sorted['transducer_id']   = trans_list
 
 
@@ -502,23 +502,25 @@ def main():
 
 keyword         = 'cycle'
 battery_id      = input('Input Battery ID: \n')
-SoH             = input('Input SoH value: \n')
-date            = input('Testing date: \n')
+# SoH             = input('Input SoH value: \n')
+SoH = 98.34
+date = '190523'
+# date            = input('Testing date: \n')
 transducer_id   = '039015'#'067143' #'09807'
-name            = battery_id + '-H' + str(SoH) + '_' + str(date)
+name            = battery_id + '_H' + str(SoH) + '_' + str(date)
 
 # name            = '18650_190320'
 # actual_capacity = raw_input('Input Real capacity')
 
 # path            ='/media/kacao/Ultra-Fit/titan-echo-boards/Echo-A/TC04-H74_181113/tempC/'
-path            = '/media/kacao/Ultra-Fit/titan-echo-boards/Echo-D/18650/tempC/'
+path            = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/second_test/primary/18650_190605_merged.csv'
 # path = th.ui.getdir('Pick your directory') + '/'                                # prompts user to select folder
 cycler_path     = path + name + '.csv'
-cycler_path_merged = path + name + '_merged.csv'
+cycler_path_merged = path + name + '_merged_full.csv'
 final_log_path  = path + name + '_sorted.csv'
 
 __NEWARE__  = False
-__PERIOD__  = 1                                                                 #time difference btw each log
+__PERIOD__  = 5                                                                 #time difference btw each log
 _start_row  = 1                                                                 #number of header to be remove
 ind = []                                                                        #list of stage index
 

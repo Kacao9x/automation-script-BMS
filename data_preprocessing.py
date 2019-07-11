@@ -14,7 +14,7 @@ from lib.commandline import *
 
 class cycler_preprocessing(object):
 
-    __PERIOD__      = 5                                                         #time differnce between each capture
+    __PERIOD__      = 1                                                         #time differnce between each capture
     start_row   = 1                                                             #number of header to remove
     ind         = []
 
@@ -427,7 +427,7 @@ class cycler_preprocessing(object):
 
 class echoes_sorting(object):
 
-    __PERIOD__      = 5                                                         #time differnce between each capture
+    __PERIOD__      = 1                                                         #time differnce between each capture
     __start_row__   = 1                                                             #number of header to remove
     ind         = []
 
@@ -479,7 +479,8 @@ class echoes_sorting(object):
         sec = 0
         print ('end {}, begin {}'.format(end, begin))
         end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-        begin = datetime.strptime(begin, '%Y-%m-%d %H:%M:%S')
+        # begin = datetime.strptime(begin, '%Y-%m-%d %H:%M:%S')
+        begin = datetime.strptime(begin, '%m/%d/%Y %H:%M:%S')
 
         diff = (end - begin)
         if ( diff.days == 0 ):
@@ -514,7 +515,7 @@ class echoes_sorting(object):
 
         return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
             table['current'][line], table['volt'][line], \
-            # table['SoH'][line], table['SoC'][line]
+            table['SoH'][line], table['SoC'][line]
 
     
     # return a sorted table with capacity, filename, index
@@ -536,13 +537,13 @@ class echoes_sorting(object):
                 aCapture = json.load(json_file)
             json_file.close()
 
-            endtime = aCapture['timestamp']
+            print ('captureID: {}'.format(aCapture['capture_number']))
             # ValueError: time data '2019-06-24T11:11:00' does not match format '%Y-%m-%d-%H-%M-%S'
             echoes_endtime = datetime.strptime(aCapture['timestamp'], 
                             '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
             print (echoes_endtime)
-            # row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
-            row, c, p, curr, voltage  = self.find_capacity(cycler_start_time, echoes_endtime, table)
+            row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
+            # row, c, p, curr, voltage  = self.find_capacity(cycler_start_time, echoes_endtime, table)
 
             index.append(row)
             cap.append(c)
@@ -550,8 +551,8 @@ class echoes_sorting(object):
             volt.append(voltage)
             current.append(curr)
             filename.append(element)
-            # SoH.append(soh)
-            # SoC.append(soc)
+            SoH.append(soh)
+            SoC.append(soc)
 
             if curr < 0:
                 charging.append( -1 )
@@ -559,23 +560,23 @@ class echoes_sorting(object):
                 charging.append( 1 )
 
         print ("start sorting")
-        column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
-                'power(Wh)', 'FileName']
-        table_sorted = pd.DataFrame({'index'    : index, 'charging' :charging,
-                                    'volt'     : volt, 'current'  : current,
-                                    'cap(Ah)'  : cap, 'power(Wh)':power,
-                                    'FileName' : filename},
-                                    columns=column) 
-
-
         # column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
-        #         'power(Wh)', 'FileName', 'SoH', 'SoC']
-
+        #         'power(Wh)', 'FileName']
         # table_sorted = pd.DataFrame({'index'    : index, 'charging' :charging,
         #                             'volt'     : volt, 'current'  : current,
         #                             'cap(Ah)'  : cap, 'power(Wh)':power,
-        #                             'FileName' : filename, 'SoH' : SoH, 'SoC' : SoC},
-        #                             columns=column)                                 # columns=[] used to set order of columns
+        #                             'FileName' : filename},
+        #                             columns=column)
+
+
+        column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
+                'power(Wh)', 'FileName', 'SoH', 'SoC']
+
+        table_sorted = pd.DataFrame({'index'    : index, 'charging' :charging,
+                                    'volt'     : volt, 'current'  : current,
+                                    'cap(Ah)'  : cap, 'power(Wh)':power,
+                                    'FileName' : filename, 'SoH' : SoH, 'SoC' : SoC},
+                                    columns=column)                                 # columns=[] used to set order of columns
 
         del table_sorted['index']
         # # table_sorted = table_sorted.sort_values('index')
@@ -587,20 +588,20 @@ class echoes_sorting(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/Todd_20190625/Cell_18650_cycler_Todd_6-25-2019'
-    path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/Todd_20190625/primary/'
-    rated_cap = 2500
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/TYPK19-1/TYPK19-1-CyclerData'
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/TYPK19-1/secondary/'
+    rated_cap = 25850
 
-    battery_id = '18650' #raw_input('battery_id \n')
+    battery_id = 'TYPK19-1' #raw_input('battery_id \n')
 
     cycler_sort = cycler_preprocessing(
         filename=_pathname,
-        neware=False,
+        neware=True,
         time_sync_fix=True, debug=False)
 
     echoes_sort = echoes_sorting(
         path = path,
-        neware=False,
+        neware=True,
         debug=False)
 
 
@@ -612,7 +613,7 @@ class Test(unittest.TestCase):
 
     def test_merge_column(self, cycler_sort=cycler_sort):
 
-        # table = cycler_sort.clean_test_data()
+        table = cycler_sort.clean_test_data()
         with open (self._pathname + '.csv') as my_file:
             table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
         print (table.head().to_string())
@@ -637,20 +638,19 @@ class Test(unittest.TestCase):
 
 
     def test_sort_Cycler_Echoes(self, cycler_sort=cycler_sort, echoes_sort=echoes_sort):
-        with open(self._pathname + '_merged.csv') as readTable:
+        with open(self._pathname + '_merged_full.csv') as readTable:
             table = pd.read_csv(readTable, sep=',', error_bad_lines=False)
         readTable.close()
 
         print (table.head().to_string())
 
-        key = 'cycle'
-        path = '/media/kacao/Ultra-Fit/titan-echo-boards/18650/Todd_20190625/primary/'
-        filelist = display_list_of_file_by_date(path, key)
+        key = 'capture'
+        filelist = display_list_of_file_by_date(self.path, key)
         print (filelist)
 
         _start_row = 1        
         sorted_table = echoes_sort.sort_by_name(filelist, table)
-        sorted_table.to_csv(self._pathname + '_echoescyler_final.csv')
+        sorted_table.to_csv(self.path + '{}_secondary_echoescyler_final.csv'.format(self.battery_id))
         return
 
 

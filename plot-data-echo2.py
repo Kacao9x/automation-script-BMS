@@ -17,21 +17,6 @@ def check_data_quality_mongo(collection):
     The first method detect a flat curve
     Second method detect a time shift more than 2 data points
     """
-    # These constants are sensitive to VGA change. VGA default is 0.55
-
-    PRIMARY_AMP_RANGE = 0.4
-    SECONDARY_AMP_RANGE_LOW = 0.015
-    SECONDARY_AMP_RANGE_HIGH = 0.5
-    def find_dup_run(x, isPrimary):
-
-        max_value = max(x)
-        min_value = min(x)
-
-        if isPrimary:
-            return max_value - min_value < PRIMARY_AMP_RANGE
-        else:
-            return (max_value - min_value < SECONDARY_AMP_RANGE_LOW or
-                    max_value - min_value > SECONDARY_AMP_RANGE_HIGH)
 
     def _locate_2ndEcho_index(data):
         data = data[140: 260]
@@ -44,9 +29,32 @@ def check_data_quality_mongo(collection):
         data = data[ 108: 131 ]
         return 108 + data.index( max(data))
 
-
     def _find_avg(numbers):
         return (sum(numbers)) / max(len(numbers), 1)
+
+    def remove_bad_samples(aCapture_signal):
+        # These constants are sensitive to VGA change. VGA default is 0.55
+        START_DATA_PTS = 58     #evaluate signal after 8us
+        HIGH_BOUND = 0.2         #arbitrary value for Toyota cell
+        LOW_BOUND  = 0.09
+
+        idx = []
+        for i, sample in enumerate(aCapture_signal):
+            # x_arr = np.absolute(signal)   #compare standard deviation with threshold
+
+            std_value = np.std(sample[START_DATA_PTS : ], ddof=1)
+            # print ('std val: {}'.format(std_value))
+            if std_value > HIGH_BOUND or std_value < LOW_BOUND:
+                idx.append(i)
+            else:
+                None
+
+        print("bad sampling {}".format(idx))
+
+        aCapture_signal = np.delete(aCapture_signal, idx, axis=0).tolist()                                              # delete bad sampling by index
+
+        return aCapture_signal
+
 
     echoes_db = database(database='echoes-captures')
 
@@ -69,33 +77,14 @@ def check_data_quality_mongo(collection):
     count = 0
     for aCapture in data_cursor:
         count += 1
-        # pprint (aCapture)
         print ("capture ID: {}".format(aCapture['capture_number']))
 
         # aCapture['timestamp'] = aCapture['timestamp'] - timedelta(hours=4)        #convert UTC to EDT timezone
 
-        sample = 0
-        dup = []
-        echoes_index = []
-
         aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
-        while sample < len(aCapture['raw_data']):
-
-            # find the flat signal
-            if find_dup_run(aCapture['raw_data'][sample], primary_channel):
-                dup.append(sample)
-
-            # locate 1st/2nd peak to detect time shift later
-            # echo_idx = _locate_1stEcho_index(aCapture['raw_data'][sample])
-            # echoes_index.append(echo_idx)
+        aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
 
 
-            sample += 1
-
-        print("duplicate {}".format(dup))
-        aCapture['raw_data'] = np.delete(aCapture['raw_data'], dup, axis=0).tolist()     # delete bad sampling by index
-        # for idx in dup:
-        #     del aCapture['raw_data'][idx]
         if count % 2 == 1:
             path = address + 'primary/'
         else:
@@ -105,24 +94,6 @@ def check_data_quality_mongo(collection):
             aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
             writeout.write(json.dumps(aCapture))
         writeout.close()
-    # print ('count {}'.format(count))
-
-
-        #     # record = {'$unset': {'raw_data.{}': 1}}
-        #     # res = echoes_db.update(record ={"$unset": {"raw_data.0": 1, "raw_data.2": 1}},
-        #     #                  match  ={"_id": oneCapture['_id']},
-        #     #                  collection='TC28constant3A')
-        #     # print (res)
-        #
-        # ''' DETECT a time-shift in signal '''
-        # avg = _find_avg( echoes_index )
-        # print ('avg is: {}'.format(avg))
-        # for i, element in enumerate(echoes_index):
-        #     if abs( element - avg ) > 2:
-        #         print ("capture shift: {} - {}".format(str(count),str(i + 1)))
-
-
-
 
     echoes_db.close()
 
@@ -131,7 +102,7 @@ def check_data_quality_mongo(collection):
 def plot_signal_from_mongo(collection):
     echoes_db = database(database='echoes-captures')
     query = {
-        'capture_number':{'$lt':2}
+        'capture_number':{'$lt':8, '$gt':3}
     }
     projection={
         'raw_data':1
@@ -150,7 +121,7 @@ def plot_signal_from_mongo(collection):
             row = 512
             x = np.arange(0, dt * row, dt)
             filter_data = echoes_dsp.apply_bandpass_filter(aCapture['raw_data'][sample],
-                                                   300000, 1200000, 51)
+                                                   300000, 1000000, 51)
             plt.figure(1)
             plt.title('Signal Plot')
             plt.interactive(False)
@@ -180,9 +151,9 @@ def check_data_quality_json():
     SECONDARY_AMP_RANGE_LOW = 0.015
     SECONDARY_AMP_RANGE_HIGH = 0.5
     def find_dup_run(x, isPrimary):
-
-        max_value = max(x)
-        min_value = min(x)
+        START_DATA_PTS = 58
+        max_value = max(x[START_DATA_PTS:])
+        min_value = min(x[START_DATA_PTS:])
 
         if isPrimary:
             return max_value - min_value < PRIMARY_AMP_RANGE
@@ -239,11 +210,11 @@ def check_data_quality_json():
         print("duplicate {}".format(dup))
         aCapture['raw_data'] = np.delete(aCapture['raw_data'], dup, axis=0).tolist()  # delete bad sampling by index
 
-        avg = np.mean(aCapture['raw_data'], axis=0)
-        aCapture['average_data'] = avg.tolist()
-        with open(address + '{}.json'.format(aCapture['capture_number']), 'w') as writeout:
-            writeout.write(json.dumps(aCapture))
-        writeout.close()
+        # avg = np.mean(aCapture['raw_data'], axis=0)
+        # aCapture['average_data'] = avg.tolist()
+        # with open(address + '{}.json'.format(aCapture['capture_number']), 'w') as writeout:
+        #     writeout.write(json.dumps(aCapture))
+        # writeout.close()
 
     return
 
@@ -305,7 +276,7 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
             # plt.subplot(211)
             x_1 = np.arange(0, ped * row, ped)
             # x_1 = [1000000.0*ped for i in range(0, row)]                 #convert to micro-sec unit scale
-            plt.title(' TYPK19-1 - Transmission| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 July 09')
+            plt.title(' Me07 - Transmission| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 July 02')
             plt.plot(x_1, avg_bandpass, label='capture 0{}'.format(int(captureID)))
             plt.xlim(0,70)
             plt.grid('on')
@@ -348,7 +319,6 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
     return
 
 
-
 #==============================================================================#
 #======================== MAIN FUNCTION ======================================-#
 def main ():
@@ -360,11 +330,11 @@ def main ():
         (1) Check data quality: detect flat curve, missing echo
     """
     # check_data_quality_json()
-    check_data_quality_mongo(collection=collection)
+    # check_data_quality_mongo(collection=collection)
     """
     (2) plot avg of each capture. Save avg (mean) to csv file
     """
-    # plot_signal_from_json(bandpass=True, backgrd_subtract= False)
+    plot_signal_from_json(bandpass=True, backgrd_subtract= False)
     # plot_signal_from_mongo(collection=collection)
 
     """
@@ -465,12 +435,12 @@ input_channel = 'primary'
 primary_channel = (input_channel == 'primary')
 print (str(primary_channel))
 
-collection  = 'TYPK19-1'
+collection  = 'Me07_2'
 SoH         = 'H77.23'
 day         = '_190123'
 
 
-address = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/TYPK19-1/'
+address = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07/secondary/'
 echoes_index = []
 backgrd = []
 

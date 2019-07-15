@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from lib.echoes_database import *
 import bson, time
 import unittest
@@ -143,7 +143,7 @@ class cycler_preprocessing(object):
             if NAN_finder[i] == True:
                 ind = np.append(ind, i)
 
-        print (ind)
+        print ('ind:'.format(ind))
         id_num      = table.columns.get_loc("id_num")
         cap_Ah      = table.columns.get_loc("cap(Ah)")
         energy_Wh   = table.columns.get_loc("en(Wh)")
@@ -237,7 +237,8 @@ class cycler_preprocessing(object):
 
             # Subtraction the capacity for dischage cycle
             elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
-                  table.iat[int(ind[i]), id_num] == 'CC_DChg'):
+                  table.iat[int(ind[i]), id_num] == 'CC_DChg' and
+                table.iat[int(ind[i+1]), id_num] == 'CCCV_Chg'):
 
                 tot_cap = table.iat[int(ind[i + 1]) - 1, cap_Ah]
                 tot_wh  = table.iat[int(ind[i + 1]) - 1, energy_Wh]
@@ -251,12 +252,20 @@ class cycler_preprocessing(object):
                                                         table.iat[int(ind[i]) + j, energy_Wh]
                     # table.iat[int(ind[i]) + j, sec] += tot_sec
 
-            # if ( i == len(ind) - 1 ):
-            #     tot_sec = table.iat[int(ind[i]) - 1, sec]
-            #     diff    = len(table.index)- ind[i]
-
+            # for cycler ends up at Discharge cycle
+            # Subtraction the capacity for dischage cycle
+            # elif (table.iat[int(ind[i]), id_num] == 'CC_DChg'):
+            #
+            #     tot_cap = 24719.3
+            #     tot_wh = 92941.3
+            #     # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
+            #     diff = len(table.index) - int(ind[i])
+            #
             #     for j in range(diff):
-            #         table.iat[int(ind[i]) + j, sec] += tot_sec
+            #         table.iat[int(ind[i]) + j, cap_Ah] = tot_cap - \
+            #                                              table.iat[int(ind[i]) + j, cap_Ah]
+            #         table.iat[int(ind[i]) + j, energy_Wh] = tot_wh - \
+            #                                                 table.iat[int(ind[i]) + j, energy_Wh]
 
         return table
 
@@ -427,7 +436,7 @@ class cycler_preprocessing(object):
 
 class echoes_sorting(object):
 
-    __PERIOD__      = 1                                                         #time differnce between each capture
+    __PERIOD__      = 5                                                         #time differnce between each capture
     __start_row__   = 1                                                             #number of header to remove
     ind         = []
 
@@ -530,7 +539,7 @@ class echoes_sorting(object):
         SoH     = []
         SoC     = []
 
-        cycler_start_time = table['Date/Time'][self.__start_row__]                             # Read the start time in Cycler
+        cycler_start_time = table['Date/Time'][self.__start_row__]                                                      # Read the start time in Cycler
 
         for i, element in enumerate( filelist ):
             with open(self._path + element) as json_file:
@@ -538,11 +547,25 @@ class echoes_sorting(object):
             json_file.close()
 
             print ('captureID: {}'.format(aCapture['capture_number']))
-            # ValueError: time data '2019-06-24T11:11:00' does not match format '%Y-%m-%d-%H-%M-%S'
-            echoes_endtime = datetime.strptime(aCapture['timestamp'], 
-                            '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-            print (echoes_endtime)
+
+            convert_UTC_to_EDT = False
+            if convert_UTC_to_EDT:
+                echoes_UTC = datetime.strptime(aCapture['timestamp'],
+                                               '%Y-%m-%dT%H:%M:%S')
+
+                echoes_convert_EDT = echoes_UTC - timedelta(hours=4)                                                    # convert UTC to EDT timezone
+                echoes_endtime = echoes_convert_EDT.strftime('%Y-%m-%d %H:%M:%S')
+                print (echoes_endtime)
+
+            else:
+                echoes_endtime = datetime.strptime(aCapture['timestamp'],
+                                '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+                print (echoes_endtime)
+
+
+
             row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
+            # row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
             # row, c, p, curr, voltage  = self.find_capacity(cycler_start_time, echoes_endtime, table)
 
             index.append(row)
@@ -588,11 +611,11 @@ class echoes_sorting(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/TYPK19-1/TYPK19-1-CyclerData'
-    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/TYPK19-1/secondary/'
-    rated_cap = 25850
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07/Me07-aging'
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07/secondary/'
+    rated_cap = 56000
 
-    battery_id = 'TYPK19-1' #raw_input('battery_id \n')
+    battery_id = 'Me07-1' #raw_input('battery_id \n')
 
     cycler_sort = cycler_preprocessing(
         filename=_pathname,

@@ -143,7 +143,7 @@ class cycler_preprocessing(object):
             if NAN_finder[i] == True:
                 ind = np.append(ind, i)
 
-        print ('ind:'.format(ind))
+        print ('ind: {}'.format(ind))
         id_num      = table.columns.get_loc("id_num")
         cap_Ah      = table.columns.get_loc("cap(Ah)")
         energy_Wh   = table.columns.get_loc("en(Wh)")
@@ -254,18 +254,21 @@ class cycler_preprocessing(object):
 
             # for cycler ends up at Discharge cycle
             # Subtraction the capacity for dischage cycle
-            # elif (table.iat[int(ind[i]), id_num] == 'CC_DChg'):
-            #
-            #     tot_cap = 24719.3
-            #     tot_wh = 92941.3
-            #     # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
-            #     diff = len(table.index) - int(ind[i])
-            #
-            #     for j in range(diff):
-            #         table.iat[int(ind[i]) + j, cap_Ah] = tot_cap - \
-            #                                              table.iat[int(ind[i]) + j, cap_Ah]
-            #         table.iat[int(ind[i]) + j, energy_Wh] = tot_wh - \
-            #                                                 table.iat[int(ind[i]) + j, energy_Wh]
+            if (i == len(ind) - 2 and
+                table.iat[int(ind[i]), id_num] == 'Rest' and
+                table.iat[int(ind[len(ind) - 1]), id_num] == 'CC_DChg'):
+
+                tot_cap = 2933.3
+                tot_wh = 10987.6
+                # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
+                print ('length table {}\n\n'.format(table.index))
+                diff = len(table.index) - int(ind[i+1])
+
+                for j in range(diff):
+                    table.iat[int(ind[i+1]) + j, cap_Ah] = tot_cap - \
+                                                         table.iat[int(ind[i+1]) + j, cap_Ah]
+                    table.iat[int(ind[i+1]) + j, energy_Wh] = tot_wh - \
+                                                            table.iat[int(ind[i+1]) + j, energy_Wh]
 
         return table
 
@@ -436,7 +439,7 @@ class cycler_preprocessing(object):
 
 class echoes_sorting(object):
 
-    __PERIOD__      = 5                                                         #time differnce between each capture
+    __PERIOD__      = 1                                                         #time differnce between each capture
     __start_row__   = 1                                                             #number of header to remove
     ind         = []
 
@@ -488,8 +491,11 @@ class echoes_sorting(object):
         sec = 0
         print ('end {}, begin {}'.format(end, begin))
         end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-        # begin = datetime.strptime(begin, '%Y-%m-%d %H:%M:%S')
-        begin = datetime.strptime(begin, '%m/%d/%Y %H:%M:%S')
+        if self._neware:
+            begin = datetime.strptime(begin, '%m/%d/%Y %H:%M:%S')
+        else:
+            begin = datetime.strptime(begin, '%Y-%m-%d %H:%M:%S')
+
 
         diff = (end - begin)
         if ( diff.days == 0 ):
@@ -611,20 +617,20 @@ class echoes_sorting(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07/Me07-aging'
-    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07/secondary/'
-    rated_cap = 56000
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/Transducer_Testing-CyclerData_7-23-19'
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/secondary/'
+    rated_cap = 2933.3
 
-    battery_id = 'Me07-1' #raw_input('battery_id \n')
+    battery_id = 'Lenovo' #raw_input('battery_id \n')
 
     cycler_sort = cycler_preprocessing(
         filename=_pathname,
-        neware=True,
-        time_sync_fix=True, debug=False)
+        neware=False,
+        time_sync_fix=False, debug=False)
 
     echoes_sort = echoes_sorting(
         path = path,
-        neware=True,
+        neware=False,
         debug=False)
 
 

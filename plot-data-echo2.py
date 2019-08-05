@@ -9,7 +9,7 @@ from lib.echoes_database import *
 
 import json
 from lib.commandline import *
-from datetime import timedelta
+from datetime import datetime,timedelta
 
 def check_data_quality_mongo(collection):
     """
@@ -156,43 +156,32 @@ def check_data_quality_json():
     """
     # These constants are sensitive to VGA change. VGA default is 0.55
 
-    PRIMARY_AMP_RANGE = 0.4
-    SECONDARY_AMP_RANGE_LOW = 0.015
-    SECONDARY_AMP_RANGE_HIGH = 0.5
-    def find_dup_run(x, isPrimary):
-        START_DATA_PTS = 58
-        max_value = max(x[START_DATA_PTS:])
-        min_value = min(x[START_DATA_PTS:])
+    def remove_bad_samples(aCapture_signal):
+        # These constants are sensitive to VGA change. VGA default is 0.55
+        START_DATA_PTS = 58                                                     #evaluate signal after 8us
+        HIGH_BOUND = 0.2                                                        #arbitrary value for Toyota cell
+        LOW_BOUND  = 0.09
 
-        if isPrimary:
-            return max_value - min_value < PRIMARY_AMP_RANGE
-        else:
-            return (max_value - min_value < SECONDARY_AMP_RANGE_LOW or
-                    max_value - min_value > SECONDARY_AMP_RANGE_HIGH)           # for echo B
+        idx = []
+        for i, sample in enumerate(aCapture_signal):
+            # x_arr = np.absolute(signal)                                         #compare standard deviation with threshold
 
+            std_value = np.std(sample[START_DATA_PTS : ], ddof=1)
+            # print ('std val: {}'.format(std_value))
+            if std_value > HIGH_BOUND or std_value < LOW_BOUND:
+                idx.append(i)
+            else:
+                None
 
-    def _locate_2ndEcho_index( data ):
-        data = data[ 140 : 260 ]
-        return 140 + data.index( max(data) )
+        print("bad sampling {}".format(idx))
 
-    def _locate_1stEcho_index( data ):
-        '''
-        For checking Mercedes data
-        '''
-        data = data[ 108: 131 ]
-        return 108 + data.index( max(data))
+        aCapture_signal = np.delete(aCapture_signal, idx, axis=0).tolist()      # delete bad sampling by index
 
-    def _find_avg( numbers ):
-        return (sum(numbers)) / max(len(numbers), 1)
+        return aCapture_signal
 
-
-
-    global cycle_id
-
-
-    echoes_index = []
-    list_file = display_list_of_file_by_date(address)
-    print (list_file)
+    key = '.json'
+    # list_file = display_list_of_file(address, key)
+    list_file = sort_folder_by_name(address, key)
 
     ''' Loop through every sample data in a read/capture '''
     for captureID, filename in enumerate(list_file):
@@ -201,29 +190,20 @@ def check_data_quality_json():
             aCapture = json.load(json_file)
         json_file.close()
 
-        dup = []
-        for idx in range(len(aCapture['raw_data'])):
+        print ("capture ID: {}\t".format(aCapture['capture_number']))
 
-            ''' DETECT a flat curve in a sample '''
-            if find_dup_run(aCapture['raw_data'][idx], primary_channel):
-                dup.append(idx)
-                # with open(address + 'bad-flat.txt', 'ab') as writeout:
-                #     writeout.writelines(str(captureID) + '-' + str(idx) + '\n')
-                # writeout.close()
+        time_object = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S')
+        aCapture['timestamp'] = time_object - timedelta(hours=4)                # convert UTC to EDT timezone
 
-            ''' DETECT a time-shift in signal
-                by checking differnce of 1st/2nd echo position against average'''
+        aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
+        aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
 
-            # echo_idx = _locate_1stEcho_index(aCapture['raw_data'][idx])
-            # echoes_index.append(echo_idx)
-        print("duplicate {}".format(dup))
-        aCapture['raw_data'] = np.delete(aCapture['raw_data'], dup, axis=0).tolist()  # delete bad sampling by index
+        path = '/media/kacao/479E26136B58509D/Titan_AES/Echoes-test-data/Me07_3/data/secondary_gap/'
+        with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
+            aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
+            writeout.write(json.dumps(aCapture))
+        writeout.close()
 
-        # avg = np.mean(aCapture['raw_data'], axis=0)
-        # aCapture['average_data'] = avg.tolist()
-        # with open(address + '{}.json'.format(aCapture['capture_number']), 'w') as writeout:
-        #     writeout.write(json.dumps(aCapture))
-        # writeout.close()
 
     return
 
@@ -338,8 +318,8 @@ def main ():
     """
         (1) Check data quality: detect flat curve, missing echo
     """
-    # check_data_quality_json()
-    check_data_quality_mongo(collection=collection)
+    check_data_quality_json()
+    # check_data_quality_mongo(collection=collection)
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
@@ -447,7 +427,7 @@ print (str(primary_channel))
 collection  = 'Me07_3'
 plot_title  = ' Me07_3 - Transducer Transmission| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 5th'
 
-address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07-3/'
+address     = '/media/kacao/479E26136B58509D/Titan_AES/Echoes-test-data/Me07_3/data/secondary/'
 
 # backgrd = []
 # with open(address + 'background.dat') as my_file:

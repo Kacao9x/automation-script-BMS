@@ -38,11 +38,6 @@ def test_Enum34(color):
         print("BBBB")
 
 
-def test_boolean_operator():
-    result = False
-    result |= True
-    print (result)
-
 
 def test_branching_function():
     for val in "string":
@@ -251,20 +246,6 @@ def test_wrong_datetime_exception():
     return
 
 
-def test_file_path():
-    file_path = os.path.dirname(os.path.abspath(__file__))
-    if os.path.isdir(file_path + '/data/'):
-        SESSION_CONFIG_PATH = file_path + '/data/session-config.pickle'
-        print (SESSION_CONFIG_PATH)
-    elif os.path.isdir('../data/'):
-        SESSION_CONFIG_PATH = '../data/session-config.pickle'
-        print (SESSION_CONFIG_PATH)
-    else:
-        print("Missing data/ directory")
-        exit()
-
-    return
-
 
 def test_datetime_import():
     # from datetime import datetime
@@ -280,7 +261,6 @@ def test_datetime_import():
         print (fn)
 
 def test_time_zone():
-
 
     timezones = ['America/New_York', 
                 'America/Los_Angeles', 
@@ -427,6 +407,14 @@ def sort_folder_by_name_advance():
         if '.json' in files:
             myimages.append(files)
 
+def convert_to_time_object():
+    time_readout = "2019-07-23T00:43:25"
+    time_converted = datetime.strptime(time_readout, '%Y-%m-%dT%H:%M:%S')
+    time_to_EDT = time_converted - timedelta(hours=4)
+    print ('timeconvert {}'.format(time_to_EDT))
+
+
+
 if __name__ == "__main__":
     # test_Enum34(1)
     # avg_arr_of_arr()
@@ -441,6 +429,8 @@ if __name__ == "__main__":
 
     test_time_zone()
 
+    convert_to_time_object()
+
     time_readout = "2019-06-04-13-46-57"
     time_converted = datetime.strptime(time_readout, '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
     print (time_converted)
@@ -454,7 +444,6 @@ if __name__ == "__main__":
     edit_element_numpy()
     grap_middle_value()
     convert_timest_to_sec('0:01:05.000')
-    test_file_path()
 
     # JSON_to_file()
 

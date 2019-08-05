@@ -7,7 +7,7 @@ import json as j
 import numpy as np
 import os
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 from time import time
 import pytz
 
@@ -234,7 +234,7 @@ def grap_middle_value():
     # print (zc_right)
     print (zc_left_max)
 
-def test_exception():
+def test_wrong_datetime_exception():
     # timest = datetime_format(u'11/14/2018 16:09:03')
     time_arr = [u'11/14/2018 16:09:03', None,u'353415574.4', u'12/1/2018 16:09:03']
     for timest in time_arr:
@@ -288,16 +288,21 @@ def test_time_zone():
                 'America/Puerto_Rico']
 
     ts = datetime.now().replace(microsecond=0)
+
     print ("Time ISOformat: {}".format(ts))
     # time_string = datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     # print ("Time to save file: {}".format(time_string))
 
     bucket = {}
-    bucket['timestamp'] = ts.isoformat()
+    bucket['timestamp'] = datetime.now()#.replace(microsecond=0).isoformat()
+    cycleID = 2
+    st = 'cycle{}_echo_{}.json'.format(cycleID+1, bucket['timestamp'].isoformat())
+    print ('st {}'.format(st))
 
-    with open('data/timestamp_' + str(bucket['timestamp']) + '.json', 'w') as outfile:
-        outfile.write(json.dumps(bucket))
-    outfile.close()
+
+    # with open('data/timestamp_' + str(bucket['timestamp']) + '.json', 'w') as outfile:
+    #     outfile.write(json.dumps(bucket))
+    # outfile.close()
 
     # Python3 only!
     # tzinfo = timezone.utc
@@ -308,15 +313,17 @@ def test_time_zone():
     # print (datetime.utcnow().replace(tzinfo=timezone.utc).isoformat())
 
     current_timezone = pytz.timezone("US/Eastern")
-    print (datetime.now(current_timezone).replace(microsecond=0).isoformat())
-    time_now = datetime.now(current_timezone).replace(microsecond=0)
-    print (time_now.strftime('%Y%m%dT%H%M%S.%Z'))
+    print ('timezone: {}'.format(datetime.now(current_timezone).replace(microsecond=0).isoformat()))
+
+    time_now = datetime.now(current_timezone)#.replace(microsecond=0)
+    bucket['timestamp'] = time_now
+    print ('time now: {}'.format(bucket['timestamp'].strftime('%Y%m%dT%H%M%S.%Z')))
     # print ()
 
-    unaware = datetime(2011, 8, 15, 8, 15, 12, 0)
-    aware = datetime(2011, 8, 15, 8, 15, 12, 0, pytz.UTC)
-    now_aware = pytz.utc.localize(unaware)
-    assert aware == now_aware
+    # unaware = datetime(2011, 8, 15, 8, 15, 12, 0)
+    # aware = datetime(2011, 8, 15, 8, 15, 12, 0, pytz.timezone("US/Eastern"))
+    # now_aware = pytz.utc.localize(unaware)
+    # assert aware == now_aware
 
 
 def avg_arr_of_arr():
@@ -335,25 +342,104 @@ def avg_arr_of_arr():
     print ('remove element from array: {}'.format(list_2))
     print (np.array(list_1))
 
+    echoes_data = {'raw_data': [4,5,6,3],'capture_number':220}
+
+    mess = 'detect failed' if 'temperature' in echoes_data else 'correct'
+    print (mess)
+    print ('\n')
 
 
 def join_list():
+    # res = echoes_db.update(record ={"$unset": {"raw_data.0": 1, "raw_data.2": 1}},
+    #                  match  ={"_id": oneCapture['_id']},
+    #                  collection='TC28constant3A')
     dup = [0,3,6,4]
-    record = {'raw_data.'.join(str(dup))}
+    # record = {'raw_data.'.join(str(dup))}
+    # print('record {}'.format(record))
 
-    print('record {}'.format(record))
+    unset = ''
+    for idx in dup:
+        unset += "'raw_data.{}':1, ".format(idx)
+
+    print (unset)
+    print ('\n')
     return
 
 
+def test_bypass_function():
+    outside_count = 0
+    error = 0
+    time_arr = ['11/14/2018 18:09:03', u'11/14/2018 16:09:03', None, u'353415574.4', u'12/1/2018 16:09:03']
+
+    for timest in time_arr:
+        if timest is not None:
+            try:
+                convert = datetime_format(timest)
+                print (convert)
+            except:
+                print ('wrong format')
+                error += 1
+
+            # print (convert)
+            print ('timest: {}'.format(timest))
+            outside_count += 1
+
+    print('outside {}, error {}\n\n'.format(outside_count, error))
+
+    return
+
+def create_folder_w_timestamp():
+    bucket = {}
+    bucket['timestamp'] = datetime.now().replace(microsecond=0)
+    st = 'xxx_{}.dat'.format(bucket['timestamp'].isoformat())
+
+    with open("data/" + st, 'w') as writeout:
+        writeout.write("testing")
+    writeout.close()
+
+    print("finish creating filename")
+    return
+
+def sort_folder_by_name():
+    ''' sort by siginificant number'''
+    import os
+
+    myimages = []  # list of image filenames
+
+    dirFiles = os.listdir('/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/primary/')  # list of directory files
+    dirFiles.sort()  # good initial sort but doesnt sort numerically very well
+    sorted(dirFiles)  # sort numerically in ascending order
+
+    for files in dirFiles:  # filter out all non jpgs
+        if '.json' in files:
+            myimages.append(files)
+
+    print len(myimages)
+    print myimages
+
+def sort_folder_by_name_advance():
+    myimages = []  # list of image filenames
+    dirFiles = os.listdir('/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/primary/')  # list of directory files
+    dirFiles.sort(key=lambda f: int(filter( str.split('-')[1].isdigit(), f )))  # good initial sort but doesnt sort numerically very well
+    sorted(dirFiles)  # sort numerically in ascending order
+
+    for files in dirFiles:  # filter out all non jpgs
+        if '.json' in files:
+            myimages.append(files)
+
 if __name__ == "__main__":
     # test_Enum34(1)
-    avg_arr_of_arr()
-    join_list()
+    # avg_arr_of_arr()
+    # join_list()
+    # test_bypass_function()
+    # create_folder_w_timestamp()
+    # sort_folder_by_name_advance()
 
 
-    id = 'cycle1_echo_2019-06-04-13-46-57_echoes-c'
-    i = id.split('_')
-    print (i[0].split('cycle')[1])
+    ind = [3,5,6,8]
+    print ('list: {}'.format( ind[len(ind) -1] ))
+
+    test_time_zone()
 
     time_readout = "2019-06-04-13-46-57"
     time_converted = datetime.strptime(time_readout, '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
@@ -361,7 +447,8 @@ if __name__ == "__main__":
 
 
 
-    test_exception()
+
+    test_wrong_datetime_exception()
     test_datetime_import()
 
     edit_element_numpy()
@@ -374,5 +461,4 @@ if __name__ == "__main__":
     # use_timeout_with_signal()
     # use_timeout_with_process()
 
-    test_time_zone()
     

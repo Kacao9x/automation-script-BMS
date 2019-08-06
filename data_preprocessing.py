@@ -221,35 +221,35 @@ class cycler_preprocessing(object):
                     table.iat[int(ind[i]) + j, energy_Wh]   +=  tot_wh
                     # table.iat[int(ind[i]) + j, sec]         += tot_sec
 
+            # Subtraction the capacity for dischage cycle
+            elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
+                  table.iat[int(ind[i]), id_num] == 'CC_DChg'):
 
-            # Adding total seconds of runtime to the next stage
-            # elif ((table.iat[int(ind[i]), id_num] == 'Rest' and
-            #       table.iat[int(ind[i - 1]), id_num] == 'CC_DChg')) or\
-            #     ((table.iat[int(ind[i]), id_num] == 'CCCV_Chg') and
-            #      table.iat[int(ind[i - 1]), id_num] == 'Rest'):
-
-            #     tot_sec = table.iat[int(ind[i]) - 1, sec]
-            #     diff = int(ind[i + 1]) - int(ind[i])
-
-            #     for j in range(diff):
-            #         table.iat[int(ind[i]) + j, sec] += tot_sec
+                tot = table.iat[int(ind[i + 1]) - 1, cap_Ah]
+                tot_mwh = table.iat[int(ind[i + 1]) - 1, energy_Wh]
+                diff = int(ind[i + 1]) - int(ind[i])
+                for j in range(diff):
+                    table.iat[int(ind[i]) + j, cap_Ah] = tot - \
+                                                          table.iat[int(ind[i]) + j, cap_Ah]
+                    table.iat[int(ind[i]) + j, energy_Wh] = tot_mwh - \
+                                                             table.iat[int(ind[i]) + j, energy_Wh]
 
 
             # Subtraction the capacity for dischage cycle
-            elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
-                  table.iat[int(ind[i]), id_num] == 'CC_DChg' and
-                table.iat[int(ind[i+1]), id_num] == 'CCCV_Chg'):
-
-                tot_cap = table.iat[int(ind[i + 1]) - 1, cap_Ah]
-                tot_wh  = table.iat[int(ind[i + 1]) - 1, energy_Wh]
-                # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
-                diff    = int(ind[i + 1]) - int(ind[i])
-
-                for j in range(diff):
-                    table.iat[int(ind[i]) + j, cap_Ah] = tot_cap -\
-                                                         table.iat[int(ind[i]) + j, cap_Ah]
-                    table.iat[int(ind[i]) + j, energy_Wh] = tot_wh - \
-                                                        table.iat[int(ind[i]) + j, energy_Wh]
+            # elif (table.iat[int(ind[i - 1]), id_num] == 'Rest' and
+            #     table.iat[int(ind[i]), id_num] == 'CC_DChg' and
+            #     table.iat[int(ind[i + 1]), id_num] == 'CCCV_Chg'):
+            #
+            #     tot_cap = table.iat[int(ind[i + 1]) - 1, cap_Ah]
+            #     tot_wh  = table.iat[int(ind[i + 1]) - 1, energy_Wh]
+            #     # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
+            #     diff    = int(ind[i + 1]) - int(ind[i])
+            #
+            #     for j in range(diff):
+            #         table.iat[int(ind[i]) + j, cap_Ah] = tot_cap -\
+            #                                              table.iat[int(ind[i]) + j, cap_Ah]
+            #         table.iat[int(ind[i]) + j, energy_Wh] = tot_wh - \
+            #                                             table.iat[int(ind[i]) + j, energy_Wh]
                     # table.iat[int(ind[i]) + j, sec] += tot_sec
 
             # for cycler ends up at Discharge cycle
@@ -258,8 +258,8 @@ class cycler_preprocessing(object):
                 table.iat[int(ind[i]), id_num] == 'Rest' and
                 table.iat[int(ind[len(ind) - 1]), id_num] == 'CC_DChg'):
 
-                tot_cap = 2933.3
-                tot_wh = 10987.6
+                tot_cap = table.iat[int(ind[i+1]) -2, cap_Ah]
+                tot_wh  = table.iat[int(ind[i+1]) -2, energy_Wh]
                 # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
                 print ('length table {}\n\n'.format(table.index))
                 diff = len(table.index) - int(ind[i+1])
@@ -322,7 +322,8 @@ class cycler_preprocessing(object):
             table['SoH'] = 100*actual_capacity/1
         else:
             table['SoH'] = 100 * actual_capacity / rated_cap
-            table['SoC'] = 100 * table['cap(Ah)'] / actual_capacity
+            soc = 100 * table['cap(Ah)'] / actual_capacity
+            table['SoC'] = round(soc, 3)
         return table
 
 
@@ -571,7 +572,6 @@ class echoes_sorting(object):
 
 
             row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
-            # row, c, p, curr, voltage, soh, soc  = self.find_capacity(cycler_start_time, echoes_endtime, table)
             # row, c, p, curr, voltage  = self.find_capacity(cycler_start_time, echoes_endtime, table)
 
             index.append(row)
@@ -617,21 +617,21 @@ class echoes_sorting(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/Transducer_Testing-CyclerData_7-23-19'
-    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/secondary/'
-    rated_cap = 2933.3
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09/secondary/Me09_Cyclerdata_8-5'
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09/secondary/'
+    rated_cap = 56000
 
-    battery_id = 'Lenovo' #raw_input('battery_id \n')
+    battery_id = 'Me09' #raw_input('battery_id \n')
 
     cycler_sort = cycler_preprocessing(
         filename=_pathname,
-        neware=False,
+        neware=True,
         time_sync_fix=False, debug=False)
 
     echoes_sort = echoes_sorting(
         path = path,
-        neware=False,
-        debug=False)
+        neware=True,
+        debug=True)
 
 
     def test_clean_data(self, cycler_sort=cycler_sort):

@@ -59,7 +59,7 @@ def check_data_quality_mongo(collection):
     echoes_db = database(database='echoes-captures')
 
     query = {
-        'capture_number': {'$gt':3595},
+        'capture_number': {'$gt':1242},
     }
 
     #1: ascending, -1: descending, 0: hidden
@@ -82,7 +82,9 @@ def check_data_quality_mongo(collection):
         count += 1
         print ("capture ID: {}\t".format(aCapture['capture_number']))
 
-        aCapture['timestamp'] = aCapture['timestamp'] - timedelta(hours=4)      #convert UTC to EDT timezone
+        # time_obj = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S')
+        # aCapture['timestamp'] = time_obj - timedelta(hours=4)  # convert UTC to EDT timezone
+        # aCapture['timestamp'] = aCapture['timestamp'] - timedelta(hours=4)      #convert UTC to EDT timezone
 
         aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
         aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
@@ -99,10 +101,10 @@ def check_data_quality_mongo(collection):
         else:
             path = address + 'secondary/'
 
-        # with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
-        #     aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
-        #     writeout.write(json.dumps(aCapture))
-        # writeout.close()
+        with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
+            # aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
+            writeout.write(json.dumps(aCapture))
+        writeout.close()
 
     echoes_db.close()
 
@@ -193,14 +195,14 @@ def check_data_quality_json():
         print ("capture ID: {}\t".format(aCapture['capture_number']))
 
         time_object = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S')
-        aCapture['timestamp'] = time_object - timedelta(hours=4)                # convert UTC to EDT timezone
+        # aCapture['timestamp'] = time_object - timedelta(hours=4)                # convert UTC to EDT timezone
 
         aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
         aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
 
-        path = '/media/kacao/479E26136B58509D/Titan_AES/Echoes-test-data/Me07_3/data/secondary_gap/'
+        path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/secondary_gap/'
         with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
-            aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
+            # aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
             writeout.write(json.dumps(aCapture))
         writeout.close()
 
@@ -219,8 +221,8 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
 
 
     key='.json'
-    # list_file = display_list_of_file(address, key)
-    list_file = sort_folder_by_name(address, key)
+    list_file = display_list_of_file_by_date(address, key)
+    # list_file = sort_folder_by_name(address, key)
     print (list_file)
 
     tempC_1, tempC_2 = [], []
@@ -318,8 +320,8 @@ def main ():
     """
         (1) Check data quality: detect flat curve, missing echo
     """
-    check_data_quality_json()
-    # check_data_quality_mongo(collection=collection)
+    # check_data_quality_json()
+    check_data_quality_mongo(collection=collection)
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
@@ -420,14 +422,12 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel       = 'secondary'
-primary_channel     = (input_channel == 'primary')
-print (str(primary_channel))
+input_channel       = 'primary_2'
+collection  = 'Me09'
+plot_title  = ' Me09 - Reflection_2| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 5th'
 
-collection  = 'Me07_3'
-plot_title  = ' Me07_3 - Transducer Transmission| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 5th'
 
-address     = '/media/kacao/479E26136B58509D/Titan_AES/Echoes-test-data/Me07_3/data/secondary/'
+address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09/'
 
 # backgrd = []
 # with open(address + 'background.dat') as my_file:

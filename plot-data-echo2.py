@@ -194,15 +194,19 @@ def check_data_quality_json():
 
         print ("capture ID: {}\t".format(aCapture['capture_number']))
 
-        time_object = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S')
-        # aCapture['timestamp'] = time_object - timedelta(hours=4)                # convert UTC to EDT timezone
+        # strp = (aCapture['timestamp']).split('-04')[0]
+        # echoes_endtime = datetime.strptime(strp,
+        #                                    '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+        time_object = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S-04:00')
+        aCapture['timestamp'] = time_object - timedelta(hours=4)                # convert UTC to EDT timezone
 
         aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
-        aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
+        # aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
 
-        path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/secondary_gap/'
+        path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/primary_2/'
         with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
-            # aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
+            aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
+            aCapture['input_channel'] = 1
             writeout.write(json.dumps(aCapture))
         writeout.close()
 
@@ -221,14 +225,16 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
 
 
     key='.json'
-    list_file = display_list_of_file_by_date(address, key)
+    list_file = display_list_of_file(address, key)
     # list_file = sort_folder_by_name(address, key)
     print (list_file)
 
     tempC_1, tempC_2 = [], []
     for oneFile in list_file:
         strip_name = oneFile.split('-')
-        captureID =  (strip_name[0].split('capture'))[1]
+        # captureID =  (strip_name[0].split('capture'))[1]
+        str = (strip_name[0].split('_'))[0]
+        captureID = str.split('cycle')[1]
         print ('capture ID: {}'.format(captureID))
 
         with open(address + oneFile) as json_file:
@@ -238,7 +244,8 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
         ''' Read temperature'''
         # tempC_1.append(echo_data['temperature'][0])
         # tempC_2.append(echo_data['temperature'][1])
-        if 'master' in echo_data['test_setting']:
+        # if 'master' in echo_data['test_setting']:
+        if echo_data['test_setting']['master'] != False:
             tempC_1.append(echo_data["test_setting"]["master"]["temp_sense_a_1"])
         else:
             tempC_1.append(None)
@@ -303,7 +310,7 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
     # filter_concat = filter_concat.mean( axis=1 )
     filter_concat = filter_concat.T
     filter_concat.insert(loc=0, column='tempC_1', value=tempC_1)
-    filter_concat.to_csv(address + input_channel + '-bandpass-avg-sec.csv')
+    filter_concat.to_csv(address + input_channel + '-bandpass-avg.csv')
     # avgTable_concat.to_csv(address + input_channel + '-raw-avg-9-channel-A.csv')
     
     print ("complete")
@@ -321,11 +328,11 @@ def main ():
         (1) Check data quality: detect flat curve, missing echo
     """
     # check_data_quality_json()
-    check_data_quality_mongo(collection=collection)
+    # check_data_quality_mongo(collection=collection)
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
-    # plot_signal_from_json(bandpass=True, backgrd_subtract= False)
+    plot_signal_from_json(bandpass=True, backgrd_subtract= False)
     # plot_signal_from_mongo(collection=collection)
 
     """
@@ -422,12 +429,12 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel       = 'primary_2'
-collection  = 'Me09'
-plot_title  = ' Me09 - Reflection_2| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 5th'
+input_channel       = 'primary_3'
+collection  = 'Me08'
+plot_title  = ' Me08 - primary_3| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 5th'
 
 
-address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09/'
+address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/primary_3/'
 
 # backgrd = []
 # with open(address + 'background.dat') as my_file:

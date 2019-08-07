@@ -448,7 +448,7 @@ class echoes_sorting(object):
     _class       = None
     _debug       = None
 
-    def __init__(self, path=None, neware = True, debug = False):
+    def __init__(self, path=None, neware = True, time_between_capture=1, debug = False):
         '''
         :param filename: Path to the data set
         :param neware: True if sorting the Neware data report
@@ -460,6 +460,7 @@ class echoes_sorting(object):
         self._class = self.__class__.__name__
 
         self._neware   = neware
+        self.__PERIOD__= time_between_capture
 
         if not path:
             self.dprint('No data set specified', error = True)
@@ -567,6 +568,10 @@ class echoes_sorting(object):
             else:
                 echoes_endtime = datetime.strptime(aCapture['timestamp'],
                                 '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+
+                # echoes_endtime = datetime.strptime(aCapture['timestamp'],
+                #                                    '%Y-%m-%dT%H:%M:%S-04:00').strftime(
+                #     '%Y-%m-%d %H:%M:%S')
                 print (echoes_endtime)
 
 
@@ -617,11 +622,11 @@ class echoes_sorting(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09/secondary/Me09_Cyclerdata_8-5'
-    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09/secondary/'
+    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/secondary_3/Me08_CyclerData_8-5'
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/secondary_3/'
     rated_cap = 56000
 
-    battery_id = 'Me09' #raw_input('battery_id \n')
+    battery_id = 'Me08' #raw_input('battery_id \n')
 
     cycler_sort = cycler_preprocessing(
         filename=_pathname,
@@ -631,6 +636,7 @@ class Test(unittest.TestCase):
     echoes_sort = echoes_sorting(
         path = path,
         neware=True,
+        time_between_capture = 5,
         debug=True)
 
 
@@ -673,8 +679,8 @@ class Test(unittest.TestCase):
 
         print (table.head().to_string())
 
-        key = 'capture'
-        filelist = display_list_of_file_by_date(self.path, key)
+        key = 'cycle'
+        filelist = display_list_of_file(self.path, key)
         print (filelist)
 
         _start_row = 1        

@@ -136,7 +136,6 @@ class cycler_preprocessing(object):
         print (table.shape)
 
         NAN_finder = table['id'].notna()                                        # a boolean list of ID columns
-        # global ind
 
         ind = []
         for i in range(len(NAN_finder)):
@@ -147,14 +146,12 @@ class cycler_preprocessing(object):
         id_num      = table.columns.get_loc("id_num")
         cap_Ah      = table.columns.get_loc("cap(Ah)")
         energy_Wh   = table.columns.get_loc("en(Wh)")
-        sec         = table.columns.get_loc("time")
 
         # add 21.00 for real capacity
         # for i in range(0, int(ind[1])):
         #     table.iat[i, cap_mAh] = 38 + table.iat[i, cap_mAh]
         table['cap(Ah)']    = table['cap(Ah)'].astype(float)
         table['en(Wh)']     = table['en(Wh)'].astype(float)
-        # table['time']       = table['time'].astype(float)
 
 
         for i in range(len(ind) - 1):
@@ -165,13 +162,12 @@ class cycler_preprocessing(object):
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]                    # store the capacity
                 tot_wh  = table.iat[int(ind[i]) - 1, energy_Wh]                 # store the energy
-                # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # store the total second
+
                 diff    = int(ind[i + 1]) - int(ind[i])                         # find the length of the stage
 
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
                     table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
-                    # table.iat[int(ind[i]) + j, sec]         += tot_sec
 
             # Adding capacity - CV charge --> CC charge
             elif (table.iat[int(ind[i]), id_num] == 'CC_Chg' and
@@ -179,13 +175,12 @@ class cycler_preprocessing(object):
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
                 tot_wh = table.iat[int(ind[i]) - 1, energy_Wh]
-                # tot_sec = table.iat[int(ind[i]) - 1, sec]
+
                 diff    = int(ind[i + 1]) - int(ind[i])
 
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
                     table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
-                    # table.iat[int(ind[i]) + j, sec]         += tot_sec
 
 
             # Keep the same capacity of CV_charge for rest cycle
@@ -198,13 +193,12 @@ class cycler_preprocessing(object):
 
                 tot_cap = table.iat[int(ind[i]) - 1, cap_Ah]
                 tot_wh  = table.iat[int(ind[i]) - 1, energy_Wh]
-                # tot_sec = table.iat[int(ind[i]) - 1, sec]
+
                 diff    = int(ind[i + 1]) - int(ind[i])
 
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
                     table.iat[int(ind[i]) + j, energy_Wh]   += tot_wh
-                    # table.iat[int(ind[i])+ j, sec]          += tot_sec
 
 
             # Keep the last capacity/power of CCCV_charge for rest cycle
@@ -213,7 +207,6 @@ class cycler_preprocessing(object):
 
                 tot_cap = float(table.iat[int(ind[i]) - 1, cap_Ah])
                 tot_wh  = float(table.iat[int(ind[i]) - 1, energy_Wh])
-                # tot_sec = table.iat[int(ind[i]) - 1, sec]
                 diff    = int(ind[i + 1]) - int(ind[i])
 
                 for j in range(diff):
@@ -260,7 +253,7 @@ class cycler_preprocessing(object):
 
                 tot_cap = table.iat[int(ind[i+1]) -2, cap_Ah]
                 tot_wh  = table.iat[int(ind[i+1]) -2, energy_Wh]
-                # tot_sec = table.iat[int(ind[i]) - 1, sec]                       # total sec from Rest
+
                 print ('length table {}\n\n'.format(table.index))
                 diff = len(table.index) - int(ind[i+1])
 
@@ -276,7 +269,7 @@ class cycler_preprocessing(object):
     def calculate_SoH(self, table, rated_cap=None):
         SoH_value = 100
 
-        ind = table[table['id'].notna()].index.tolist()                        # a list of ID rows
+        ind = table[table['id'].notna()].index.tolist()                         # a list of ID rows
         print (ind)
 
         # id_num      = table.columns.get_loc("id_num")
@@ -304,7 +297,7 @@ class cycler_preprocessing(object):
             if table['id_num'][i] == 'Rest':
                 cap_ah_arr.append( table['cap(Ah)'][i])
         max_cap_Ah = max(cap_ah_arr)
-        print ('max capacity: ' + str(max_cap_Ah))
+        print ('max capacity: {}'.format(max_cap_Ah))
 
         if rated_cap is None:
             pass
@@ -321,9 +314,9 @@ class cycler_preprocessing(object):
         if rated_cap is None:
             table['SoH'] = 100*actual_capacity/1
         else:
-            table['SoH'] = 100 * actual_capacity / rated_cap
-            soc = 100 * table['cap(Ah)'] / actual_capacity
-            table['SoC'] = round(soc, 3)
+            table['SoH']    = 100 * actual_capacity / rated_cap
+            table['SoC']    = 100 * table['cap(Ah)'] / actual_capacity
+
         return table
 
 
@@ -368,8 +361,6 @@ class cycler_preprocessing(object):
 
 
     def post_csv_data(self, table, battery_id):
-        import json
-        import time
 
         def convert_to_time_utc(time_string):
             # time_string = u'11/14/2018 4:09:03 PM'
@@ -397,26 +388,54 @@ class cycler_preprocessing(object):
         echoes_db       = database(database='cycler-data')
 
         batch_size = 1000
-        inserts = []
+        insert_list = []
         count = 0
 
         del table['Unnamed: 0']
         data_table = json.loads(table.to_json(orient='records'))
 
-        for element in data_table:
-            if element['Date/Time'] is not None:
+        '''
+        A specs of tested battery:
+        - full capacity
+        - note
+        - module
+        '''
+
+        for aLog in data_table:
+            if aLog['Date/Time'] is not None:
                 try:
-                    element['Date/Time'] = datetime_format(element['Date/Time'])
+                    aLog['Date/Time'] = datetime_format(aLog['Date/Time'])
 
                 except:
                     print ('wrong format')
                     continue
 
+                aLog['battery_id'] = battery_id
 
-                element['battery_id'] = battery_id
+                count += 1
+                insert_list.append(aLog)
 
-                result = echoes_db.insert_capture(element, collection='cycler-test')
+            if count >= batch_size:
+                result = echoes_db.insert_multiple(insert_list,
+                                                  collection='Me07-cycler')
                 print (result)
+                count = 0                                                       #reset counter
+                insert_list = []                                                #zero out the list
+
+        # for element in data_table:
+        #     if element['Date/Time'] is not None:
+        #         try:
+        #             element['Date/Time'] = datetime_format(element['Date/Time'])
+        #
+        #         except:
+        #             print ('wrong format')
+        #             continue
+        #
+        #
+        #         element['battery_id'] = battery_id
+        #
+        #         result = echoes_db.insert_capture(element, collection='cycler-test', host=False)
+        #         print (result)
 
         echoes_db.close()
 
@@ -430,9 +449,12 @@ class cycler_preprocessing(object):
             if self._debug or error:
                 function_name = sys._getframe(1).f_code.co_name
                 if timestamp:
-                    print("  " + str(
-                        datetime.now()) + " " + self._class +
-                          ":" + function_name + "(): " + txt)
+                    print ("  {} {}:{}'()': {}".format(datetime.now(),
+                                                       self._class,
+                                                       function_name, txt))
+                    # print("  " + str(
+                    #     datetime.now()) + " " + self._class +
+                    #       ":" + function_name + "(): " + txt)
                 else:
                     print("  " + self._class + ":" + function_name + "(): " + txt)
         return
@@ -441,8 +463,8 @@ class cycler_preprocessing(object):
 class echoes_sorting(object):
 
     __PERIOD__      = 1                                                         #time differnce between each capture
-    __start_row__   = 1                                                             #number of header to remove
-    ind         = []
+    __start_row__   = 1                                                         #number of header to remove
+    ind         = []                                                            #index of stage
 
     _debug_level = None
     _class       = None
@@ -518,17 +540,17 @@ class echoes_sorting(object):
         
         # identify the index to grasp the proper row of data instance
         cycler_end_temp = table['Date/Time'][line]
-        check = pd.isnull(table.at[line, 'Date/Time'])
+        isValidTimestamp= pd.isnull(table.at[line, 'Date/Time'])
 
-        if check:
+        if isValidTimestamp:
             cycler_end_temp = table['Date/Time'][line + 2]
-        print ('grasp a time Node: ' + str(cycler_end_temp))
+        print ('grasp a time Node: {}'.format(cycler_end_temp))
 
         diff = self.calculate_time(cycler_end_temp, end)
         line += int(diff / self.__PERIOD__)
 
         print ('cycler_end_temp_correct: {}'.format(table['Date/Time'][line]))
-        print ("correct diff: %s \n" % str(diff))
+        print ("correct diff: {} \n".format(diff))
 
         return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
             table['current'][line], table['volt'][line], \
@@ -537,17 +559,14 @@ class echoes_sorting(object):
     
     # return a sorted table with capacity, filename, index
     def sort_by_name(self, filelist, table):
-        cap     = []
-        power   = []
-        filename= []
-        index   = []
-        volt    = []
-        current = []
+        cap, power      = [], []
+        index, filename = [], []
+        volt,current    = [], []
         charging= []
         SoH     = []
         SoC     = []
 
-        cycler_start_time = table['Date/Time'][self.__start_row__]                                                      # Read the start time in Cycler
+        cycler_start_time = table['Date/Time'][self.__start_row__]              # Read the start time in Cycler
 
         for i, element in enumerate( filelist ):
             with open(self._path + element) as json_file:
@@ -561,7 +580,7 @@ class echoes_sorting(object):
                 echoes_UTC = datetime.strptime(aCapture['timestamp'],
                                                '%Y-%m-%dT%H:%M:%S')
 
-                echoes_convert_EDT = echoes_UTC - timedelta(hours=4)                                                    # convert UTC to EDT timezone
+                echoes_convert_EDT = echoes_UTC - timedelta(hours=4)            # convert UTC to EDT timezone
                 echoes_endtime = echoes_convert_EDT.strftime('%Y-%m-%d %H:%M:%S')
                 print (echoes_endtime)
 
@@ -610,7 +629,7 @@ class echoes_sorting(object):
                                     'volt'     : volt, 'current'  : current,
                                     'cap(Ah)'  : cap, 'power(Wh)':power,
                                     'FileName' : filename, 'SoH' : SoH, 'SoC' : SoC},
-                                    columns=column)                                 # columns=[] used to set order of columns
+                                    columns=column)                             # columns=[] used to set order of columns
 
         del table_sorted['index']
         # # table_sorted = table_sorted.sort_values('index')
@@ -622,21 +641,24 @@ class echoes_sorting(object):
 
 class Test(unittest.TestCase):
     
-    _pathname = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/secondary_3/Me08_CyclerData_8-5'
-    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/secondary_3/'
-    rated_cap = 56000
+    _cycler_txt_report = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07_CyclerData_8-5'
+    echoes_cycler_path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07-3/secondary_3554_4365/'
 
-    battery_id = 'Me08' #raw_input('battery_id \n')
+
+    battery_id      = 'Me07'    #raw_input('battery_id \n')
+    rated_cap       = 56000
+    time_btw_logs   = 5                                                         # time btw each capture log in cycler
+
 
     cycler_sort = cycler_preprocessing(
-        filename=_pathname,
-        neware=True,
+        filename    =_cycler_txt_report,
+        neware      =True,
         time_sync_fix=False, debug=False)
 
     echoes_sort = echoes_sorting(
-        path = path,
-        neware=True,
-        time_between_capture = 5,
+        path    = echoes_cycler_path,
+        neware  =True,
+        time_between_capture = time_btw_logs,
         debug=True)
 
 
@@ -649,12 +671,12 @@ class Test(unittest.TestCase):
     def test_merge_column(self, cycler_sort=cycler_sort):
 
         table = cycler_sort.clean_test_data()
-        with open (self._pathname + '.csv') as my_file:
-            table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
-        print (table.head().to_string())
+        # with open (self._cycler_txt_report + '.csv') as my_file:
+        #     table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
+        # print (table.head().to_string())
 
         cycler_sort.merge_column(table)                                         # Merge capactity of CC and CV stages
-        table.to_csv(self._pathname + '_merged.csv')
+        table.to_csv(self._cycler_txt_report + '_merged.csv')
         return table
 
 
@@ -668,24 +690,26 @@ class Test(unittest.TestCase):
                                           self.rated_cap)
 
         print (table.head().to_string())
-        table.to_csv(self._pathname + '_merged_full.csv')
+        table.to_csv(self._cycler_txt_report + '_merged_full.csv')
         return
 
 
-    def test_sort_Cycler_Echoes(self, cycler_sort=cycler_sort, echoes_sort=echoes_sort):
-        with open(self._pathname + '_merged_full.csv') as readTable:
+    def test_sort_Cycler_Echoes(self, cycler_sort=cycler_sort,
+                                echoes_sort=echoes_sort):
+        with open(self._cycler_txt_report + '_merged_full.csv') as readTable:
             table = pd.read_csv(readTable, sep=',', error_bad_lines=False)
         readTable.close()
 
         print (table.head().to_string())
 
-        key = 'cycle'
-        filelist = display_list_of_file(self.path, key)
+        key = 'capture'
+        filelist = display_list_of_file(self.echoes_cycler_path, key)
         print (filelist)
 
         _start_row = 1        
         sorted_table = echoes_sort.sort_by_name(filelist, table)
-        sorted_table.to_csv(self.path + '{}_secondary_echoescyler_final.csv'.format(self.battery_id))
+        sorted_table.to_csv(self.echoes_cycler_path +
+                            '{}_secondary_echoescyler_final.csv'.format(self.battery_id))
         return
 
 
@@ -693,7 +717,7 @@ class Test(unittest.TestCase):
     def test_post_data_to_mongo(self, cycler_sort=cycler_sort,
                                 battery_id=battery_id):
         
-        with open (self._pathname + '_merged.csv') as my_file:
+        with open (self._cycler_txt_report + '_merged_full.csv') as my_file:
             table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
 
         my_file.close()

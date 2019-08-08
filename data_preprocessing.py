@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
+from enum import Enum
 import pandas as pd
 import numpy as np
 import json
 from datetime import datetime, timedelta
 from lib.echoes_database import *
-import bson, time
+import time
 import unittest
 import pprint
 
@@ -82,8 +83,8 @@ class cycler_preprocessing(object):
 
         cycler_data = lines.iloc[:, 0:10]
         print (cycler_data.shape)
-        header_list = ['id_num', 'time', 'volt', 'current', 'del2', 'cap(Ah)',
-                       'cap(microAh)', 'en(Wh)','en(microWh)', 'Date/Time']
+        header_list = ['id_num', 'time', 'volt', 'current', 'del2', 'cap(mAh)',
+                       'cap(microAh)', 'en(mWh)','en(microWh)', 'Date/Time']
 
         cycler_data.columns = header_list
         del cycler_data['del2'], cycler_data['en(microWh)'], \
@@ -91,7 +92,7 @@ class cycler_preprocessing(object):
 
         # added extra 'id' columns to shift the first rows
         header_list = ['id', 'id_num', 'time', 'volt', 'current',
-                       'cap(Ah)', 'en(Wh)', 'Date/Time']
+                       'cap(mAh)', 'en(mWh)', 'Date/Time']
         cycler_data = cycler_data.reindex(columns=header_list)
 
         '''
@@ -144,14 +145,14 @@ class cycler_preprocessing(object):
 
         print ('ind: {}'.format(ind))
         id_num      = table.columns.get_loc("id_num")
-        cap_Ah      = table.columns.get_loc("cap(Ah)")
-        energy_Wh   = table.columns.get_loc("en(Wh)")
+        cap_Ah      = table.columns.get_loc("cap(mAh)")
+        energy_Wh   = table.columns.get_loc("en(mWh)")
 
         # add 21.00 for real capacity
         # for i in range(0, int(ind[1])):
         #     table.iat[i, cap_mAh] = 38 + table.iat[i, cap_mAh]
-        table['cap(Ah)']    = table['cap(Ah)'].astype(float)
-        table['en(Wh)']     = table['en(Wh)'].astype(float)
+        table['cap(mAh)']    = table['cap(mAh)'].astype(float)
+        table['en(mWh)']     = table['en(mWh)'].astype(float)
 
 
         for i in range(len(ind) - 1):
@@ -212,7 +213,6 @@ class cycler_preprocessing(object):
                 for j in range(diff):
                     table.iat[int(ind[i]) + j, cap_Ah]      += tot_cap
                     table.iat[int(ind[i]) + j, energy_Wh]   +=  tot_wh
-                    # table.iat[int(ind[i]) + j, sec]         += tot_sec
 
             # Subtraction the capacity for dischage cycle
             elif (table.iat[int(ind[i + 1]), id_num] == 'Rest' and
@@ -262,7 +262,6 @@ class cycler_preprocessing(object):
                                                          table.iat[int(ind[i+1]) + j, cap_Ah]
                     table.iat[int(ind[i+1]) + j, energy_Wh] = tot_wh - \
                                                             table.iat[int(ind[i+1]) + j, energy_Wh]
-
         return table
 
 
@@ -273,8 +272,8 @@ class cycler_preprocessing(object):
         print (ind)
 
         # id_num      = table.columns.get_loc("id_num")
-        # cap_Ah      = table.columns.get_loc("cap(Ah)")
-        # energy_Wh   = table.columns.get_loc("en(Wh)")
+        # cap_Ah      = table.columns.get_loc("cap(mAh)")
+        # energy_Wh   = table.columns.get_loc("en(mWh)")
 
         # actual_cap_Ah_arr = []
         # for i in range(len(ind)):
@@ -288,14 +287,14 @@ class cycler_preprocessing(object):
         # max_cap_Ah = max(actual_cap_Ah_arr)
         # print ('max capacity: ' + str(max_cap_Ah))
 
-        # max_cap_Ah = table['cap(Ah)'].max()
+        # max_cap_Ah = table['cap(mAh)'].max()
 
         cap_ah_arr = []
         for i in ind:
             # if table['id_num'][i] == 'CCCV_Chg':
             #     cap_ah_arr.append( table['volt'][i])
             if table['id_num'][i] == 'Rest':
-                cap_ah_arr.append( table['cap(Ah)'][i])
+                cap_ah_arr.append( table['cap(mAh)'][i])
         max_cap_Ah = max(cap_ah_arr)
         print ('max capacity: {}'.format(max_cap_Ah))
 
@@ -315,10 +314,9 @@ class cycler_preprocessing(object):
             table['SoH'] = 100*actual_capacity/1
         else:
             table['SoH']    = 100 * actual_capacity / rated_cap
-            table['SoC']    = 100 * table['cap(Ah)'] / actual_capacity
+            table['SoC']    = 100 * table['cap(mAh)'] / actual_capacity
 
         return table
-
 
 
     def _filter_data_by_timeInterval(self, table, sec):
@@ -352,12 +350,11 @@ class cycler_preprocessing(object):
             tb = pd.concat([tb, table_data], axis=0)
 
         tb.columns = ['id', 'id_num', 'time', 'volt', 'current',
-                      'cap(Ah)', 'en(Wh)', 'Date/Time']
+                      'cap(mAh)', 'en(mWh)', 'Date/Time']
         tb.sort_values('id')
         # del tb['extra']
 
         return tb
-
 
 
     def post_csv_data(self, table, battery_id):
@@ -392,6 +389,7 @@ class cycler_preprocessing(object):
         count = 0
 
         del table['Unnamed: 0']
+        del table['time']
         data_table = json.loads(table.to_json(orient='records'))
 
         '''
@@ -552,7 +550,7 @@ class echoes_sorting(object):
         print ('cycler_end_temp_correct: {}'.format(table['Date/Time'][line]))
         print ("correct diff: {} \n".format(diff))
 
-        return line, table['cap(Ah)'][line], table['en(Wh)'][line],\
+        return line, table['cap(mAh)'][line], table['en(mWh)'][line],\
             table['current'][line], table['volt'][line], \
             table['SoH'][line], table['SoC'][line]
 
@@ -613,21 +611,21 @@ class echoes_sorting(object):
                 charging.append( 1 )
 
         print ("start sorting")
-        # column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
+        # column = ['index', 'charging', 'volt', 'current', 'cap(mAh)',
         #         'power(Wh)', 'FileName']
         # table_sorted = pd.DataFrame({'index'    : index, 'charging' :charging,
         #                             'volt'     : volt, 'current'  : current,
-        #                             'cap(Ah)'  : cap, 'power(Wh)':power,
+        #                             'cap(mAh)'  : cap, 'power(Wh)':power,
         #                             'FileName' : filename},
         #                             columns=column)
 
 
-        column = ['index', 'charging', 'volt', 'current', 'cap(Ah)',
-                'power(Wh)', 'FileName', 'SoH', 'SoC']
+        column = ['index', 'charging', 'volt', 'current', 'cap(mAh)',
+                'power(mWh)', 'FileName', 'SoH', 'SoC']
 
         table_sorted = pd.DataFrame({'index'    : index, 'charging' :charging,
                                     'volt'     : volt, 'current'  : current,
-                                    'cap(Ah)'  : cap, 'power(Wh)':power,
+                                    'cap(mAh)'  : cap, 'power(mWh)':power,
                                     'FileName' : filename, 'SoH' : SoH, 'SoC' : SoC},
                                     columns=column)                             # columns=[] used to set order of columns
 
@@ -638,16 +636,27 @@ class echoes_sorting(object):
         
 
 
+class battery_cap(Enum):
+    'unit: mAh'
+    mercedes    = 56000
+    tunacan     = 64000
+    toyotaCell  = 25800
+    lenovo      = 3300
+    apple       = None
+    hyundai     = None
+
+
 
 class Test(unittest.TestCase):
     
-    _cycler_txt_report = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07_CyclerData_8-5'
-    echoes_cycler_path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07-3/secondary_3554_4365/'
+    _cycler_txt_report = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/aug-8/TY01-15-CyclerData-7-16-2019'
+    echoes_cycler_path = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/aug-8/'
 
 
-    battery_id      = 'Me07'    #raw_input('battery_id \n')
-    rated_cap       = 56000
-    time_btw_logs   = 5                                                         # time btw each capture log in cycler
+    battery_id      = 'TY01-15'    #raw_input('battery_id \n')
+    rated_cap       = battery_cap.toyotaCell.value
+    time_btw_logs   = 1                                                         # time btw each capture log in cycler
+    channel         = 'secondary'
 
 
     cycler_sort = cycler_preprocessing(
@@ -702,14 +711,15 @@ class Test(unittest.TestCase):
 
         print (table.head().to_string())
 
-        key = 'capture'
+        key = 'cycle'
         filelist = display_list_of_file(self.echoes_cycler_path, key)
         print (filelist)
 
         _start_row = 1        
         sorted_table = echoes_sort.sort_by_name(filelist, table)
         sorted_table.to_csv(self.echoes_cycler_path +
-                            '{}_secondary_echoescyler_final.csv'.format(self.battery_id))
+                            '{}_{}_echoescyler_final.csv'.format(
+                                self.battery_id, self.channel))
         return
 
 

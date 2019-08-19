@@ -1,4 +1,5 @@
 import subprocess
+import re, os, glob
 
 #==============================================================================#
 #Subprocess's call command with piped output and active shell
@@ -39,7 +40,6 @@ def display_list_of_file_by_date(path, key):
 
 def sort_folder_by_name(path, key):
     ''' sort by siginificant number'''
-    import os
 
     myimages = []  # list of image filenames
 
@@ -53,3 +53,26 @@ def sort_folder_by_name(path, key):
 
     print len(myimages)
     return myimages
+
+def sort_folder_by_name_universal(path, key):
+
+    def tryint(s):
+        try:
+            return int(s)
+        except:
+            return s
+
+    def alphanum_key(s):
+        return [ tryint(c) for c in re.split('([0-9]+)', s) ]
+
+
+
+
+    # dirFiles = (os.listdir(path))  # list of directory files
+    dirFiles = [os.path.basename(x) for x in
+                glob.glob(os.path.join(path, key))]
+    print ('beforeSorted {}'.format(dirFiles))
+    dirFiles.sort( key=alphanum_key )
+    print ('dirFiles {}'.format(dirFiles))
+
+    return dirFiles

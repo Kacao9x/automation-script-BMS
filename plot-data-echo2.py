@@ -11,55 +11,43 @@ import json
 from lib.commandline import *
 from datetime import datetime,timedelta
 
-def check_data_quality_mongo(collection):
+
+def remove_bad_samples(aCapture_signal):
+    # These constants are sensitive to VGA change. VGA default is 0.55
+    START_DATA_PTS = 58  # evaluate signal after 8us
+    HIGH_BOUND = 0.2  # arbitrary value for Toyota cell
+    LOW_BOUND = 0.09
+
+    idx = []
+    for i, sample in enumerate(aCapture_signal):
+        # x_arr = np.absolute(signal)                                         #compare standard deviation with threshold
+
+        std_value = np.std(sample[START_DATA_PTS:], ddof=1)
+        # print ('std val: {}'.format(std_value))
+        if std_value > HIGH_BOUND or std_value < LOW_BOUND:
+            idx.append(i)
+        else:
+            None
+
+    print("bad sampling {}".format(idx))
+
+    aCapture_signal = np.delete(aCapture_signal, idx,
+                                axis=0).tolist()  # delete bad sampling by index
+
+    return aCapture_signal
+
+
+def check_data_quality_mongo(remove_bad_samp, collection):
     """
     This functions detect bad sampling in a capture.
     The first method detect a flat curve
     Second method detect a time shift more than 2 data points
     """
 
-    def _locate_2ndEcho_index(data):
-        data = data[140: 260]
-        return 140 + data.index(max(data))
-
-    def _locate_1stEcho_index( data ):
-        '''
-        For checking Mercedes data
-        '''
-        data = data[ 108: 131 ]
-        return 108 + data.index( max(data))
-
-    def _find_avg(numbers):
-        return (sum(numbers)) / max(len(numbers), 1)
-
-    def remove_bad_samples(aCapture_signal):
-        # These constants are sensitive to VGA change. VGA default is 0.55
-        START_DATA_PTS = 58                                                     #evaluate signal after 8us
-        HIGH_BOUND = 0.2                                                        #arbitrary value for Toyota cell
-        LOW_BOUND  = 0.09
-
-        idx = []
-        for i, sample in enumerate(aCapture_signal):
-            # x_arr = np.absolute(signal)                                         #compare standard deviation with threshold
-
-            std_value = np.std(sample[START_DATA_PTS : ], ddof=1)
-            # print ('std val: {}'.format(std_value))
-            if std_value > HIGH_BOUND or std_value < LOW_BOUND:
-                idx.append(i)
-            else:
-                None
-
-        print("bad sampling {}".format(idx))
-
-        aCapture_signal = np.delete(aCapture_signal, idx, axis=0).tolist()      # delete bad sampling by index
-
-        return aCapture_signal
-
-
     echoes_db = database(database='echoes-captures')
 
     query = {
-        'capture_number': {'$gt':1242},
+        'capture_number': {'$gte': 1243},
     }
 
     #1: ascending, -1: descending, 0: hidden
@@ -67,12 +55,15 @@ def check_data_quality_mongo(collection):
         # 'echoes_id':1,
         # 'test_examiner':0,
         # 'transducer_id':0,
-        'raw_data': 1,
-        'capture_number':1,
-        'timestamp': 1,
-        'test_setting.master.temp_sense_a_1': 1,
-        '_id': 0,
-        'input_channel':1
+        # 'test_setting.master.temp_sense_a_1': 1,
+        'timestamp'     : 1,
+        'capture_number': 1,
+        'input_channel' : 1,
+        'raw_data'      : 1,
+        'test_setting.master': 1,
+        'source'        : 1,
+        '_id'           : 0,
+
     }
     data_cursor = echoes_db.search(query=query, projection=projection,
                               collection=collection)
@@ -82,12 +73,15 @@ def check_data_quality_mongo(collection):
         count += 1
         print ("capture ID: {}\t".format(aCapture['capture_number']))
 
-        # time_obj = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S')
-        # aCapture['timestamp'] = time_obj - timedelta(hours=4)  # convert UTC to EDT timezone
         # aCapture['timestamp'] = aCapture['timestamp'] - timedelta(hours=4)      #convert UTC to EDT timezone
 
+        time_obj = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S')#convert to time object for calculation
+        aCapture['timestamp'] = time_obj - timedelta(hours=4)                   # convert UTC to EDT timezone
+
+
         aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
-        aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
+        if remove_bad_samp:
+            aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
 
         print ("saving data to disk\n")
         # Used to separate dataset doesn't have input channel info
@@ -97,12 +91,13 @@ def check_data_quality_mongo(collection):
         #     path = address + 'secondary/'
 
         if aCapture['input_channel'] == 1:
-            path = address + 'primary/'
+            path = addr_to_extract + 'primary-upload/'
         else:
-            path = address + 'secondary/'
+            path = addr_to_extract + 'secondary-upload/'
 
-        with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
-            # aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
+        with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'],
+                                                    aCapture['timestamp']), 'w') as writeout:
+            aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
             writeout.write(json.dumps(aCapture))
         writeout.close()
 
@@ -158,32 +153,9 @@ def check_data_quality_json():
     """
     # These constants are sensitive to VGA change. VGA default is 0.55
 
-    def remove_bad_samples(aCapture_signal):
-        # These constants are sensitive to VGA change. VGA default is 0.55
-        START_DATA_PTS = 58                                                     #evaluate signal after 8us
-        HIGH_BOUND = 0.2                                                        #arbitrary value for Toyota cell
-        LOW_BOUND  = 0.09
-
-        idx = []
-        for i, sample in enumerate(aCapture_signal):
-            # x_arr = np.absolute(signal)                                         #compare standard deviation with threshold
-
-            std_value = np.std(sample[START_DATA_PTS : ], ddof=1)
-            # print ('std val: {}'.format(std_value))
-            if std_value > HIGH_BOUND or std_value < LOW_BOUND:
-                idx.append(i)
-            else:
-                None
-
-        print("bad sampling {}".format(idx))
-
-        aCapture_signal = np.delete(aCapture_signal, idx, axis=0).tolist()      # delete bad sampling by index
-
-        return aCapture_signal
-
     key = '.json'
     # list_file = display_list_of_file(address, key)
-    list_file = sort_folder_by_name(address, key)
+    list_file = display_list_of_file(address, key)
 
     ''' Loop through every sample data in a read/capture '''
     for captureID, filename in enumerate(list_file):
@@ -197,24 +169,24 @@ def check_data_quality_json():
         # strp = (aCapture['timestamp']).split('-04')[0]
         # echoes_endtime = datetime.strptime(strp,
         #                                    '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+
         time_object = datetime.strptime(aCapture['timestamp'], '%Y-%m-%dT%H:%M:%S-04:00')
-        aCapture['timestamp'] = time_object - timedelta(hours=4)                # convert UTC to EDT timezone
+        # aCapture['timestamp'] = time_object - timedelta(hours=4)                # convert UTC to EDT timezone
 
         aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
-        # aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
+        aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
 
-        path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/primary_2/'
+        path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08_H98.86_190715/data/secondary_bonus_2/'
         with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
             aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
-            aCapture['input_channel'] = 1
+            # aCapture['input_channel'] = 2
             writeout.write(json.dumps(aCapture))
         writeout.close()
-
 
     return
 
 
-def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
+def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtract=False):
     """
     (2) plot avg of each cycle. Save avg (mean) to csv file
     """
@@ -224,16 +196,19 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
     ped = 1.38888889e-1                                                         #microsec, * 1000000
 
 
-    key='.json'
-    list_file = display_list_of_file(address, key)
-    # list_file = sort_folder_by_name(address, key)
+    key='*.json'
+    # list_file = display_list_of_file(address, key)
+
+    list_file = sort_folder_by_name_universal(address, key)
     print (list_file)
 
     tempC_1, tempC_2 = [], []
     for oneFile in list_file:
-        strip_name = oneFile.split('-')
+
+        # strip_name = oneFile.split('-')
         # captureID =  (strip_name[0].split('capture'))[1]
-        str = (strip_name[0].split('_'))[0]
+
+        str = (oneFile.split('_'))[0]
         captureID = str.split('cycle')[1]
         print ('capture ID: {}'.format(captureID))
 
@@ -244,14 +219,26 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
         ''' Read temperature'''
         # tempC_1.append(echo_data['temperature'][0])
         # tempC_2.append(echo_data['temperature'][1])
-        # if 'master' in echo_data['test_setting']:
-        if echo_data['test_setting']['master'] != False:
-            tempC_1.append(echo_data["test_setting"]["master"]["temp_sense_a_1"])
+
+        if 'master' in echo_data['test_setting']:
+            if echo_data['test_setting']['master'] != False:
+                tempC_1.append(echo_data["test_setting"]["master"]["temp_sense_a_1"])
+            else:
+                tempC_1.append(None)
+        elif 'temperature' in echo_data:
+            tempC_1.append(echo_data['temperature'][0])
+            tempC_2.append(echo_data['temperature'][1])
         else:
             tempC_1.append(None)
 
 
         if echo_data['raw_data']:
+            echo_data['raw_data'] = [i for i in echo_data['raw_data'] if
+                                    i != None]
+            if remove_bad_samp:
+                echo_data['raw_data'] = remove_bad_samples(echo_data['raw_data'])
+
+
             raw_set_pd = pd.DataFrame()
             for idx, raw in enumerate( echo_data['raw_data'] ):
                 single_set = pd.DataFrame({idx: raw})                           # concat all data set into a singl dataframe
@@ -304,12 +291,12 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
 
     avgTable_concat.insert(loc=0, column='tempC_1', value=tempC_1)
     # avgTable_concat.insert(loc=1, column='tempC_2', value=tempC_2)
-
     avgTable_concat.to_csv(address + input_channel + '-raw-avg-sec.csv')
 
     # filter_concat = filter_concat.mean( axis=1 )
     filter_concat = filter_concat.T
     filter_concat.insert(loc=0, column='tempC_1', value=tempC_1)
+    # filter_concat.insert(loc=1, column='tempC_2', value=tempC_2)
     filter_concat.to_csv(address + input_channel + '-bandpass-avg.csv')
     # avgTable_concat.to_csv(address + input_channel + '-raw-avg-9-channel-A.csv')
     
@@ -317,24 +304,61 @@ def plot_signal_from_json(bandpass=False, backgrd_subtract=False):
     return
 
 
+def upload_json_to_mongo():
+    print("Initializing database")
+    echoes_db = database(database=dtb)
+
+    batch_size = 20
+    insert_list = []
+    count = 0
+
+    key = '.json'
+
+    list_file = display_list_of_file(addr_to_extract, key)
+
+    ''' Loop through every sample data in a read/capture '''
+    for captureID, filename in enumerate(list_file):
+        with open(addr_to_extract + filename) as json_file:
+            aCapture = json.load(json_file)
+        json_file.close()
+
+        print ("capture ID: {}\t".format(aCapture['capture_number']))
+
+        # aCapture['input_channel'] = input_chn
+        if aCapture['timestamp'] is not None:
+            aCapture['timestamp'] = datetime.strptime(aCapture['timestamp'],
+                                               '%Y-%m-%dT%H:%M:%S')
+
+        count+= 1
+        insert_list.append( aCapture )
+
+        if count >= batch_size:
+            result = echoes_db.insert_multiple(insert_list, collection=collection)
+            print (result)
+
+            count = 0
+            insert_list = []
+
+
+    echoes_db.close()
+    return
 #==============================================================================#
 #======================== MAIN FUNCTION ======================================-#
 def main ():
-    global cycle
-    global cycle_id
     global backgrd
 
     """
         (1) Check data quality: detect flat curve, missing echo
     """
     # check_data_quality_json()
-    # check_data_quality_mongo(collection=collection)
+    # check_data_quality_mongo(remove_bad_samp=True, collection=collection)
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
-    plot_signal_from_json(bandpass=True, backgrd_subtract= False)
+    plot_signal_from_json(remove_bad_samp=True, bandpass=True, backgrd_subtract= False)
     # plot_signal_from_mongo(collection=collection)
 
+    # upload_json_to_mongo()
     """
     (4) Plot all 64 samplings in a capture. Query data from Mongodb
     """
@@ -429,12 +453,16 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel       = 'primary_3'
-collection  = 'Me08'
-plot_title  = ' Me08 - primary_3| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 5th'
+input_channel       = 'primary'
+input_chn   = 1 if input_channel == 'primary' else 2
+plot_title  = ' Lenovo_01 - primary| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 11th'
 
 
-address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08/data/primary_3/'
+dtb         = 'cycler-data'
+collection  = 'Me09'
+
+addr_to_extract = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/Lenovo_1/primary_1/'
+address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/190718/{}/'.format(input_channel)
 
 # backgrd = []
 # with open(address + 'background.dat') as my_file:

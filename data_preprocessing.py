@@ -357,7 +357,7 @@ class cycler_preprocessing(object):
         return tb
 
 
-    def post_csv_data(self, table, battery_id):
+    def post_csv_data(self, table, battery_id, dtb, collection):
 
         def convert_to_time_utc(time_string):
             # time_string = u'11/14/2018 4:09:03 PM'
@@ -382,7 +382,24 @@ class cycler_preprocessing(object):
 
 
         print("Initializing database")
-        echoes_db       = database(database='cycler-data')
+        echoes_db       = database(database=dtb)
+
+        '''
+        A specs of tested battery:
+        - full capacity
+        - note
+        - module
+        '''
+        log_master = {
+            'batter_id'     : battery_id,
+            'note'          : 'Aging mercedes cell',
+            'rated_capacity': battery_cap.mercedes.value,
+            'test_machine'  : 'echoes-two-102, Neware channel 2',
+            'channel'       : None,
+
+        }
+        result = echoes_db.insert(log_master, collection=collection)
+        self.dprint('log master: {}'.format(result))
 
         batch_size = 1000
         insert_list = []
@@ -391,13 +408,6 @@ class cycler_preprocessing(object):
         del table['Unnamed: 0']
         del table['time']
         data_table = json.loads(table.to_json(orient='records'))
-
-        '''
-        A specs of tested battery:
-        - full capacity
-        - note
-        - module
-        '''
 
         for aLog in data_table:
             if aLog['Date/Time'] is not None:
@@ -415,7 +425,7 @@ class cycler_preprocessing(object):
 
             if count >= batch_size:
                 result = echoes_db.insert_multiple(insert_list,
-                                                  collection='Me07-cycler')
+                                                  collection=collection)
                 print (result)
                 count = 0                                                       #reset counter
                 insert_list = []                                                #zero out the list
@@ -641,32 +651,36 @@ class battery_cap(Enum):
     mercedes    = 56000
     tunacan     = 64000
     toyotaCell  = 25800
-    lenovo      = 3300
+    lenovo      = 3000
     apple       = None
     hyundai     = None
+    subaru      = None
 
 
 
 class Test(unittest.TestCase):
     
-    _cycler_txt_report = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/aug-8/TY01-15-CyclerData-7-16-2019'
-    echoes_cycler_path = '/media/kacao/Ultra-Fit/titan-echo-boards/Toyota/aug-8/'
+    _cycler_txt_report = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09-H94.75-190726/Me09_Cyclerdata_8-5'
+    echoes_cycler_path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09-H94.75-190726/'
 
 
-    battery_id      = 'TY01-15'    #raw_input('battery_id \n')
-    rated_cap       = battery_cap.toyotaCell.value
+    battery_id      = 'Me09'    #raw_input('battery_id \n')
+    rated_cap       = battery_cap.mercedes.value
     time_btw_logs   = 1                                                         # time btw each capture log in cycler
     channel         = 'secondary'
+
+    dtb             = 'cycler-data'
+    collection      = 'Me09-cycler'
 
 
     cycler_sort = cycler_preprocessing(
         filename    =_cycler_txt_report,
-        neware      =True,
+        neware      = False,
         time_sync_fix=False, debug=False)
 
     echoes_sort = echoes_sorting(
         path    = echoes_cycler_path,
-        neware  =True,
+        neware  = False,
         time_between_capture = time_btw_logs,
         debug=True)
 
@@ -711,7 +725,7 @@ class Test(unittest.TestCase):
 
         print (table.head().to_string())
 
-        key = 'cycle'
+        key = 'capture'
         filelist = display_list_of_file(self.echoes_cycler_path, key)
         print (filelist)
 
@@ -732,7 +746,7 @@ class Test(unittest.TestCase):
 
         my_file.close()
 
-        cycler_sort.post_csv_data(table, battery_id)
+        cycler_sort.post_csv_data(table, battery_id, self.dtb, self.collection)
 
         return
 

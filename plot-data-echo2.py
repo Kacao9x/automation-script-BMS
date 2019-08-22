@@ -205,11 +205,11 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
     tempC_1, tempC_2 = [], []
     for oneFile in list_file:
 
-        # strip_name = oneFile.split('-')
-        # captureID =  (strip_name[0].split('capture'))[1]
+        strip_name = oneFile.split('-')
+        captureID =  (strip_name[0].split('capture'))[1]
 
-        str = (oneFile.split('_'))[0]
-        captureID = str.split('cycle')[1]
+        # str = (oneFile.split('_'))[0]
+        # captureID = str.split('cycle')[1]
         print ('capture ID: {}'.format(captureID))
 
         with open(address + oneFile) as json_file:
@@ -308,23 +308,25 @@ def upload_json_to_mongo():
     print("Initializing database")
     echoes_db = database(database=dtb)
 
-    batch_size = 20
+    batch_size = 100
     insert_list = []
     count = 0
 
     key = '.json'
 
-    list_file = display_list_of_file(addr_to_extract, key)
+    list_file = display_list_of_file(address, key)
+    # list_file = sort_folder_by_name_universal(address, key)
+    print (list_file)
 
     ''' Loop through every sample data in a read/capture '''
-    for captureID, filename in enumerate(list_file):
-        with open(addr_to_extract + filename) as json_file:
+    for idx, filename in enumerate(list_file):
+        with open(address + filename) as json_file:
             aCapture = json.load(json_file)
         json_file.close()
 
         print ("capture ID: {}\t".format(aCapture['capture_number']))
 
-        # aCapture['input_channel'] = input_chn
+        aCapture['input_channel'] = input_chn
         if aCapture['timestamp'] is not None:
             aCapture['timestamp'] = datetime.strptime(aCapture['timestamp'],
                                                '%Y-%m-%dT%H:%M:%S')
@@ -332,7 +334,9 @@ def upload_json_to_mongo():
         count+= 1
         insert_list.append( aCapture )
 
-        if count >= batch_size:
+        # insert a batch of 100 obj or the end of filelist
+        if count >= batch_size or idx == len(list_file) - 1:
+            print ('idx {}'.format(idx))
             result = echoes_db.insert_multiple(insert_list, collection=collection)
             print (result)
 
@@ -355,10 +359,10 @@ def main ():
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
-    plot_signal_from_json(remove_bad_samp=True, bandpass=True, backgrd_subtract= False)
+    # plot_signal_from_json(remove_bad_samp=True, bandpass=True, backgrd_subtract= False)
     # plot_signal_from_mongo(collection=collection)
 
-    # upload_json_to_mongo()
+    upload_json_to_mongo()
     """
     (4) Plot all 64 samplings in a capture. Query data from Mongodb
     """
@@ -453,16 +457,16 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel       = 'primary'
-input_chn   = 1 if input_channel == 'primary' else 2
+input_channel       = 'secondary'
+input_chn   = 1 if 'primary' in input_channel else 2
 plot_title  = ' Lenovo_01 - primary| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 11th'
 
 
-dtb         = 'cycler-data'
-collection  = 'Me09'
+dtb         = 'mercedes'
+collection  = 'Me07'
 
 addr_to_extract = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/Lenovo_1/primary_1/'
-address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/190718/{}/'.format(input_channel)
+address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07-3/{}/'.format(input_channel)
 
 # backgrd = []
 # with open(address + 'background.dat') as my_file:

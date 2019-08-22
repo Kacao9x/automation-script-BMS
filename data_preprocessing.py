@@ -405,11 +405,11 @@ class cycler_preprocessing(object):
         insert_list = []
         count = 0
 
-        del table['Unnamed: 0']
+        del table['Unnamed: 0'], table['Unnamed: 0.1']
         del table['time']
         data_table = json.loads(table.to_json(orient='records'))
 
-        for aLog in data_table:
+        for idx, aLog in enumerate(data_table):
             if aLog['Date/Time'] is not None:
                 try:
                     aLog['Date/Time'] = datetime_format(aLog['Date/Time'])
@@ -423,27 +423,13 @@ class cycler_preprocessing(object):
                 count += 1
                 insert_list.append(aLog)
 
-            if count >= batch_size:
+            if count >= batch_size or idx == len(data_table.index) - 1:
                 result = echoes_db.insert_multiple(insert_list,
                                                   collection=collection)
                 print (result)
                 count = 0                                                       #reset counter
                 insert_list = []                                                #zero out the list
 
-        # for element in data_table:
-        #     if element['Date/Time'] is not None:
-        #         try:
-        #             element['Date/Time'] = datetime_format(element['Date/Time'])
-        #
-        #         except:
-        #             print ('wrong format')
-        #             continue
-        #
-        #
-        #         element['battery_id'] = battery_id
-        #
-        #         result = echoes_db.insert_capture(element, collection='cycler-test', host=False)
-        #         print (result)
 
         echoes_db.close()
 
@@ -452,19 +438,21 @@ class cycler_preprocessing(object):
 
     # Prints messages with function and class
     def dprint(self, txt, timestamp=False, error=False, level=1):
-
-        if level <= self._debug_level:
-            if self._debug or error:
-                function_name = sys._getframe(1).f_code.co_name
-                if timestamp:
-                    print ("  {} {}:{}'()': {}".format(datetime.now(),
-                                                       self._class,
-                                                       function_name, txt))
-                    # print("  " + str(
-                    #     datetime.now()) + " " + self._class +
-                    #       ":" + function_name + "(): " + txt)
-                else:
-                    print("  " + self._class + ":" + function_name + "(): " + txt)
+        if self._debug_level != None:
+            if level <= self._debug_level:
+                if self._debug or error:
+                    function_name = sys._getframe(1).f_code.co_name
+                    if timestamp:
+                        print ("  {} {}:{}'()': {}".format(datetime.now(),
+                                                           self._class,
+                                                           function_name, txt))
+                        # print("  " + str(
+                        #     datetime.now()) + " " + self._class +
+                        #       ":" + function_name + "(): " + txt)
+                    else:
+                        print("  " + self._class + ":" + function_name + "(): " + txt)
+        else:
+            return "skip"
         return
 
 
@@ -505,16 +493,18 @@ class echoes_sorting(object):
 
     # Prints messages with function and class
     def dprint(self, txt, timestamp=False, error=False, level=1):
-
-        if level <= self._debug_level:
-            if self._debug or error:
-                function_name = sys._getframe(1).f_code.co_name
-                if timestamp:
-                    print("  " + str(
-                        datetime.now()) + " " + self._class +
-                          ":" + function_name + "(): " + txt)
-                else:
-                    print("  " + self._class + ":" + function_name + "(): " + txt)
+        if self._debug_level != None:
+            if level <= self._debug_level:
+                if self._debug or error:
+                    function_name = sys._getframe(1).f_code.co_name
+                    if timestamp:
+                        print("  " + str(
+                            datetime.now()) + " " + self._class +
+                              ":" + function_name + "(): " + txt)
+                    else:
+                        print("  " + self._class + ":" + function_name + "(): " + txt)
+        else:
+            return "skip"
         return
 
     # calculate the time difference in seconds. Return int
@@ -745,6 +735,7 @@ class Test(unittest.TestCase):
             table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
 
         my_file.close()
+        print (table.head().to_string())
 
         cycler_sort.post_csv_data(table, battery_id, self.dtb, self.collection)
 

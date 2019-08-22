@@ -25,6 +25,7 @@ def display_list_of_file(path, key):
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip())
 
+    print ('len filelist {}'.format(len(file_name)))
     return file_name
 
 
@@ -36,7 +37,9 @@ def display_list_of_file_by_date(path, key):
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip())
 
+    print ('len filelist {}'.format(len(file_name)))
     return file_name
+
 
 def sort_folder_by_name(path, key):
     ''' sort by siginificant number'''
@@ -51,8 +54,9 @@ def sort_folder_by_name(path, key):
         if key in files:
             myimages.append(files)
 
-    print len(myimages)
+    print (len(myimages))
     return myimages
+
 
 def sort_folder_by_name_universal(path, key):
 
@@ -73,6 +77,5 @@ def sort_folder_by_name_universal(path, key):
                 glob.glob(os.path.join(path, key))]
     print ('beforeSorted {}'.format(dirFiles))
     dirFiles.sort( key=alphanum_key )
-    print ('dirFiles {}'.format(dirFiles))
-
+    print ('dirFiles {}, len {}'.format(dirFiles, len(dirFiles)))
     return dirFiles

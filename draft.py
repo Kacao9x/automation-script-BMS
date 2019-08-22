@@ -5,7 +5,7 @@
 from enum import Enum
 import json as j
 import numpy as np
-import os
+import os, glob
 import json
 from datetime import datetime, timedelta, tzinfo
 from time import time
@@ -385,7 +385,6 @@ def sort_folder_by_name():
     import os
 
     myimages = []  # list of image filenames
-
     dirFiles = os.listdir('/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/primary/')  # list of directory files
     dirFiles.sort()  # good initial sort but doesnt sort numerically very well
     sorted(dirFiles)  # sort numerically in ascending order
@@ -397,15 +396,49 @@ def sort_folder_by_name():
     print len(myimages)
     print myimages
 
-def sort_folder_by_name_advance():
+
+def sort_folder_universal():
     myimages = []  # list of image filenames
-    dirFiles = os.listdir('/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/primary/')  # list of directory files
-    dirFiles.sort(key=lambda f: int(filter( str.split('-')[1].isdigit(), f )))  # good initial sort but doesnt sort numerically very well
+
+    dirFiles = os.listdir(
+        '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/transducer-testing-0723/primary/')  # list of directory files
+    dirFiles.sort()  # good initial sort but doesnt sort numerically very well
     sorted(dirFiles)  # sort numerically in ascending order
 
     for files in dirFiles:  # filter out all non jpgs
         if '.json' in files:
             myimages.append(files)
+
+    print len(myimages)
+    print myimages
+    return
+
+
+def sort_folder_by_name_advance():
+    import re
+    def tryint(s):
+        try:
+            return int(s)
+        except:
+            return s
+
+    def alphanum_key(s):
+        return [ tryint(c) for c in re.split('([0-9]+)', s) ]
+
+
+    myimages = []  # list of image filenames
+    path = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/190718/primary'
+    dirFiles = (os.listdir(path))  # list of directory files
+    dirFiles.sort( key=alphanum_key )
+    print ('dirFiles {}'.format(dirFiles))
+
+
+    myimages =  [os.path.basename(x) for x in glob.glob(os.path.join(path, 'capture[0-100]*.json'))]
+    print('myimages:{}'.format(myimages))
+
+
+    return
+
 
 def convert_to_time_object():
     time_readout = "2019-07-23T00:43:25"
@@ -421,7 +454,10 @@ if __name__ == "__main__":
     # join_list()
     # test_bypass_function()
     # create_folder_w_timestamp()
-    # sort_folder_by_name_advance()
+
+    sort_folder_by_name()
+    print ('\n')
+    sort_folder_by_name_advance()
 
 
     ind = [3,5,6,8]

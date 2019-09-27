@@ -1,15 +1,18 @@
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 import numpy as np
 import subprocess
 
 # import thLib as th
 import pandas as pd
 from lib.echoes_signalprocessing import *
+from lib.echoes_models import *
 from lib.echoes_database import *
 
 import json
 from lib.commandline import *
 from datetime import datetime,timedelta
+from scipy.fftpack import fft, rfft, ifft
 
 
 def remove_bad_samples(aCapture_signal):
@@ -58,7 +61,7 @@ def check_data_quality_mongo(remove_bad_samp, collection):
         # 'test_setting.master.temp_sense_a_1': 1,
         'timestamp'     : 1,
         'capture_number': 1,
-        'input_channel' : 1,
+        'input_side'    : 1,
         'raw_data'      : 1,
         'test_setting.master': 1,
         'source'        : 1,
@@ -90,7 +93,7 @@ def check_data_quality_mongo(remove_bad_samp, collection):
         # else:
         #     path = address + 'secondary/'
 
-        if aCapture['input_channel'] == 1:
+        if aCapture['input_side'] == 1:
             path = addr_to_extract + 'primary-upload/'
         else:
             path = addr_to_extract + 'secondary-upload/'
@@ -179,7 +182,7 @@ def check_data_quality_json():
         path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08_H98.86_190715/data/secondary_bonus_2/'
         with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
             aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
-            # aCapture['input_channel'] = 2
+            # aCapture['input_side'] = 2
             writeout.write(json.dumps(aCapture))
         writeout.close()
 
@@ -199,20 +202,21 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
     key='*.json'
     # list_file = display_list_of_file(address, key)
 
-    list_file = sort_folder_by_name_universal(address, key)
+    list_file = sort_folder_by_name_universal(Path(address), key)
     print (list_file)
 
     tempC_1, tempC_2 = [], []
     for oneFile in list_file:
 
-        strip_name = oneFile.split('-')
+        strip_name = oneFile.name.split('_')
+        print (strip_name)
         captureID =  (strip_name[0].split('capture'))[1]
 
         # str = (oneFile.split('_'))[0]
         # captureID = str.split('cycle')[1]
         print ('capture ID: {}'.format(captureID))
 
-        with open(address + oneFile) as json_file:
+        with open(str(address / oneFile)) as json_file:
             echo_data = json.load(json_file)
         json_file.close()
 
@@ -220,16 +224,16 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
         # tempC_1.append(echo_data['temperature'][0])
         # tempC_2.append(echo_data['temperature'][1])
 
-        if 'master' in echo_data['test_setting']:
-            if echo_data['test_setting']['master'] != False:
-                tempC_1.append(echo_data["test_setting"]["master"]["temp_sense_a_1"])
-            else:
-                tempC_1.append(None)
-        elif 'temperature' in echo_data:
-            tempC_1.append(echo_data['temperature'][0])
-            tempC_2.append(echo_data['temperature'][1])
-        else:
-            tempC_1.append(None)
+        # if 'master' in echo_data['test_setting']:
+        #     if echo_data['test_setting']['master'] != False:
+        #         tempC_1.append(echo_data["test_setting"]["master"]["temp_sense_a_1"])
+        #     else:
+        #         tempC_1.append(None)
+        # elif 'temperature' in echo_data:
+        #     tempC_1.append(echo_data['temperature'][0])
+        #     tempC_2.append(echo_data['temperature'][1])
+        # else:
+        #     tempC_1.append(None)
 
 
         if echo_data['raw_data']:
@@ -268,7 +272,7 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
             plt.grid('on')
             plt.legend(loc='upper right')
 
-            # plt.show() # plot an individual signal
+            plt.show() # plot an individual signal
         else:
             print ('no raw_data')
             avg = []
@@ -283,7 +287,7 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
 
     plt.interactive(False)
     # plt.savefig(address + 'channel-B-798.png', dpi = 500)
-    plt.show()
+    # plt.show()
 
     ''' Save Processed Data to csv '''
     # avgTable_concat = avgTable_concat.mean( axis =1 )
@@ -291,16 +295,51 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
 
     avgTable_concat.insert(loc=0, column='tempC_1', value=tempC_1)
     # avgTable_concat.insert(loc=1, column='tempC_2', value=tempC_2)
-    avgTable_concat.to_csv(address + input_channel + '-raw-avg-sec.csv')
+    avgTable_concat.to_csv(address + input_side + '-raw-avg-sec.csv')
 
     # filter_concat = filter_concat.mean( axis=1 )
     filter_concat = filter_concat.T
     filter_concat.insert(loc=0, column='tempC_1', value=tempC_1)
     # filter_concat.insert(loc=1, column='tempC_2', value=tempC_2)
-    filter_concat.to_csv(address + input_channel + '-bandpass-avg.csv')
-    # avgTable_concat.to_csv(address + input_channel + '-raw-avg-9-channel-A.csv')
+    filter_concat.to_csv(address + input_side + '-bandpass-avg.csv')
+    # avgTable_concat.to_csv(address + input_side + '-raw-avg-9-channel-A.csv')
     
     print ("complete")
+    return
+
+def plot_fft_signal():
+    def y_fm(x, y):
+        return ('{:2.2e}'.format(x).replace('e', 'x10^'))
+
+    filename = 'capture3_2019-02-26T09:49:57.json'
+    with open(str(address / filename)) as json_file:
+        aCapture = json.load(json_file)
+    json_file.close()
+    
+    avg = np.mean(aCapture['raw_data'], axis=0)                                   # average 64 captures
+    if True:
+        avg_bandpass = echoes_dsp.apply_bandpass_filter(avg, 300000, 1200000, 51)      # apply bandpass
+    print ('len avg: {}'.format(len(avg_bandpass)))
+    
+    y_intp = interp(interp(avg_bandpass, 10), 10)
+    yf = fft(y_intp)
+    N = len(y_intp)
+    print ('len N {}'.format(N))
+    T = 1.38888889e-1 #1/7.2e-6
+    # x = np.linspace(0.0, N*T, N)
+    xf = np.linspace(0.0, 1.0/(2.0*T), N//2)
+
+    fig = plt.figure()
+
+    plt.plot(xf, 2.0/N * np.abs(yf[0:N//2]))
+    plt.xlabel("Frequency [$10^{x} hz]$")
+    # logfmt = matplotlib.ticker.LogFormatterExponent(base=10.0, labelOnlyBase=True)
+    # ax.xaxis.set_major_formatter(logfmt)
+
+    plt.xlim([0, 0.025])
+    plt.grid()
+    plt.show()
+
     return
 
 
@@ -312,21 +351,23 @@ def upload_json_to_mongo():
     insert_list = []
     count = 0
 
-    key = '.json'
+    key = '*.json'
 
-    list_file = display_list_of_file(address, key)
-    # list_file = sort_folder_by_name_universal(address, key)
+    # list_file = display_list_of_file(address, key)
+    list_file = sort_folder_by_name_universal(Path(address), key)
     print (list_file)
 
     ''' Loop through every sample data in a read/capture '''
     for idx, filename in enumerate(list_file):
-        with open(address + filename) as json_file:
+        # with open(address + filename) as json_file:
+        with open(str(address / filename)) as json_file:
             aCapture = json.load(json_file)
         json_file.close()
 
         print ("capture ID: {}\t".format(aCapture['capture_number']))
 
-        aCapture['input_channel'] = input_chn
+        # aCapture['input_side'] = input_sd
+        # aCapture['source'] = 'echoes-a'
         if aCapture['timestamp'] is not None:
             aCapture['timestamp'] = datetime.strptime(aCapture['timestamp'],
                                                '%Y-%m-%dT%H:%M:%S')
@@ -359,10 +400,11 @@ def main ():
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
-    # plot_signal_from_json(remove_bad_samp=True, bandpass=True, backgrd_subtract= False)
+    #plot_signal_from_json(remove_bad_samp=False, bandpass=True, backgrd_subtract= False)
     # plot_signal_from_mongo(collection=collection)
+    plot_fft_signal()
 
-    upload_json_to_mongo()
+    # upload_json_to_mongo()
     """
     (4) Plot all 64 samplings in a capture. Query data from Mongodb
     """
@@ -457,25 +499,17 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_channel       = 'secondary'
-input_chn   = 1 if 'primary' in input_channel else 2
+input_side      = 'primary_json'
+input_sd        = 1 if 'primary' in input_side else 2
 plot_title  = ' Lenovo_01 - primary| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 11th'
 
 
 dtb         = 'mercedes'
-collection  = 'Me07'
+collection  = 'Me05'
 
-addr_to_extract = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/Lenovo_1/primary_1/'
-address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me07/Me07-3/{}/'.format(input_channel)
-
-# backgrd = []
-# with open(address + 'background.dat') as my_file:
-#     y_str = my_file.read()
-#     y_str = y_str.splitlines()
-#
-#     for num in y_str:
-#         backgrd.append(float(num))
-# my_file.close()
+# addr_to_extract = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/Lenovo_1/primary_1/'
+# address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/{}-190227/{}/'.format(collection,input_side)
+address = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me05-190227/primary_json/')
 
 
 echoes_dsp = echoes_signals( 7200000.0 )

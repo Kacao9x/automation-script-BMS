@@ -1,5 +1,7 @@
 import subprocess
 import re, os, glob
+import unittest
+from pathlib import *
 
 #==============================================================================#
 #Subprocess's call command with piped output and active shell
@@ -41,25 +43,8 @@ def display_list_of_file_by_date(path, key):
     return file_name
 
 
-def sort_folder_by_name(path, key):
-    ''' sort by siginificant number'''
-
-    myimages = []  # list of image filenames
-
-    dirFiles = os.listdir(path)  # list of directory files
-    dirFiles.sort()  # good initial sort but doesnt sort numerically very well
-    sorted(dirFiles)  # sort numerically in ascending order
-
-    for files in dirFiles:  # filter out all non jpgs
-        if key in files:
-            myimages.append(files)
-
-    print (len(myimages))
-    return myimages
-
 
 def sort_folder_by_name_universal(path, key):
-
     def tryint(s):
         try:
             return int(s)
@@ -67,15 +52,61 @@ def sort_folder_by_name_universal(path, key):
             return s
 
     def alphanum_key(s):
-        return [ tryint(c) for c in re.split('([0-9]+)', s) ]
+        # int_sort_list = []
+        # for c in re.split('([0-9]+)', s.name):
+        #     int_sort_list.append(tryint(c))
+        # return int_sort_list
+        return [ tryint(c) for c in re.split('([0-9]+)', s.name) ]
 
+    # print ('path: {}'.format(path))
+    # dirFiles = (os.listdir(os.path.join(path, key)))  # list of directory files
 
+    print (path)
+    dirFiles = [i for i in path.glob(key)]
+    print (dirFiles)
 
-
-    # dirFiles = (os.listdir(path))  # list of directory files
-    dirFiles = [os.path.basename(x) for x in
-                glob.glob(os.path.join(path, key))]
-    print ('beforeSorted {}'.format(dirFiles))
     dirFiles.sort( key=alphanum_key )
     print ('dirFiles {}, len {}'.format(dirFiles, len(dirFiles)))
+
     return dirFiles
+
+
+
+
+class Test(unittest.TestCase):
+    def test_sort_universal(self):
+        addr    = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Nissan-Leaf/TC24-H77_190103/')
+        sub_path= 'primary'
+        key     = 'cycle2-*.dat'
+
+        list_file_dat = sort_folder_by_name_universal(path=addr / sub_path, key=key)
+        return
+
+    def test_open_json(self):
+        import json
+        addr = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Nissan-Leaf/TC04/')
+        sub_path = 'primary_json'
+        key = 'capture2_*.json'
+
+        bucket = {
+            'run': 2, 'walk': 4, 'swim': 10
+        }
+
+
+
+        list_file_dat = sort_folder_by_name_universal(path=(addr / sub_path).resolve(), key=key)
+        print ('that {}'.format(list_file_dat))
+
+        for i in list_file_dat:
+        #     readout = Path(addr/sub_path/i).open('r')
+        #     aCap = json.load(readout)
+            print (i)
+            with open(str(i)) as json_file:
+                aCap = json.load(json_file)
+            json_file.close()
+            print (aCap)
+
+
+
+
+        return

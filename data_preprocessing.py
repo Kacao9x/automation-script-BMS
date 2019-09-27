@@ -6,7 +6,8 @@ import numpy as np
 import json
 from datetime import datetime, timedelta
 from lib.echoes_database import *
-import time
+from dateutil.parser import parse
+
 import unittest
 import pprint
 
@@ -15,7 +16,7 @@ from lib.commandline import *
 
 class cycler_preprocessing(object):
 
-    __PERIOD__      = 1                                                         #time differnce between each capture
+    __PERIOD__      = 5                                                         #time differnce between each capture
     start_row   = 1                                                             #number of header to remove
     ind         = []
 
@@ -53,24 +54,6 @@ class cycler_preprocessing(object):
 
 
     def clean_test_data(self):
-        def convert_runtime_to_sec(time_arr=[]):
-            print (time_arr[:5])
-            end_stage_index = []
-            for idx, st in enumerate(time_arr):
-
-                try:
-                    pt = datetime.strptime(st, '%H:%M:%S.%f')
-                    sec = pt.second + pt.minute * 60 + pt.hour * 3600
-                except:
-                    print ('Value error')
-                    end_stage_index.append(idx)
-                    continue
-
-                # print ('index: {}, sec: {}'.format(str(idx), str(sec)))
-                time_arr[idx] = sec
-            return time_arr, end_stage_index
-
-
         with open(self._filename + '.txt', 'r') as my_file:
             if self._neware:
                 lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
@@ -120,14 +103,8 @@ class cycler_preprocessing(object):
             cycler_data = self._filter_data_by_timeInterval(cycler_data,
                                                             self.__PERIOD__)
 
-        ''' Convert the runtime to sec '''
-        # cycler_data['time'], bad_idx = convert_runtime_to_sec( cycler_data['time'] )
-        # cycler_data.drop(bad_idx, axis=0, inplace=True)
-        # cycler_data.reset_index(drop=True, inplace=True)
-        # print (bad_idx)
 
         cycler_data.to_csv(self._filename + '.csv')                             #cycler path
-
 
         return cycler_data
 
@@ -137,11 +114,12 @@ class cycler_preprocessing(object):
         print (table.shape)
 
         NAN_finder = table['id'].notna()                                        # a boolean list of ID columns
-
+        
         ind = []
         for i in range(len(NAN_finder)):
             if NAN_finder[i] == True:
                 ind = np.append(ind, i)
+        
 
         print ('ind: {}'.format(ind))
         id_num      = table.columns.get_loc("id_num")
@@ -271,24 +249,6 @@ class cycler_preprocessing(object):
         ind = table[table['id'].notna()].index.tolist()                         # a list of ID rows
         print (ind)
 
-        # id_num      = table.columns.get_loc("id_num")
-        # cap_Ah      = table.columns.get_loc("cap(mAh)")
-        # energy_Wh   = table.columns.get_loc("en(mWh)")
-
-        # actual_cap_Ah_arr = []
-        # for i in range(len(ind)):
-        #     if table.iat[ind[i], id_num] == 'Rest' and \
-        #         table.iat[ind[i-1], id_num] == 'CV_Chg':
-        #
-        #         actual_cap_Ah_arr.append(table.iat[ind[i-1], cap_Ah])
-        #
-        #
-        # print(actual_cap_Ah_arr)
-        # max_cap_Ah = max(actual_cap_Ah_arr)
-        # print ('max capacity: ' + str(max_cap_Ah))
-
-        # max_cap_Ah = table['cap(mAh)'].max()
-
         cap_ah_arr = []
         for i in ind:
             # if table['id_num'][i] == 'CCCV_Chg':
@@ -319,7 +279,8 @@ class cycler_preprocessing(object):
         return table
 
 
-    def _filter_data_by_timeInterval(self, table, sec):
+    @staticmethod
+    def _filter_data_by_timeInterval(table, sec):
         '''
         Merge the table with a time step of 0.1s
         :param sec: time step (second)
@@ -338,13 +299,15 @@ class cycler_preprocessing(object):
 
         tb = pd.DataFrame()
 
-        for i in range(len(ind) - 1):
-            table_stage = table.loc[[int(ind[i])]]  # grasp the stage id
+        for i in range(len(ind)):
+            table_stage = table.loc[[int(ind[i])]]  							# grasp the stage id
             print (table_stage.head())
 
             tb = pd.concat([tb, table_stage], axis=0)
-            table_data = table.iloc[int(ind[i]) + 1: int(
-                ind[i + 1]): sec ].copy()  # grasp the data instance
+            if i < len(ind) -1:
+                table_data = table.iloc[int(ind[i]) + 1: int(ind[i + 1]): sec ].copy()  # grasp the data instance
+            else:
+                table_data = table.iloc[int(ind[i]) + 1: len(table.index): sec ].copy()  # grasp the data instance
             print (table_data.head().to_string())
 
             tb = pd.concat([tb, table_data], axis=0)
@@ -357,29 +320,36 @@ class cycler_preprocessing(object):
         return tb
 
 
+    @staticmethod
+    def _isTimeValid(date_string, fuzzy=False):
+        """
+        Return whether the string can be interpreted as a date.
+
+        :param string: str, string to check for date
+        :param fuzzy: bool, ignore unknown tokens in string if True
+        """
+        try:
+            parse(date_string, fuzzy=fuzzy)
+            return True
+
+        except:
+            print ("wrong date format")
+            return False
+
+    @staticmethod
+    def _convert_timestr_to_dateObj(neware, time_string):
+        if cycler_preprocessing._isTimeValid(time_string) and neware:
+            return datetime.datetime.strptime(time_string, "%m/%d/%Y %H:%M:%S")
+
+        elif cycler_preprocessing._isTimeValid(time_string) and (neware is False):
+            return datetime.datetime.strptime(time_string, "%Y-%m-%d %H:%M:%S")
+
+        else:
+            return None
+
+
+
     def post_csv_data(self, table, battery_id, dtb, collection):
-
-        def convert_to_time_utc(time_string):
-            # time_string = u'11/14/2018 4:09:03 PM'
-            # format = "%m/%d/%Y %I:%M:%S %p"
-            format = "%m/%d/%Y %H:%M:%S"
-            strptime = datetime.strptime(time_string, format)
-
-            return strptime.isoformat()
-
-        def datetime_format(time_string):
-            format = "%m/%d/%Y %H:%M:%S"
-            timest =  time.strptime(time_string, format)
-            # tm_year = 2018, tm_mon = 11, tm_mday = 15,
-            # tm_hour = 16, tm_min = 45, tm_sec = 43,
-            # tm_wday = 3, tm_yday = 319, tm_isdst = -1)
-
-
-            return datetime(timest[0], timest[1],
-                              timest[2], timest[3],
-                              timest[4], timest[5])
-
-
 
         print("Initializing database")
         echoes_db       = database(database=dtb)
@@ -390,40 +360,47 @@ class cycler_preprocessing(object):
         - note
         - module
         '''
-        log_master = {
-            'batter_id'     : battery_id,
-            'note'          : 'Aging mercedes cell',
-            'rated_capacity': battery_cap.mercedes.value,
-            'test_machine'  : 'echoes-two-102, Neware channel 2',
-            'channel'       : None,
-
-        }
-        result = echoes_db.insert(log_master, collection=collection)
-        self.dprint('log master: {}'.format(result))
+        # log_master = {
+        #     'batter_id'     : battery_id,
+        #     'note'          : 'Aging mercedes cell',
+        #     'rated_capacity': battery_cap.mercedes.value,
+        #     'test_machine'  : 'echoes-two-101, Neware channel 1',
+        #     'channel'       : None,
+        #
+        # }
+        # result = echoes_db.insert(log_master, collection=collection)
+        # self.dprint('log master: {}'.format(result))
 
         batch_size = 1000
         insert_list = []
         count = 0
 
-        del table['Unnamed: 0'], table['Unnamed: 0.1']
-        del table['time']
+        del table['Unnamed: 0']
+        del table['time']#, table['del1'], table['del2']
         data_table = json.loads(table.to_json(orient='records'))
 
         for idx, aLog in enumerate(data_table):
-            if aLog['Date/Time'] is not None:
-                try:
-                    aLog['Date/Time'] = datetime_format(aLog['Date/Time'])
+            temp = self._convert_timestr_to_dateObj(self._neware,
+                                                    aLog['Date/Time'])
+            if temp:
+                print (temp.isoformat())
+                aLog['Date/Time'] = temp
+            else:
+                continue
 
-                except:
-                    print ('wrong format')
-                    continue
+                # try:
+		            # aLog['Date/Time'] = datetime_format(self._neware, aLog['Date/Time'])
+		            # print (aLog['Date/Time'])
+                # except:
+                #     print ('wrong format')
+                #     continue
 
-                aLog['battery_id'] = battery_id
+            aLog['battery_id'] = battery_id
 
-                count += 1
-                insert_list.append(aLog)
+            count += 1
+            insert_list.append(aLog)
 
-            if count >= batch_size or idx == len(data_table.index) - 1:
+            if count >= batch_size or idx == len(table.index) - 1:
                 result = echoes_db.insert_multiple(insert_list,
                                                   collection=collection)
                 print (result)
@@ -509,23 +486,16 @@ class echoes_sorting(object):
 
     # calculate the time difference in seconds. Return int
     def calculate_time(self, begin, end):
-        
-        sec = 0
-        print ('end {}, begin {}'.format(end, begin))
-        end = datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-        if self._neware:
-            begin = datetime.strptime(begin, '%m/%d/%Y %H:%M:%S')
-        else:
-            begin = datetime.strptime(begin, '%Y-%m-%d %H:%M:%S')
 
+        print ('end {}, begin {}'.format(end, begin))
+        end = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+        if self._neware:
+            begin = datetime.datetime.strptime(begin, '%m/%d/%Y %H:%M:%S')
+        else:
+            begin = datetime.datetime.strptime(begin, '%Y-%m-%d %H:%M:%S')
 
         diff = (end - begin)
-        if ( diff.days == 0 ):
-            sec += diff.seconds
-        else:
-            sec += diff.days*24*60*60 + diff.seconds
-
-        m, s = divmod(sec, 60)
+        sec = diff.total_seconds()
 
         return sec
 
@@ -538,10 +508,12 @@ class echoes_sorting(object):
         
         # identify the index to grasp the proper row of data instance
         cycler_end_temp = table['Date/Time'][line]
-        isValidTimestamp= pd.isnull(table.at[line, 'Date/Time'])
 
-        if isValidTimestamp:
-            cycler_end_temp = table['Date/Time'][line + 2]
+        while cycler_preprocessing._isTimeValid(cycler_end_temp) is False:
+            line = line + 1
+            cycler_end_temp = table['Date/Time'][line]
+
+
         print ('grasp a time Node: {}'.format(cycler_end_temp))
 
         diff = self.calculate_time(cycler_end_temp, end)
@@ -567,7 +539,7 @@ class echoes_sorting(object):
         cycler_start_time = table['Date/Time'][self.__start_row__]              # Read the start time in Cycler
 
         for i, element in enumerate( filelist ):
-            with open(self._path + element) as json_file:
+            with open(str(element) ) as json_file: #self._path + element
                 aCapture = json.load(json_file)
             json_file.close()
 
@@ -575,7 +547,7 @@ class echoes_sorting(object):
 
             convert_UTC_to_EDT = False
             if convert_UTC_to_EDT:
-                echoes_UTC = datetime.strptime(aCapture['timestamp'],
+                echoes_UTC = datetime.datetime.strptime(aCapture['timestamp'],
                                                '%Y-%m-%dT%H:%M:%S')
 
                 echoes_convert_EDT = echoes_UTC - timedelta(hours=4)            # convert UTC to EDT timezone
@@ -583,7 +555,7 @@ class echoes_sorting(object):
                 print (echoes_endtime)
 
             else:
-                echoes_endtime = datetime.strptime(aCapture['timestamp'],
+                echoes_endtime = datetime.datetime.strptime(aCapture['timestamp'],
                                 '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
 
                 # echoes_endtime = datetime.strptime(aCapture['timestamp'],
@@ -601,7 +573,7 @@ class echoes_sorting(object):
             power.append(p)
             volt.append(voltage)
             current.append(curr)
-            filename.append(element)
+            filename.append(element.stem)
             SoH.append(soh)
             SoC.append(soc)
 
@@ -650,45 +622,49 @@ class battery_cap(Enum):
 
 class Test(unittest.TestCase):
     
-    _cycler_txt_report = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09-H94.75-190726/Me09_Cyclerdata_8-5'
-    echoes_cycler_path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me09-H94.75-190726/'
+    _cycler_txt_report = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08_H98.86_190715/data2/Me08-AgeingTest-Todd-9-23-2019')
+    echoes_cycler_path = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08_H98.86_190715/data2/primary_2019-08-23T17:20:58')
 
 
-    battery_id      = 'Me09'    #raw_input('battery_id \n')
+    battery_id      = 'Me08'    #raw_input('battery_id \n')
     rated_cap       = battery_cap.mercedes.value
-    time_btw_logs   = 1                                                         # time btw each capture log in cycler
+    time_btw_logs   = 5                                                         # time btw each capture log in cycler
     channel         = 'secondary'
+    _isNeware  		= True
 
-    dtb             = 'cycler-data'
-    collection      = 'Me09-cycler'
+    dtb             = 'mercedes'
+    collection      = '{}-cycler'.format(battery_id)
 
 
     cycler_sort = cycler_preprocessing(
         filename    =_cycler_txt_report,
-        neware      = False,
-        time_sync_fix=False, debug=False)
+        neware      = _isNeware,
+        time_sync_fix=True, debug=False)
 
     echoes_sort = echoes_sorting(
         path    = echoes_cycler_path,
-        neware  = False,
+        neware  = _isNeware,
         time_between_capture = time_btw_logs,
         debug=True)
 
 
     def test_clean_data(self, cycler_sort=cycler_sort):
         print (self.battery_id)
-        cycler_sort.clean_test_data()
-        return
+        clean_table = cycler_sort.clean_test_data()
+
+        return clean_table
 
 
     def test_merge_column(self, cycler_sort=cycler_sort):
 
-        table = cycler_sort.clean_test_data()
-        # with open (self._cycler_txt_report + '.csv') as my_file:
-        #     table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
-        # print (table.head().to_string())
+        Test.test_clean_data(self, cycler_sort)	#test_clean_data doesn't return table
+        with open (self._cycler_txt_report + '.csv') as my_file:
+            clean_table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
+        print (clean_table.head().to_string())
 
-        cycler_sort.merge_column(table)                                         # Merge capactity of CC and CV stages
+        table = cycler_sort.merge_column(clean_table)                              	# Merge capactity of CC and CV stages
+        # table.loc[:, 'cap(mAh)'] *= 1000
+        # table.loc[:, 'en(mWh)'] *= 1000
         table.to_csv(self._cycler_txt_report + '_merged.csv')
         return table
 
@@ -709,32 +685,34 @@ class Test(unittest.TestCase):
 
     def test_sort_Cycler_Echoes(self, cycler_sort=cycler_sort,
                                 echoes_sort=echoes_sort):
-        with open(self._cycler_txt_report + '_merged_full.csv') as readTable:
+        with open(str(self._cycler_txt_report) + '_merged_full.csv') as readTable:
             table = pd.read_csv(readTable, sep=',', error_bad_lines=False)
         readTable.close()
 
         print (table.head().to_string())
 
-        key = 'capture'
-        filelist = display_list_of_file(self.echoes_cycler_path, key)
+        # key = 'cycle'
+        # filelist = display_list_of_file(self.echoes_cycler_path, key)
+        key = '*.json'
+        filelist = sort_folder_by_name_universal(self.echoes_cycler_path, key)
         print (filelist)
 
         _start_row = 1        
         sorted_table = echoes_sort.sort_by_name(filelist, table)
-        sorted_table.to_csv(self.echoes_cycler_path +
+        sorted_table.to_csv(str(self.echoes_cycler_path) +
                             '{}_{}_echoescyler_final.csv'.format(
                                 self.battery_id, self.channel))
         return
 
 
-
     def test_post_data_to_mongo(self, cycler_sort=cycler_sort,
                                 battery_id=battery_id):
         
-        with open (self._cycler_txt_report + '_merged_full.csv') as my_file:
+        with open (str(self._cycler_txt_report) + '_merged_full.csv') as my_file:
             table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
 
         my_file.close()
+        del table['id'], table['id_num']
         print (table.head().to_string())
 
         cycler_sort.post_csv_data(table, battery_id, self.dtb, self.collection)

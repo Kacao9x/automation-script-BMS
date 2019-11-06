@@ -16,7 +16,7 @@ from lib.commandline import *
 
 class cycler_preprocessing(object):
 
-    __PERIOD__      = 5                                                         #time differnce between each capture
+    __PERIOD__      = 5                                                         #number of seconds btw logs to be saved
     start_row   = 1                                                             #number of header to remove
     ind         = []
 
@@ -54,10 +54,15 @@ class cycler_preprocessing(object):
 
 
     def clean_test_data(self):
-        with open(self._filename + '.txt', 'r') as my_file:
+        with open(str(self._filename) + '.txt', 'r', encoding='latin-1') as my_file:
+            chunksize = 100000
             if self._neware:
-                lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
-                                    error_bad_lines=False, engine='python')
+                # lines = pd.read_csv(my_file, header=3, sep=r'\s\s+',
+                #                     error_bad_lines=False, engine='python')
+                tfr = pd.read_csv(my_file, header=3, sep=r'\s\s+',
+                                  error_bad_lines=False, engine='python',
+                                  chunksize=chunksize, iterator=True)
+                lines = pd.concat(tfr, ignore_index=True)
             else:
                 lines = pd.read_csv(my_file, header=3, sep=r'\t',
                                     error_bad_lines=False, engine='python')
@@ -104,7 +109,7 @@ class cycler_preprocessing(object):
                                                             self.__PERIOD__)
 
 
-        cycler_data.to_csv(self._filename + '.csv')                             #cycler path
+        cycler_data.to_csv(str(self._filename) + '.csv')                             #cycler path
 
         return cycler_data
 
@@ -614,6 +619,7 @@ class battery_cap(Enum):
     tunacan     = 64000
     toyotaCell  = 25800
     lenovo      = 3000
+    enel        = 114000
     apple       = None
     hyundai     = None
     subaru      = None
@@ -622,13 +628,13 @@ class battery_cap(Enum):
 
 class Test(unittest.TestCase):
     
-    _cycler_txt_report = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08_H98.86_190715/data2/Me08-AgeingTest-Todd-9-23-2019')
-    echoes_cycler_path = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08_H98.86_190715/data2/primary_2019-08-23T17:20:58')
+    _cycler_txt_report = Path('/media/kacao/EchoesData/echo-B/Me09-AgeingHeat-Todd-9-23-2019')
+    echoes_cycler_path = Path('/media/kacao/EchoesData/echo-C/data/Me07-AgeingTest-Todd_merged_full.csv')
 
 
-    battery_id      = 'Me08'    #raw_input('battery_id \n')
+    battery_id      = 'Me09'    #raw_input('battery_id \n')
     rated_cap       = battery_cap.mercedes.value
-    time_btw_logs   = 5                                                         # time btw each capture log in cycler
+    time_btw_logs   = 1                                                         # time btw each capture log in cycler
     channel         = 'secondary'
     _isNeware  		= True
 
@@ -657,15 +663,15 @@ class Test(unittest.TestCase):
 
     def test_merge_column(self, cycler_sort=cycler_sort):
 
-        Test.test_clean_data(self, cycler_sort)	#test_clean_data doesn't return table
-        with open (self._cycler_txt_report + '.csv') as my_file:
+        # Test.test_clean_data(self, cycler_sort)	#test_clean_data doesn't return table
+        with open (str(self._cycler_txt_report) + '.csv') as my_file:
             clean_table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
         print (clean_table.head().to_string())
 
         table = cycler_sort.merge_column(clean_table)                              	# Merge capactity of CC and CV stages
         # table.loc[:, 'cap(mAh)'] *= 1000
         # table.loc[:, 'en(mWh)'] *= 1000
-        table.to_csv(self._cycler_txt_report + '_merged.csv')
+        table.to_csv(str(self._cycler_txt_report) + '_merged.csv')
         return table
 
 
@@ -679,7 +685,7 @@ class Test(unittest.TestCase):
                                           self.rated_cap)
 
         print (table.head().to_string())
-        table.to_csv(self._cycler_txt_report + '_merged_full.csv')
+        table.to_csv(str(self._cycler_txt_report) + '_merged_full.csv')
         return
 
 
@@ -699,8 +705,12 @@ class Test(unittest.TestCase):
 
         _start_row = 1        
         sorted_table = echoes_sort.sort_by_name(filelist, table)
-        sorted_table.to_csv(str(self.echoes_cycler_path) +
-                            '{}_{}_echoescyler_final.csv'.format(
+        # sorted_table.to_csv(str(self.echoes_cycler_path) +
+        #                     '{}_{}_echoescyler_final.csv'.format(
+        #                         self.battery_id, self.channel))
+
+        sorted_table.to_excel(str(self.echoes_cycler_path) +
+                            '{}_{}_echoescyler_final.xlsx'.format(
                                 self.battery_id, self.channel))
         return
 

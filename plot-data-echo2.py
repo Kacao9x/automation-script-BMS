@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
-import subprocess
+import sys, timeit
+
 
 # import thLib as th
 import pandas as pd
@@ -179,8 +180,7 @@ def check_data_quality_json():
         aCapture['raw_data'] = [i for i in aCapture['raw_data'] if i != None]
         aCapture['raw_data'] = remove_bad_samples(aCapture['raw_data'])
 
-        path = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me08_H98.86_190715/data/secondary_bonus_2/'
-        with open(path + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
+        with open(address + 'capture{}-{}.json'.format(aCapture['capture_number'], aCapture['timestamp']), 'w') as writeout:
             aCapture['timestamp'] = aCapture['timestamp'].strftime('%Y-%m-%dT%H:%M:%S')
             # aCapture['input_side'] = 2
             writeout.write(json.dumps(aCapture))
@@ -189,12 +189,159 @@ def check_data_quality_json():
     return
 
 
+def plot_signal_from_json_new(remove_bad_samp=False, bandpass=False,
+                          backgrd_subtract=False):
+    """
+    (2) plot avg of each cycle. Save avg (mean) to csv file
+    """
+    tempTable_concat        = pd.DataFrame()
+    filter_concat           = pd.DataFrame()
+    signal_combined_dict    = {}
+    temp_combined_dict      = {}
+
+    ped = 1.38888889e-1  # microsec, * 1000000
+
+    key = '*.json'
+
+    list_file = sort_folder_by_name_universal(Path(address), key)
+    print(list_file)
+
+
+
+    count = 0
+    for cnt, oneFile in enumerate(list_file):
+        count += 1
+
+        strip_name = oneFile.name.split('_')
+        # print (strip_name)
+        captureID = (strip_name[0].split('cycle'))[1]
+        # str = (oneFile.split('_'))[0]
+        # captureID = str.split('cycle')[1]
+        print('item {}, capture ID: {}'.format(cnt, captureID))
+
+        with open(str(address / oneFile)) as json_file:
+            echo_data = json.load(json_file)
+        json_file.close()
+
+        ''' Read temperature'''
+        # tempC_1.append(echo_data['temperature'][0])
+        # tempC_2.append(echo_data['temperature'][1])
+        tempC = []
+        if 'master' in echo_data['test_setting']:
+            if echo_data['test_setting']['master'] != False:
+                tempC.append(
+                    echo_data["test_setting"]["master"]["temp_sense_a_1"])
+            else:
+                tempC.append(None)
+        elif 'temperature' in echo_data:
+            tempC.append(echo_data['temperature'][0])
+            tempC.append(echo_data['temperature'][1])
+        else:
+            tempC.append(None)
+
+        if echo_data['raw_data']:
+            echo_data['raw_data'] = [i for i in echo_data['raw_data'] if
+                                     i != None]
+            if remove_bad_samp:
+                echo_data['raw_data'] = remove_bad_samples(
+                    echo_data['raw_data'])
+
+            raw_set_pd = pd.DataFrame()
+            for idx, raw in enumerate(echo_data['raw_data']):
+                single_set = pd.DataFrame({idx: raw})                           # concat all data set into a singl dataframe
+                raw_set_pd = pd.concat([raw_set_pd, single_set], axis=1,
+                                       ignore_index=True)
+
+            [row, column] = raw_set_pd.shape
+
+            avg = np.mean(raw_set_pd, axis=1)  # average 64 captures
+            if bandpass:
+                avg_bandpass = echoes_dsp.apply_bandpass_filter(avg, 300000,
+                                                                1200000,
+                                                                51)  # apply bandpass
+
+            if backgrd_subtract:
+                avg = [a_i - b_i for a_i, b_i in zip(avg, backgrd)]
+
+            # if normalize:
+
+            ''' -------   plot the avg for checking clean data    ---- '''
+            # plt.subplot(211)
+            x_1 = np.arange(0, ped * row, ped)
+            # x_1 = [1000000.0*ped for i in range(0, row)]                        #convert to micro-sec unit scale
+            # plt.figure(dpi=200,  figsize=(12.0, 7.0))
+            plt.title(plot_title)
+            plt.plot(x_1, avg_bandpass,
+                     label='capture {}'.format(int(captureID)))
+            plt.xlim(0, 70)
+            plt.grid('on')
+            plt.legend(loc='upper right')
+
+            # plt.show() # plot an individual signal
+        else:
+            print('no raw_data')
+            avg = []
+            avg_bandpass = []
+
+        ''' New exe: Save all data as dict, then convert it to dataframe'''
+        signal_combined_dict.update({captureID: avg_bandpass})
+        temp_combined_dict.update({captureID: tempC})
+
+        if count > 600 or cnt == len(list_file) - 1:
+            filter_concat = pd.DataFrame.from_dict(signal_combined_dict,
+                                                   orient='index')
+            tempTable_concat = pd.DataFrame.from_dict(temp_combined_dict,
+                                                    orient='index', columns=['temp_1'])
+            # print (filter_concat.head().to_string())
+            tempTable_concat = pd.concat([tempTable_concat, filter_concat], axis=1)
+            # filter_concat.to_csv(Path(address + input_side +
+            #                           '-{}-{}.csv'.format(cnt + 1 - count,
+            #                                               cnt + 1)))
+            tempTable_concat.to_csv(Path(address + input_side +
+                                      '{}-{}.csv'.format(cnt + 1 - count,
+                                                          cnt + 1)))
+            signal_combined_dict = {}
+            temp_combined_dict = {}
+            count = 0
+            print('count {}, cnt {}'.format(count, cnt))
+            plt.interactive(False)
+            plt.show()
+
+        # # Save all average data into Dataframe
+        # avgTable = pd.DataFrame({captureID : avg})
+        # avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
+        #
+        # avg_filter = pd.DataFrame({captureID : avg_bandpass})
+        # filter_concat = pd.concat([filter_concat, avg_filter], axis=1)
+
+    # plt.savefig(address + 'channel-B-798.png', dpi = 500)
+    # plt.savefig(str(Path(address + collection + "-" + input_side + '-bandpass.png')))
+
+    # plt.interactive(False)
+    # plt.show()
+
+
+    # filter_concat = pd.DataFrame.from_dict(signal_combined_dict, orient='index')
+    # filter_concat = filter_concat.T
+    ''' Save Processed Data to csv '''
+    # # filter_concat = filter_concat.mean( axis=1 )
+    # filter_concat = filter_concat.T
+    # filter_concat.insert(loc=0, column='tempC_1', value=tempC)
+    # # filter_concat.insert(loc=1, column='tempC_2', value=tempC_2)
+    # filter_concat.to_csv(Path(address + input_side + '-bandpass-avg.csv'))
+
+
+    print("complete")
+    return
+
 def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtract=False):
     """
     (2) plot avg of each cycle. Save avg (mean) to csv file
     """
     avgTable_concat     = pd.DataFrame()
     filter_concat       = pd.DataFrame()
+    signal_combined_dict= {}
+    temp_combined_dict  = {}
     
     ped = 1.38888889e-1                                                         #microsec, * 1000000
 
@@ -206,15 +353,17 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
     print (list_file)
 
     tempC_1, tempC_2 = [], []
-    for oneFile in list_file:
+    count = 0
+    for cnt, oneFile in enumerate(list_file):
+        count += 1
 
         strip_name = oneFile.name.split('_')
-        print (strip_name)
-        captureID =  (strip_name[0].split('capture'))[1]
-
+        # print (strip_name)
+        captureID =  (strip_name[0].split('cycle'))[1]
         # str = (oneFile.split('_'))[0]
         # captureID = str.split('cycle')[1]
-        print ('capture ID: {}'.format(captureID))
+        print ('item {}, capture ID: {}'.format(cnt, captureID))
+
 
         with open(str(address / oneFile)) as json_file:
             echo_data = json.load(json_file)
@@ -224,16 +373,16 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
         # tempC_1.append(echo_data['temperature'][0])
         # tempC_2.append(echo_data['temperature'][1])
 
-        # if 'master' in echo_data['test_setting']:
-        #     if echo_data['test_setting']['master'] != False:
-        #         tempC_1.append(echo_data["test_setting"]["master"]["temp_sense_a_1"])
-        #     else:
-        #         tempC_1.append(None)
-        # elif 'temperature' in echo_data:
-        #     tempC_1.append(echo_data['temperature'][0])
-        #     tempC_2.append(echo_data['temperature'][1])
-        # else:
-        #     tempC_1.append(None)
+        if 'master' in echo_data['test_setting']:
+            if echo_data['test_setting']['master'] != False:
+                tempC_1.append(echo_data["test_setting"]["master"]["temp_sense_a_1"])
+            else:
+                tempC_1.append(None)
+        elif 'temperature' in echo_data:
+            tempC_1.append(echo_data['temperature'][0])
+            tempC_2.append(echo_data['temperature'][1])
+        else:
+            tempC_1.append(None)
 
 
         if echo_data['raw_data']:
@@ -259,50 +408,54 @@ def plot_signal_from_json(remove_bad_samp=False, bandpass=False, backgrd_subtrac
             if backgrd_subtract:
                 avg = [a_i - b_i for a_i, b_i in zip( avg, backgrd )]
 
-            # if normalize:
-
 
             ''' -------   plot the avg for checking clean data    ---- '''
             # plt.subplot(211)
             x_1 = np.arange(0, ped * row, ped)
             # x_1 = [1000000.0*ped for i in range(0, row)]                        #convert to micro-sec unit scale
+            # plt.figure(dpi=200,  figsize=(12.0, 7.0))
             plt.title(plot_title)
-            plt.plot(x_1, avg_bandpass, label='capture 0{}'.format(int(captureID)))
+            plt.plot(x_1, avg_bandpass, label='capture {}'.format(int(captureID)))
             plt.xlim(0,70)
             plt.grid('on')
             plt.legend(loc='upper right')
 
-            plt.show() # plot an individual signal
+            # plt.show() # plot an individual signal
         else:
             print ('no raw_data')
             avg = []
             avg_bandpass = []
 
-        # Save all average data into Dataframe
+
+
+        # # Save all average data into Dataframe
         avgTable = pd.DataFrame({captureID : avg})
         avgTable_concat = pd.concat([avgTable_concat, avgTable], axis=1)
 
         avg_filter = pd.DataFrame({captureID : avg_bandpass})
         filter_concat = pd.concat([filter_concat, avg_filter], axis=1)
 
-    plt.interactive(False)
+
     # plt.savefig(address + 'channel-B-798.png', dpi = 500)
-    # plt.show()
+    # plt.savefig(str(Path(address + collection + "-" + input_side + '-bandpass.png')))
+    plt.interactive(False)
+    plt.show()
 
     ''' Save Processed Data to csv '''
-    # avgTable_concat = avgTable_concat.mean( axis =1 )
-    avgTable_concat = avgTable_concat.T
-
-    avgTable_concat.insert(loc=0, column='tempC_1', value=tempC_1)
-    # avgTable_concat.insert(loc=1, column='tempC_2', value=tempC_2)
-    avgTable_concat.to_csv(address + input_side + '-raw-avg-sec.csv')
-
     # filter_concat = filter_concat.mean( axis=1 )
     filter_concat = filter_concat.T
     filter_concat.insert(loc=0, column='tempC_1', value=tempC_1)
     # filter_concat.insert(loc=1, column='tempC_2', value=tempC_2)
-    filter_concat.to_csv(address + input_side + '-bandpass-avg.csv')
-    # avgTable_concat.to_csv(address + input_side + '-raw-avg-9-channel-A.csv')
+    filter_concat.to_csv(Path(address + input_side + '-bandpass-avg.csv'))
+
+
+    # avgTable_concat = avgTable_concat.mean( axis =1 )
+    avgTable_concat = avgTable_concat.T
+    avgTable_concat.insert(loc=0, column='tempC_1', value=tempC_1)
+    # avgTable_concat.insert(loc=1, column='tempC_2', value=tempC_2)
+    avgTable_concat.to_csv(Path(address + input_side + '-raw-avg-sec.csv'))
+
+
     
     print ("complete")
     return
@@ -400,9 +553,9 @@ def main ():
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
-    #plot_signal_from_json(remove_bad_samp=False, bandpass=True, backgrd_subtract= False)
+    plot_signal_from_json_new(remove_bad_samp=False, bandpass=True, backgrd_subtract= False)
     # plot_signal_from_mongo(collection=collection)
-    plot_fft_signal()
+    # plot_fft_signal()
 
     # upload_json_to_mongo()
     """
@@ -499,19 +652,26 @@ def main ():
 #==============================================================================#
 # address = th.ui.getdir('Pick your directory')  + '/'                            # prompts user to select folder
 
-input_side      = 'primary_json'
-input_sd        = 1 if 'primary' in input_side else 2
-plot_title  = ' Lenovo_01 - primary| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Aug 11th'
-
+# is_64bits = sys.maxsize > 2**32
+# print ('is 64bit {}'.format(is_64bits))
+# import struct
+# print(struct.calcsize("P") * 8)
 
 dtb         = 'mercedes'
-collection  = 'Me05'
+collection  = 'Me07'
+
+input_side      = 'primary_16'
+input_sd        = 1 if 'primary' in input_side else 2
+plot_title  = ' {} - {}| bandpass [0.3 - 1.2] Mhz | Gain 0.55 | 2019 Sep 23th'.format(collection, input_side)
+
 
 # addr_to_extract = '/media/kacao/Ultra-Fit/titan-echo-boards/Lenovo/Lenovo_1/primary_1/'
-# address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/{}-190227/{}/'.format(collection,input_side)
-address = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me05-190227/primary_json/')
+address     = '/media/kacao/EchoesData/echo-C/data/{}/'.format(input_side)
+# address = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/Me05-190227/primary_json/')
 
 
 echoes_dsp = echoes_signals( 7200000.0 )
 if __name__ == '__main__':
     main()
+    # elapsed_time = timeit.timeit(main, number=100) / 100
+    # print(elapsed_time)

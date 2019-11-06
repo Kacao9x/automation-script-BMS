@@ -8,8 +8,9 @@ import numpy as np
 import os, glob
 import json
 from datetime import datetime, timedelta, tzinfo
-from time import time
+from time import time, sleep
 import pytz
+import scipy
 
 
 class LED_Color(Enum):
@@ -393,8 +394,8 @@ def sort_folder_by_name():
         if '.json' in files:
             myimages.append(files)
 
-    print len(myimages)
-    print myimages
+    print (len(myimages))
+    print (myimages)
 
 
 def sort_folder_universal():
@@ -409,8 +410,8 @@ def sort_folder_universal():
         if '.json' in files:
             myimages.append(files)
 
-    print len(myimages)
-    print myimages
+    print (len(myimages))
+    print (myimages)
     return
 
 
@@ -447,6 +448,57 @@ def convert_to_time_object():
     print ('timeconvert {}'.format(time_to_EDT))
 
 
+def fft_signal():
+    with open('.json') as json_file:
+        aCapture = json.load(json_file)
+    json_file.close()
+    
+    from scipy.fftpack import fft
+    yf = fft(aCapture)
+    N = 512
+    T = 1.38888889e-1
+    xf = np.linspace(0.0, N*T, N)
+
+    import matplotlib.pyplot as pyplot
+
+
+def qr_generator():
+    import pyqrcode
+    from pyqrcode import QRCode
+
+    import qrcode
+
+    test_result = {
+        "IsTestValid": True,
+        "TestId": 1,
+        "ProductId": 7,
+        "Soh": 76.8,
+        "Soc": 80.2,
+        "BatteryTemperature": 21.68,
+        "AmbientTemperature": 26,
+        "Timestamp": "2019-10-25T16:37:38"
+    }
+
+    test_result_str = json.dumps(test_result)
+    # url = pyqrcode.create(test_result_str)
+    # # Create and save the png file naming "myqr.png"
+    # url.svg("data/myqr.svg", scale=2)
+    # url.png("data/myqr.png", scale=2)
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(test_result)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save("data/myqr.png")
+
+    return
+
 
 if __name__ == "__main__":
     # test_Enum34(1)
@@ -455,13 +507,16 @@ if __name__ == "__main__":
     # test_bypass_function()
     # create_folder_w_timestamp()
 
+    qr_generator()
     sort_folder_by_name()
     print ('\n')
     sort_folder_by_name_advance()
 
 
-    ind = [3,5,6,8]
-    print ('list: {}'.format( ind[len(ind) -1] ))
+    ls = [10,9,9,8]
+    ind = [3,5,6,8,10,9]
+    ls = np.append(ls, ind)
+    print (ls)
 
     test_time_zone()
 
@@ -471,7 +526,9 @@ if __name__ == "__main__":
     time_converted = datetime.strptime(time_readout, '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
     print (time_converted)
 
-
+    time_readout = "7/3/2019 1:17:54"
+    time_converted = datetime.strptime(time_readout, "%m/%d/%Y %H:%M:%S")
+    print (time_converted.isoformat())
 
 
     test_wrong_datetime_exception()
@@ -480,6 +537,7 @@ if __name__ == "__main__":
     edit_element_numpy()
     grap_middle_value()
     convert_timest_to_sec('0:01:05.000')
+
 
     # JSON_to_file()
 

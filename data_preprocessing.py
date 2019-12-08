@@ -616,7 +616,7 @@ class echoes_sorting(object):
 class battery_cap(Enum):
     'unit: mAh'
     mercedes    = 56000
-    tunacan     = 64000
+    tunacan     = 66000
     toyotaCell  = 25800
     lenovo      = 3000
     enel        = 114000
@@ -628,14 +628,13 @@ class battery_cap(Enum):
 
 class Test(unittest.TestCase):
     
-    _cycler_txt_report = Path('/media/kacao/EchoesData/echo-B/Me09-AgeingHeat-Todd-9-23-2019')
-    echoes_cycler_path = Path('/media/kacao/EchoesData/echo-C/data/Me07-AgeingTest-Todd_merged_full.csv')
+    _cycler_txt_report = Path('/home/kacao/Cycler Reports Collection/Cycler Data TC13-Cycler Error Comparison')
+    echoes_cycler_path = Path('/media/kacao/EchoesData/Tuna-Can-5/TC13-E2_secondary')
 
-
-    battery_id      = 'Me09'    #raw_input('battery_id \n')
-    rated_cap       = battery_cap.mercedes.value
-    time_btw_logs   = 1                                                         # time btw each capture log in cycler
-    channel         = 'secondary'
+    battery_id      = 'TC'    #raw_input('battery_id \n')
+    rated_cap       = battery_cap.tunacan.value
+    time_btw_logs   = 10                                                         # time btw each capture log in cycler
+    channel         = 'primary'
     _isNeware  		= True
 
     dtb             = 'mercedes'
@@ -645,7 +644,7 @@ class Test(unittest.TestCase):
     cycler_sort = cycler_preprocessing(
         filename    =_cycler_txt_report,
         neware      = _isNeware,
-        time_sync_fix=True, debug=False)
+        time_sync_fix=False, debug=False)
 
     echoes_sort = echoes_sorting(
         path    = echoes_cycler_path,
@@ -663,7 +662,7 @@ class Test(unittest.TestCase):
 
     def test_merge_column(self, cycler_sort=cycler_sort):
 
-        # Test.test_clean_data(self, cycler_sort)	#test_clean_data doesn't return table
+        Test.test_clean_data(self, cycler_sort)	#test_clean_data doesn't return table
         with open (str(self._cycler_txt_report) + '.csv') as my_file:
             clean_table = pd.read_csv(my_file, sep=',', error_bad_lines=False)
         print (clean_table.head().to_string())
@@ -710,8 +709,7 @@ class Test(unittest.TestCase):
         #                         self.battery_id, self.channel))
 
         sorted_table.to_excel(str(self.echoes_cycler_path) +
-                            '{}_{}_echoescyler_final.xlsx'.format(
-                                self.battery_id, self.channel))
+                            '_echoescyler_final.xlsx')
         return
 
 

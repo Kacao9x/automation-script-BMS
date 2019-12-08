@@ -22,7 +22,7 @@ def PopenIter(cmd):
 # display the file with keyword in ascending using BASH
 def display_list_of_file(path, key):
     file_name = []
-    list_cmd = ('ls '+ path +' -1v' + " | grep '" + key + "'")
+    list_cmd = ('ls '+ str(path) +' -1v' + " | grep '" + key + "'")
     print (list_cmd)
     for line in iter(PopenIter(list_cmd), ''):
         file_name.append(line.rstrip())
@@ -66,7 +66,7 @@ def sort_folder_by_name_universal(path, key):
     print (dirFiles)
 
     dirFiles.sort( key=alphanum_key )
-    print ('dirFiles {}, len {}'.format(dirFiles, len(dirFiles)))
+    print ('\ndirFiles {}, len {}'.format(dirFiles, len(dirFiles)))
 
     return dirFiles
 

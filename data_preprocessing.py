@@ -628,8 +628,8 @@ class battery_cap(Enum):
 
 class Test(unittest.TestCase):
     
-    _cycler_txt_report = Path('/home/kacao/Cycler Reports Collection/Cycler Data TC13-Cycler Error Comparison')
-    echoes_cycler_path = Path('/media/kacao/EchoesData/Tuna-Can-5/TC13-E2_secondary')
+    _cycler_txt_report = Path('/media/kacao/Echoes-data-2/Cycler Reports Collection/Cycler Data TC84-E2')
+    echoes_cycler_path = Path('/media/kacao/Echoes-data-2/Tuna-can-10/TC84-E2_secondary')
 
     battery_id      = 'TC'    #raw_input('battery_id \n')
     rated_cap       = battery_cap.tunacan.value

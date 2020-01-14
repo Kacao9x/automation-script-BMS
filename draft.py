@@ -1,4 +1,5 @@
-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 # Program to show the use of continue statement inside loops
 
 
@@ -173,22 +174,6 @@ def use_timeout_with_process():
 
     return
 
-def convert_timest_to_sec(timest=""):
-    pt = datetime.strptime(timest, '%H:%M:%S.%f')
-    sec = pt.second + pt.minute * 60 + pt.hour * 3600
-
-    # x = time.strptime(timest.split('.')[0], '%H:%M:%S')
-    # sec = datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min,
-    #                    seconds=x.tm_sec).total_seconds()
-
-    #Method 2
-    # time = "01:34:11"
-    # sum(x * int(t) for x, t in zip([3600, 60, 1], time.split(":")))
-
-    print (sec)
-    return sec
-
-
 def convert_to_time_utc(time_string):
     import pytz
     import dateutil.parser
@@ -230,6 +215,8 @@ def grap_middle_value():
     # print (zc_right)
     print (zc_left_max)
 
+
+
 def test_wrong_datetime_exception():
     # timest = datetime_format(u'11/14/2018 16:09:03')
     time_arr = [u'11/14/2018 16:09:03', None,u'353415574.4', u'12/1/2018 16:09:03']
@@ -246,20 +233,6 @@ def test_wrong_datetime_exception():
 
     return
 
-
-
-def test_datetime_import():
-    # from datetime import datetime
-    # from time import time
-    import socket
-
-    CWD = os.getcwd()
-    if True:
-        st = datetime.fromtimestamp(time()).strftime('%Y%m%dT%H%M%S')
-        sk = socket.gethostname()
-        fn = os.path.join(CWD, "data", "{}_{}.dat".format(st, sk))
-
-        print (fn)
 
 def test_time_zone():
 
@@ -500,6 +473,85 @@ def qr_generator():
     return
 
 
+def filename_directory():
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    print('dirname: {}, filename: {}'.format(dirname, filename))
+
+    import inspect, sys
+    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    parentdir = os.path.dirname(currentdir)
+    sys.path.insert(0, parentdir)
+    sys.path.insert(0, parentdir + "/lib")
+
+
+def uuid_generator():
+    import uuid
+
+    id = uuid.uuid4()
+    print("The id generated using uuid4() : {}".format(id))
+
+def data_schema_creator():
+    import pathlib as Path
+    import json, pickle, compress_json
+    import uuid
+    import pprint
+
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    # print (Path(str(dirname) + '/file/cycle15_trans_2019-12-28T01:13:45_echoes-c.json'))
+    with open('/home/kacao/TitanAES/Python-scripts/file/cycle15_trans_2019-12-28T01:13:45_echoes-c.json') as json_readout:
+        sample_file = json.load(json_readout)
+    json_readout.close()
+
+    total_docs = 10000
+    test_data = {}
+
+    counter = 1
+    for key in range(0, total_docs):
+        new_uuid = uuid.uuid4()                                                 # give each pet document a UUID
+        new_uuid = str(new_uuid)                                                # convert UUID to string
+        test_data[new_uuid] = {}                                                # create a nest dictionary which represents the Elasticsearch document
+
+        test_data[new_uuid] = sample_file
+
+
+        # Customize the content of test_data
+        test_data[new_uuid]['capture_number'] = counter
+        test_data[new_uuid]['input_channel'] = counter * 2
+        counter += 1
+        # pprint.pprint('key: {}\n'.format(test_data[new_uuid].items()))
+        print('capture_id: {}'.format(test_data[new_uuid]['capture_number']))
+        # del test_data[new_uuid]['average_data'], test_data[new_uuid]['raw_data']
+
+
+    with open('/home/kacao/TitanAES/Python-scripts/file/batch1.pickle', 'ab') as handle:
+        pickle.dump(test_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # with open('/home/kacao/TitanAES/Python-scripts/file/batch1.json', 'w') as writeout:
+    #     writeout.write(json.dumps(test_data, sort_keys=True))
+    # writeout.close()
+
+    # compress_json.dump(test_data, "/home/kacao/TitanAES/Python-scripts/file/batch1.json.gz")
+    # compress_json.dump(test_data,
+    #                    "/home/kacao/TitanAES/Python-scripts/file/batch1.json.bz")
+    # compress_json.dump(test_data,
+    #                    "/home/kacao/TitanAES/Python-scripts/file/batch1.json.lzma")
+
+
+    ''' Read pickle or json object '''
+    with open('/home/kacao/TitanAES/Python-scripts/file/batch1.pickle', 'rb') as pickle_readout:
+        pickle_data = pickle.load(pickle_readout)
+    pickle_readout.close()
+
+    print (len(pickle_data.items()))
+    for key,val in pickle_data.items():
+        pet = pickle_data[key]
+        print ('id: {}, cap_number: {}'.format(key, pet['capture_number']))
+        # pprint.pprint('val {}'.format(val))
+        # pprint.pprint(len(pet['raw_data']))
+
+    return
+
+
 if __name__ == "__main__":
     # test_Enum34(1)
     # avg_arr_of_arr()
@@ -507,41 +559,36 @@ if __name__ == "__main__":
     # test_bypass_function()
     # create_folder_w_timestamp()
 
-    qr_generator()
-    sort_folder_by_name()
-    print ('\n')
-    sort_folder_by_name_advance()
+    # qr_generator()
+    # sort_folder_by_name()
+    # print ('\n')
+    # sort_folder_by_name_advance()
+    #
+    #
+    # ls = [10,9,9,8]
+    # ind = [3,5,6,8,10,9]
+    # ls = np.append(ls, ind)
+    # print (ls)
+    #
+    # test_time_zone()
+    #
+    # convert_to_time_object()
+    #
+    # time_readout = "2019-06-04-13-46-57"
+    # time_converted = datetime.strptime(time_readout, '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
+    # print (time_converted)
+    #
+    # time_readout = "7/3/2019 1:17:54"
+    # time_converted = datetime.strptime(time_readout, "%m/%d/%Y %H:%M:%S")
+    # print (time_converted.isoformat())
+    #
+    #
+    # test_wrong_datetime_exception()
+    #
+    # edit_element_numpy()
+    # grap_middle_value()
 
-
-    ls = [10,9,9,8]
-    ind = [3,5,6,8,10,9]
-    ls = np.append(ls, ind)
-    print (ls)
-
-    test_time_zone()
-
-    convert_to_time_object()
-
-    time_readout = "2019-06-04-13-46-57"
-    time_converted = datetime.strptime(time_readout, '%Y-%m-%d-%H-%M-%S').strftime('%Y-%m-%d %H:%M:%S')
-    print (time_converted)
-
-    time_readout = "7/3/2019 1:17:54"
-    time_converted = datetime.strptime(time_readout, "%m/%d/%Y %H:%M:%S")
-    print (time_converted.isoformat())
-
-
-    test_wrong_datetime_exception()
-    test_datetime_import()
-
-    edit_element_numpy()
-    grap_middle_value()
-    convert_timest_to_sec('0:01:05.000')
-
-
-    # JSON_to_file()
-
-    # use_timeout_with_signal()
-    # use_timeout_with_process()
-
+    filename_directory()
+    uuid_generator()
+    data_schema_creator()
     

@@ -1,10 +1,12 @@
 #library file
 /lib
 /.idea/
+/api
 
 
 #folder
 /data
+/file
 
 #system files
 .idea/Python-script.iml

@@ -432,7 +432,8 @@ battery_id  = 'Me05'
 SoH         = 'H77.23'
 day         = '_190123'
 
-addr    = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/{}-190227'.format(battery_id))
+# addr    = Path('/media/kacao/Ultra-Fit/titan-echo-boards/Mercedes_data/{}-190227'.format(battery_id))
+addr = Path('/home/kacao/TitanAES/Python-scripts/data/result.json')
 sub_addr= input_side
 
 echoes_index = []

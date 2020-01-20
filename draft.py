@@ -551,6 +551,14 @@ def data_schema_creator():
 
     return
 
+def fix_filename_colon():
+    from datetime import datetime
+    st = datetime.now().replace(microsecond=0)
+    print ('isoformat {}'.format(st.isoformat()))
+
+    print('windows desired: {}'.format(st.strftime("%Y-%m-%dT%H-%M-%S")))
+
+    return
 
 if __name__ == "__main__":
     # test_Enum34(1)
@@ -591,4 +599,5 @@ if __name__ == "__main__":
     filename_directory()
     uuid_generator()
     data_schema_creator()
+    fix_filename_colon()
     

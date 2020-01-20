@@ -90,15 +90,14 @@ def plot_signal_from_json_new(remove_bad_samp=False, bandpass=False,
     """
 
 
-    folder_list = [
-                   'ET_Extended_Pressure_Test_Pincher_secondary']
+    folder_list = ['data',]
 
 
     for input_side in folder_list:
         plot_title = '{}| bandpass [0.3 - 1.2] Mhz | Gain 0.55'.format(
             input_side)
 
-        address     = '/media/kacao/Ultra-Fit/titan-echo-boards/Experiment/{}/'.format(input_side)
+        address     = '/home/kacao/TitanAES/Python-scripts/data/'#{}/'.format(input_side)
 
         raw_signal_dict = {}
         avg_filtered_dict = {}
@@ -106,7 +105,7 @@ def plot_signal_from_json_new(remove_bad_samp=False, bandpass=False,
 
         ped = 1.38888889e-1  # microsec, * 1000000
 
-        key = '*.json'
+        key = 'capture*.json'
 
         list_file = sort_folder_by_name_universal(Path(address), key)
         print(list_file)
@@ -156,6 +155,7 @@ def plot_signal_from_json_new(remove_bad_samp=False, bandpass=False,
                     raw_set_pd = pd.concat([raw_set_pd, single_set], axis=1,
                                            ignore_index=True)
 
+
                 [row, column] = raw_set_pd.shape
 
                 avg = np.mean(raw_set_pd, axis=1)  # average 64 captures
@@ -179,7 +179,7 @@ def plot_signal_from_json_new(remove_bad_samp=False, bandpass=False,
                 plt.grid('on')
                 plt.legend(loc='upper right')
 
-                # plt.show() # plot an individual signal
+                plt.show() # plot an individual signal
             else:
                 print('no raw_data')
                 avg = []
@@ -693,7 +693,7 @@ def main ():
     # """
     # (2) plot avg of each capture. Save avg (mean) to csv file
     # """
-    plot_signal_from_json_new(remove_bad_samp=True, bandpass=True, backgrd_subtract= False)
+    plot_signal_from_json_new(remove_bad_samp=False, bandpass=True, backgrd_subtract= False)
     # plot_signal_from_pickle()
     # plot_signal_from_mongo(collection=collection)
     # plot_fft_signal()
